@@ -6,19 +6,19 @@
 #include <unit.h>
 #include <value.h>
 #include <valueDescription.h>
-#include <attributeID.h>
 #include <exception.h>
 
 #include <iostream>
 
 class None{};
 
-template<AttributeID i, typename T, std::size_t n, typename BoostUnit=None>
+template<typename AttributeID, typename T, std::size_t n, typename BoostUnit=None>
 class Attribute
 {
   public:
     using ValueType = Value<T, n, true>;
     using ValueElementType = typename ValueType::value_type;
+    using ID = AttributeID;
   private:
     DynamicScale s;
     ValueType v;
@@ -28,7 +28,7 @@ class Attribute
     const ValueType& value() const {return v;}
     ValueType& value(){return v;}
     void value(const ValueType& v){this->v=v;}
-    static constexpr AttributeID id(){return i;}
+    constexpr ID id(){return ID();}
     const DynamicScale& scale() const{return s;}
     DynamicScale& scale(){return s;}
     const Unit unit() const{
@@ -37,12 +37,13 @@ class Attribute
     }
 };
 
-template<AttributeID i, typename T, std::size_t n>
-class Attribute<i,T,n, None>
+template<typename AttributeID, typename T, std::size_t n>
+class Attribute<AttributeID,T,n, None>
 {
   public:
     using ValueType = Value<T, n, false>;
     using ValueElementType = typename ValueType::value_type;
+    using ID = AttributeID;
   private:
     ValueType v;
   public:
@@ -51,29 +52,29 @@ class Attribute<i,T,n, None>
     const ValueType& value() const {return v;}
     ValueType& value(){return v;}
     void value(const ValueType& v){this->v=v;}
-    static constexpr AttributeID id(){return i;}
+    constexpr ID id(){return ID();}
 };
 
-template<typename PacketBufferIterator, AttributeID I, typename T, std::size_t n, typename U>
-PacketBufferIterator& operator<<(PacketBufferIterator& it, const Attribute<I,T,n,U>& q)
+template<typename PacketBufferIterator, typename ID, typename T, std::size_t n, typename U>
+PacketBufferIterator& operator<<(PacketBufferIterator& it, const Attribute<ID,T,n,U>& q)
 {
-  return it << q.id() << q.unit() << ValueDescription(q.value()) << q.scale();
+  return it << q.id().value() << q.unit() << ValueDescription(q.value()) << q.scale();
 }
 
-template<typename PacketBufferIterator, AttributeID I, typename T, std::size_t n>
-PacketBufferIterator& operator<<(PacketBufferIterator& it, const Attribute<I,T,n, None>& q)
+template<typename PacketBufferIterator, typename ID, typename T, std::size_t n>
+PacketBufferIterator& operator<<(PacketBufferIterator& it, const Attribute<ID,T,n, None>& q)
 {
-  return it << q.id() << ValueDescription(q.value());
+  return it << q.id().value() << ValueDescription(q.value());
 }
 
-template<typename PacketBufferConstIterator, AttributeID I, typename T, std::size_t n, typename U>
-PacketBufferConstIterator& operator>>(PacketBufferConstIterator& it, Attribute<I,T,n,U>& q)
+template<typename PacketBufferConstIterator, typename ID, typename T, std::size_t n, typename U>
+PacketBufferConstIterator& operator>>(PacketBufferConstIterator& it, Attribute<ID,T,n,U>& q)
 {
-  AttributeID id;
+  typename ID::Type id;
   Unit u;
   ValueDescription d;
   it >> id >> u >> d;
-  if(id!=q.id())
+  if(q.id().value()!=id)
     throw IDException();
   if(d!=q.value())
     throw TypeException();
@@ -82,27 +83,27 @@ PacketBufferConstIterator& operator>>(PacketBufferConstIterator& it, Attribute<I
   return it >> q.scale();
 }
 
-template<typename PacketBufferConstIterator, AttributeID I, typename T, std::size_t n>
-PacketBufferConstIterator& operator>>(PacketBufferConstIterator& it, Attribute<I,T,n, None>& q)
+template<typename PacketBufferConstIterator, typename ID, typename T, std::size_t n>
+PacketBufferConstIterator& operator>>(PacketBufferConstIterator& it, Attribute<ID,T,n, None>& q)
 {
-  AttributeID id;
+  typename ID::Type id;
   ValueDescription d;
   it >> id >> d;
-  if(id!=q.id())
+  if(q.id().value()!=id)
     throw IDException();
   if(d!=q.value())
     throw TypeException();
   return it;
 }
 
-template<AttributeID I, typename T, std::size_t n, typename U>
-std::ostream& operator<<(std::ostream& o, const Attribute<I,T,n,U>& a)
+template<typename ID, typename T, std::size_t n, typename U>
+std::ostream& operator<<(std::ostream& o, const Attribute<ID,T,n,U>& a)
 {
-  return o << a.id() << ": " << a.value() << " * " << a.scale() << " " << a.unit();
+  return o << a.id().name() << ": " << a.value() << " * " << a.scale() << " " << a.unit();
 }
 
-template<AttributeID I, typename T, std::size_t n>
-std::ostream& operator<<(std::ostream& o, const Attribute<I,T,n, None>& a)
+template<typename ID, typename T, std::size_t n>
+std::ostream& operator<<(std::ostream& o, const Attribute<ID,T,n, None>& a)
 {
-  return o << a.id() << ": " << a.value();
+  return o << a.id().name() << ": " << a.value();
 }

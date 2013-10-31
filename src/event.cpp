@@ -5,7 +5,7 @@
 
 using namespace std;
 
-using TestAttr = Attribute<AttributeID::unspecified, bool, 1>;
+using TestAttr = Attribute<AttributeID::Distance, uint8_t, 1, boost::units::si::length>;
 using NewScheme = SensorBaseEventScheme<>::extent<TestAttr>;
 
 int main()
@@ -16,15 +16,15 @@ int main()
   Event check = sbes.createEvent();
   DynamicPacketBuffer buffer;
 
-  auto& posValue=sbe.attribute<AttributeID::position>().value();
+  auto& posValue=sbe.attribute<AttributeID::Position>().value();
   posValue={{{1.0f,0.0f},{2.0f,0.0f},{3.0f,0.0f}}};
 
-  auto& timeValue=sbe.attribute<AttributeID::time>().value();
+  auto& timeValue=sbe.attribute<AttributeID::Time>().value();
   timeValue={{{10.0f,0.0001f}}};
 
-  sbe.attribute<AttributeID::publisherID>().value({{1337}});
+  sbe.attribute<AttributeID::PublisherID>().value({{1337}});
 
-  sbe.attribute<AttributeID::validity>().value({{0.1}});
+  sbe.attribute<AttributeID::Validity>().value({{0.1}});
 
   cout << sbe;
 

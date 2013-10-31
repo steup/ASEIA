@@ -1,26 +1,43 @@
 #pragma once
 
-#include <iostream>
+#include <cstdint>
 
-enum class AttributeID : uint8_t
+namespace AttributeID
 {
-  distance,
-  position,
-  time,
-  publisherID,
-  validity,
-  unspecified
-};
-
-std::ostream& operator<<(std::ostream& o, const AttributeID i)
-{
-  switch(i)
+  struct Base
   {
-    case(AttributeID::distance)   : return o << "Distance   ";
-    case(AttributeID::position)   : return o << "Position   ";
-    case(AttributeID::time)       : return o << "Time       ";
-    case(AttributeID::publisherID): return o << "PublisherID";
-    case(AttributeID::validity)   : return o << "Validity   ";
-    default                       : return o << "Unspecified";
-  }
+    using Type = std::uint8_t;
+    constexpr Type value(){return 0;}
+    constexpr const char* name(){return "Unspecified";}
+  };
+
+  struct Position : public Base
+  {
+    constexpr Base::Type value(){return 1;}
+    constexpr const char* name(){return "Position";}
+  };
+  
+  struct Time : public Base
+  {
+    constexpr Base::Type value(){return 2;}
+    constexpr const char* name(){return "Time";}
+  };
+  
+  struct PublisherID : public Base
+  {
+    constexpr Base::Type value(){return 3;}
+    constexpr const char* name(){return "Publisher ID";}
+  };
+  
+  struct Validity : public Base
+  {
+    constexpr Base::Type value(){return 4;}
+    constexpr const char* name(){return "Validity";}
+  };
+
+  struct Distance : public Base
+  {
+    constexpr Base::Type value(){return 5;}
+    constexpr const char* name(){return "Distance";}
+  };
 }

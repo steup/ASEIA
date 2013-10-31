@@ -1,6 +1,7 @@
 #pragma once
 
 #include <attribute.h>
+#include <attributeID.h>
 #include <tuple>
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/if.hpp>
@@ -15,13 +16,13 @@
 
 using namespace boost::mpl;
 
-template<AttributeID i>
+template<typename ID>
 struct AttrIDCompare
 {
   template<typename T>
   struct apply
   {
-    using type = typename if_c<i==T::id(), true_, false_>::type;
+    using type = typename std::is_same<ID, typename T::ID>::type;
   };
 };
 
@@ -51,17 +52,17 @@ class SensorEvent
     AttrTuple data;
 
   public:
-    template<AttributeID i>
-    const typename Scheme::template attribute<i>::type& attribute() const
+    template<typename ID>
+    const typename Scheme::template attribute<ID>::type& attribute() const
     {
-      using n = typename Scheme::template attribute<i>::pos;
+      using n = typename Scheme::template attribute<ID>::pos;
       return std::get<n::value>(data);
     }
 
-    template<AttributeID i>
-    typename Scheme::template attribute<i>::type& attribute()
+    template<typename ID>
+    typename Scheme::template attribute<ID>::type& attribute()
     {
-      using n = typename Scheme::template attribute<i>::pos;
+      using n = typename Scheme::template attribute<ID>::pos;
       return std::get<n::value>(data);
     }
 
@@ -78,10 +79,10 @@ class SensorEventScheme
     using EventType = SensorEvent<SensorEventScheme>;
     EventType createEvent() const {return EventType();}
 
-    template<AttributeID i>
+    template<typename ID>
     struct attribute
     {
-      using compare = AttrIDCompare<i>;
+      using compare = AttrIDCompare<ID>;
       using iter = typename boost::mpl::find_if<AttrList, compare>::type;
       using begin_iter = typename begin<AttrList>::type;
       using end_iter = typename end<AttrList>::type;
@@ -96,13 +97,13 @@ class SensorEventScheme
 };
 
 template<typename T, std::size_t s>
-using PositionAttribute    = Attribute<AttributeID::position   , T, s, boost::units::si::length>;
+using PositionAttribute    = Attribute<AttributeID::Position   , T, s, boost::units::si::length>;
 template<typename T, std::size_t s>
-using TimeAttribute        = Attribute<AttributeID::time       , T, s, boost::units::si::time  >;
+using TimeAttribute        = Attribute<AttributeID::Time       , T, s, boost::units::si::time  >;
 template<typename T, std::size_t s>
-using PublisherIDAttribute = Attribute<AttributeID::publisherID, T, s>;
+using PublisherIDAttribute = Attribute<AttributeID::PublisherID, T, s>;
 template<typename T, std::size_t s>
-using ValidityAttribute    = Attribute<AttributeID::validity   , T, s>;
+using ValidityAttribute    = Attribute<AttributeID::Validity   , T, s>;
 
 struct SEBSConfig
 {
@@ -135,49 +136,49 @@ template<typename Scheme>
 std::ostream& operator<<(std::ostream& o, const SensorEvent<Scheme>& sbe)
 {
   o << "Sensor Base Event: " << std::endl;
-  o << "\t" <<  sbe.template attribute<AttributeID::position   >() << std::endl;
-  o << "\t" <<  sbe.template attribute<AttributeID::time       >() << std::endl;
-  o << "\t" <<  sbe.template attribute<AttributeID::publisherID>() << std::endl;
-  o << "\t" <<  sbe.template attribute<AttributeID::validity   >() << std::endl;
+  o << "\t" <<  sbe.template attribute<AttributeID::Position   >() << std::endl;
+  o << "\t" <<  sbe.template attribute<AttributeID::Time       >() << std::endl;
+  o << "\t" <<  sbe.template attribute<AttributeID::PublisherID>() << std::endl;
+  o << "\t" <<  sbe.template attribute<AttributeID::Validity   >() << std::endl;
   return o;
 }
 
 template<typename PacketBufferConstIterator, typename Scheme>
 PacketBufferConstIterator& operator>>(PacketBufferConstIterator& i, SensorEvent<Scheme>& e)
 {
-  i >> e.template attribute<AttributeID::position>().value();
-  i >> e.template attribute<AttributeID::time>().value();
-  i >> e.template attribute<AttributeID::publisherID>().value();
-  i >> e.template attribute<AttributeID::validity>().value();
+  i >> e.template attribute<AttributeID::Position>().value();
+  i >> e.template attribute<AttributeID::Time>().value();
+  i >> e.template attribute<AttributeID::PublisherID>().value();
+  i >> e.template attribute<AttributeID::Validity>().value();
   return i;
 }
 
 template<typename PacketBufferIterator, typename Scheme>
 PacketBufferIterator& operator<<(PacketBufferIterator& i, const SensorEvent<Scheme>& e)
 {
-  i << e.template attribute<AttributeID::position>().value();
-  i << e.template attribute<AttributeID::time>().value();
-  i << e.template attribute<AttributeID::publisherID>().value();
-  i << e.template attribute<AttributeID::validity>().value();
+  i << e.template attribute<AttributeID::Position>().value();
+  i << e.template attribute<AttributeID::Time>().value();
+  i << e.template attribute<AttributeID::PublisherID>().value();
+  i << e.template attribute<AttributeID::Validity>().value();
   return i;
 }
 
 template<typename PacketBufferConstIterator, typename AttrList>
 PacketBufferConstIterator& operator>>(PacketBufferConstIterator& i, SensorEventScheme<AttrList>& e)
 {
-  i >> e.template attribute<AttributeID::position>();
-  i >> e.template attribute<AttributeID::time>();
-  i >> e.template attribute<AttributeID::publisherID>();
-  i >> e.template attribute<AttributeID::validity>();
+  i >> e.template attribute<AttributeID::Position>();
+  i >> e.template attribute<AttributeID::Time>();
+  i >> e.template attribute<AttributeID::PublisherID>();
+  i >> e.template attribute<AttributeID::Validity>();
   return i;
 }
 
 template<typename PacketBufferIterator, typename AttrList>
 PacketBufferIterator& operator<<(PacketBufferIterator& i, const SensorEventScheme<AttrList>& e)
 {
-  i << e.template attribute<AttributeID::position>();
-  i << e.template attribute<AttributeID::time>();
-  i << e.template attribute<AttributeID::publisherID>();
-  i << e.template attribute<AttributeID::validity>();
+  i << e.template attribute<AttributeID::Position>();
+  i << e.template attribute<AttributeID::Time>();
+  i << e.template attribute<AttributeID::PublisherID>();
+  i << e.template attribute<AttributeID::Validity>();
   return i;
 }
