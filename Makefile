@@ -25,6 +25,7 @@ BUILD := ./build
 SRC   := ./src
 INC   := ./include
 BIN   := ./bin
+DOC   := ./doc
 
 
 TARGETS  := $(notdir $(basename $(wildcard ${SRC}/*.cpp)))
@@ -35,7 +36,7 @@ DEPS     := $(wildcard ${BUILD}/*.d)
 
 
 
-.PHONY: all clean run_% debug_%
+.PHONY: all clean run_% debug_% doc
 
 all: ${TARGETS}
 
@@ -57,6 +58,9 @@ $(addprefix debug_,${TARGETS}): debug_%: %
 	@${DBG} ./${BIN}/$< -ex start ${ARGS}
 
 clean:
-	@rm -rf ${BIN} ${BUILD}
+	@rm -rf ${BIN} ${BUILD} ${DOC}
+
+doc:
+	@doxygen ${DOC}/doxyfile
 
 -include ${DEPS}
