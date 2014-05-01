@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <boost/units/systems/si/base.hpp>
+#include <boost/units/systems/si.hpp>
 
 namespace id{
   namespace attribute{
@@ -145,61 +145,61 @@ namespace id{
   namespace unit{
     struct Base{
       using IDType = std::uint8_t;
-      using Type = boost::units::si::dimensionless;
+      using Unit = boost::units::si::dimensionless;
       constexpr IDType value(){return 11;}
       constexpr const char* name(){return "none";}
       constexpr const char* shortName(){return "";}
     };
     struct Steradian : public Base{
-      using Type = boost::units::angle::steradian_base_unit;
+      using Unit = boost::units::si::solid_angle;
       constexpr Base::IDType value(){return 0;}
       constexpr const char* name(){return "steradian";}
       constexpr const char* shortName(){return "srad";}
     };
     struct Radian : public Base{
-      using Type = boost::units::angle::radian_base_unit;
+      using Unit = boost::units::si::plane_angle;
       constexpr Base::IDType value(){return 1;}
       constexpr const char* name(){return "radian";}
       constexpr const char* shortName(){return "rad";}
     };
     struct Candela : public Base{
-      using Type = boost::units::si::candela_base_unit;
+      using Unit = boost::units::si::luminous_intensity;
       constexpr Base::IDType value(){return 2;}
       constexpr const char* name(){return "candela";}
       constexpr const char* shortName(){return "cd";}
     };
     struct Mole : public Base{
-      using Type = boost::units::si::mole_base_unit;
+      using Unit = boost::units::si::amount;
       constexpr Base::IDType value(){return 3;}
       constexpr const char* name(){return "mole";}
       constexpr const char* shortName(){return "mol";}
     };
     struct Kelvin : public Base{
-      using Type = boost::units::si::kelvin_base_unit;
+      using Unit = boost::units::si::temperature;
       constexpr Base::IDType value(){return 4;}
       constexpr const char* name(){return "kelvin";}
       constexpr const char* shortName(){return "K";}
     };
     struct Ampere : public Base{
-      using Type = boost::units::si::ampere_base_unit;
+      using Unit = boost::units::si::current;
       constexpr Base::IDType value(){return 5;}
       constexpr const char* name(){return "ampere";}
       constexpr const char* shortName(){return "A";}
     };
     struct Second : public Base{
-      using Type = boost::units::si::second_base_unit;
+      using Unit = boost::units::si::time;
       constexpr Base::IDType value(){return 6;}
       constexpr const char* name(){return "second";}
       constexpr const char* shortName(){return "s";}
     };
     struct Kilogram : public Base{
-      using Type = boost::units::si::kilogram_base_unit;
+      using Unit = boost::units::si::mass;
       constexpr Base::IDType value(){return 7;}
       constexpr const char* name(){return "kilogram";}
       constexpr const char* shortName(){return "kg";}
     };
     struct Meter : public Base{
-      using Type = boost::units::si::meter_base_unit;
+      using Unit = boost::units::si::length;
       constexpr Base::IDType value(){return 8;}
       constexpr const char* name(){return "meter";}
       constexpr const char* shortName(){return "m";}
