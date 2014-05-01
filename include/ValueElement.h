@@ -1,11 +1,13 @@
 #pragma once
 
 #include <utility>
+#include <ID.h>
 
 template<typename T, bool useUncertainty=true>
 class ValueElement : public std::pair<T,T>
 {
   public:
+    using TypeID = id::type::getTypeID<T>::type;
     using BaseType=std::pair<T,T>;
     ValueElement() : BaseType(0,0){}
     ValueElement(T v, T u) : BaseType(v,u){}
@@ -16,6 +18,22 @@ class ValueElement : public std::pair<T,T>
     const T uncertainty() const{return this->second;}
     T& uncertainty(){return this->second;}
     void uncertainty(T u){this->second=u;}
+
+    ValueElement operator+(const ValueElement& a)const{
+      return ValueElement(this->first()+a.first(), this->second()+a.second());
+    }
+
+    ValueElement operator-(const ValueElement& a)const{
+      return ValueElement(this->first()-a.first(), this->second()+a.second());
+    }
+
+    ValueElement operator*(const ValueElement& a)const{
+      return ValueElement(this->first()+a.first(), this->second()+a.second());
+    }
+
+    ValueElement operator/(const ValueElement& a)const{
+      return ValueElement(this->first()+a.first(), this->second()+a.second());
+    }
 
     constexpr static std::size_t size() noexcept {return sizeof(BaseType);}
 };
