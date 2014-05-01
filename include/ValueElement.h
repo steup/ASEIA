@@ -1,58 +1,107 @@
 #pragma once
 
-#include <utility>
+#include <boost/numeric/interval.hpp>
 #include <ID.h>
 
 template<typename T, bool useUncertainty=true>
-class ValueElement : public std::pair<T,T>
-{
+class ValueElement{
+  private:
   public:
-    using TypeID = id::type::getTypeID<T>::type;
-    using BaseType=std::pair<T,T>;
-    ValueElement() : BaseType(0,0){}
-    ValueElement(T v, T u) : BaseType(v,u){}
+    using DataType = typename boost::numeric::interval<T>;
+    using TypeID   = typename id::type::getTypeID<T>::type;
+    using BaseType = T;
+  private:
+    DataType data;
+    explicit ValueElement(const DataType& data) : data(data){}
+  public:
+    ValueElement() : data(0,0){}
+    ValueElement(T v, T u=0) : data(v-u,v+u){}
 
-    const T value() const{return this->first;}
-    T& value(){return this->first;}
-    void value(T v){this->first=v;}
-    const T uncertainty() const{return this->second;}
-    T& uncertainty(){return this->second;}
-    void uncertainty(T u){this->second=u;}
-
-    ValueElement operator+(const ValueElement& a)const{
-      return ValueElement(this->first()+a.first(), this->second()+a.second());
+    T value() const{return (data.lower()+data.upper())/2;}
+    void value(const T& v){
+      T u = uncertainty();
+      data.lower(v-u);
+      data.upper(v+u);
+    }
+    T uncertainty() const{return (data.upper()-data.lower())/2;}
+    void uncertainty(const T& u){
+      T v = value();
+      data.lower(v-u);
+      data.upper(v+u);
     }
 
-    ValueElement operator-(const ValueElement& a)const{
-      return ValueElement(this->first()-a.first(), this->second()+a.second());
+    ValueElement operator+=(const ValueElement& a){
+      data+=a.data;
+      return *this;
     }
 
-    ValueElement operator*(const ValueElement& a)const{
-      return ValueElement(this->first()+a.first(), this->second()+a.second());
+    ValueElement operator-=(const ValueElement& a){
+      data-=a.data;
+      return *this;
     }
 
-    ValueElement operator/(const ValueElement& a)const{
-      return ValueElement(this->first()+a.first(), this->second()+a.second());
+    ValueElement operator*=(const ValueElement& a){
+      data*=a.data;
+      return *this;
     }
 
-    constexpr static std::size_t size() noexcept {return sizeof(BaseType);}
+    ValueElement operator/=(const ValueElement& a){
+      data/=a.data;
+      return *this;
+    }
+
+    ValueElement operator+(const ValueElement& a) const{
+      return ValueElement(data)+=a.data;
+    }
+
+    ValueElement operator-(const ValueElement& a) const{
+      return ValueElement(data)-=a.data;
+    }
+
+    ValueElement operator*(const ValueElement& a) const{
+      return ValueElement(data)*=a.data;
+    }
+
+    ValueElement operator/(const ValueElement& a) const{
+      return ValueElement(data)/=a.data;
+    }
+
+    constexpr static std::size_t size() noexcept {return sizeof(ValueElement);}
 };
 
 template<typename T>
 class ValueElement<T, false>
 {
   private:
-    T v;
+    T data;
   public:
-    using BaseType=T;
-    ValueElement() : v(0){}
-    ValueElement(T c) : v(c){}
+    using TypeID   = typename id::type::getTypeID<T>::type;
+    using DataType = T;
+    using BaseType = T;
+    ValueElement() : data(0){}
+    ValueElement(const T& v) : data(v){}
 
-    const T value() const{return v;}
-    T& value(){return v;}
-    void value(T v){this->v=v;}
+    const T value() const{return data;}
+    void value(const T& v){data=v;}
 
-    constexpr static std::size_t size() noexcept {return sizeof(BaseType);}
+    ValueElement operator+(const ValueElement& a) const{
+      return ValueElement(data+a.data);
+    }
+
+    ValueElement operator-(const ValueElement& a)const{
+      return ValueElement(data-a.data);
+    }
+
+    ValueElement operator*(const ValueElement& a)const{
+      return ValueElement(data*a.data);
+
+    }
+
+    ValueElement operator/(const ValueElement& a)const{
+      return ValueElement(data/a.data);
+    }
+
+    constexpr static std::size_t size() noexcept {return sizeof(DataType);}
 };
 
 template<typename T>
