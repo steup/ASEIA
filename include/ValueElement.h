@@ -12,10 +12,10 @@ class ValueElement{
     using BaseType = T;
   private:
     DataType data;
-    explicit ValueElement(const DataType& data) : data(data){}
   public:
     ValueElement() : data(0,0){}
     ValueElement(T v, T u=0) : data(v-u,v+u){}
+    ValueElement(const DataType& data) : data(data){}
 
     T value() const{return (data.lower()+data.upper())/2;}
     void value(const T& v){
@@ -67,6 +67,7 @@ class ValueElement{
     }
 
     constexpr static std::size_t size() noexcept {return sizeof(ValueElement);}
+    constexpr bool hasUncertainty()     noexcept {return true;}
 };
 
 template<typename T>
@@ -83,6 +84,30 @@ class ValueElement<T, false>
 
     const T value() const{return data;}
     void value(const T& v){data=v;}
+    T uncertainty() const{return 0;}
+    void uncertainty(const T& u){
+      static_assert(hasUncertainty(), "Uncertainty disabled at compile time");
+    }
+    
+    ValueElement operator+=(const ValueElement& a){
+      data+=a.data;
+      return *this;
+    }
+
+    ValueElement operator-=(const ValueElement& a){
+      data-=a.data;
+      return *this;
+    }
+
+    ValueElement operator*=(const ValueElement& a){
+      data*=a.data;
+      return *this;
+    }
+
+    ValueElement operator/=(const ValueElement& a){
+      data/=a.data;
+      return *this;
+    }
 
     ValueElement operator+(const ValueElement& a) const{
       return ValueElement(data+a.data);
@@ -102,6 +127,7 @@ class ValueElement<T, false>
     }
 
     constexpr static std::size_t size() noexcept {return sizeof(DataType);}
+    constexpr bool hasUncertainty()     noexcept {return false;}
 };
 
 template<typename T>
