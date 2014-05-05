@@ -66,7 +66,7 @@ class ValueElement{
       return ValueElement(data)/=a.data;
     }
 
-    constexpr static std::size_t size() noexcept {return sizeof(ValueElement);}
+    constexpr static std::size_t size() noexcept {return 2*sizeof(BaseType);}
     constexpr bool hasUncertainty()     noexcept {return true;}
 };
 
