@@ -100,3 +100,6 @@ struct Value : public std::array<ValueElement<T, useUncertainty>,n>{
       return *this;
     }
 
+    constexpr static std::size_t size() noexcept{return n*ValueElement<T, useUncertainty>::size();}
+    constexpr bool hasUncertainty() noexcept {return (*this)[0].hasUncertainty();}
+};
