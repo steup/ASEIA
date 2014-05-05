@@ -126,18 +126,6 @@ class ValueElement<T, false>
       return ValueElement(data/a.data);
     }
 
-    constexpr static std::size_t size() noexcept {return sizeof(DataType);}
+    constexpr static std::size_t size() noexcept {return sizeof(BaseType);}
     constexpr bool hasUncertainty()     noexcept {return false;}
 };
-
-template<typename T>
-std::ostream& operator<<(std::ostream& o, const ValueElement<T, true>& e)
-{
-  return o << e.value() << "+-" << e.uncertainty();
-}
-
-template<typename T>
-std::ostream& operator<<(std::ostream& o, const ValueElement<T, false>& e)
-{
-  return o << e.value();
-}

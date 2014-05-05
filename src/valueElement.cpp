@@ -1,8 +1,9 @@
+#include <ValueElement.h>
+#include <IO.h>
+
 #include <iostream>
 
-#include <ValueElement.h>
-
-using V = ValueElement<int32_t>;
+using V = ValueElement<int>;
 
 int main(){
   V a(1,1);

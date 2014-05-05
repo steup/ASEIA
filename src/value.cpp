@@ -1,8 +1,9 @@
+#include <ValueElement.h>
+#include <IO.h>
+
 #include <iostream>
 
-#include <Value.h>
-
-using V = Value<double, 3>;
+using V = Value<float, 3>;
 
 int main(){
   V a({{1.1,1.5}, {2.2,2.8}, {3.9}});
