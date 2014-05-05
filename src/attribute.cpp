@@ -1,39 +1,25 @@
+
+#include <Attribute.h>
+#include <IO.h>
+#include <Value.h>
+#include <ID.h>
+
 #include <iostream>
 
-#include <attribute.h>
-
 #include <boost/units/systems/si/length.hpp>
-#include <boost/units/systems/si/time.hpp>
 
 using boost::units::si::length;
 using boost::units::si::seconds;
 using namespace std;
 
-template<typename T, std::size_t n>
-using Position=Attribute<AttributeID::position, length, T, n, true>;
+using Vector3iu=Value<float,3,true>;
+
+using Position=Attribute<id::attribute::Position, Vector3iu, boost::units::si::length, std::ratio<1,10>>;
 
 int main()
 {
-  using F3Position=Position<float, 3>;
+  Position pos{{{0.0f,0.0f}, {0.0f, 0.0f}, {1.0f,0.0f}}};
 
-  F3Position pos;
-  F3Position deserialize;
-  pos.value()={{{0.0f,0.0f}, {0.0f, 0.0f}, {1.0f,0.0f}}};
-//  pos.value()={{0.0f, 0.0f, 1.0f}};
-  pos.scale()=1.0f/1000;
-
-  DynamicPacketBuffer b;
-
-  cout << pos << endl;
-
-  auto it=back_inserter(b);
-  it << pos << pos.value();
-
-  cout << b << endl;
-
-  auto deIt=b.cbegin();
-  deIt >> deserialize >> deserialize.value();
-  cout << deserialize << endl;
-  
+  cout << pos << endl; 
   return 0;
 }
