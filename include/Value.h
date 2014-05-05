@@ -105,7 +105,13 @@ template<typename T, std::size_t n, bool useUncertainty>
 std::ostream& operator<<(std::ostream& o, const Value<T,n,useUncertainty>& v)
 {
   o << "(";
+  bool isFirst=true;
   for(auto e : v)
-    o << e << ", ";
+    if(isFirst){
+      isFirst=false;
+      o << e;
+    }
+    else
+      o << ", " << e;
   return o << ")";
 }
