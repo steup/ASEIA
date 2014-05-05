@@ -1,28 +1,23 @@
 #pragma once
 
-#include <array>
 #include <ValueElement.h>
+
 #include <initializer_list>
+#include <array>
 
 template<typename T, std::size_t n, bool useUncertainty=true>
 struct Value : public std::array<ValueElement<T, useUncertainty>,n>{
   public:
-    using BaseType = typename ValueElement<T, useUncertainty>::BaseType;
-    using DataType = typename ValueElement<T, useUncertainty>::DataType;
-    using TypeID   = typename ValueElement<T, useUncertainty>::TypeID;
+    using BaseType    = ValueElement<T, useUncertainty>;
+    using DataType    = std::array<BaseType, n>;
+    using InitType    = std::initializer_list<typename BaseType::InitType>;
 
-    Value(std::initializer_list<std::initializer_list<T>> l){
+    Value(){}
+
+    Value(InitType l){
       std::size_t i=0;
       for(const auto& value : l){
-        uint8_t j=0;
-        T v=0, u=0;
-        for(const T& val : value){
-          if(j++==0)
-            v=val;
-          else
-            u=val;
-        }
-        (*this)[i++]=ValueElement<T, useUncertainty>(v, u);
+        (*this)[i++]=ValueElement<T, useUncertainty>(value);
       }
     }
 

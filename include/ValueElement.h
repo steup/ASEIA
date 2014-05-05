@@ -1,21 +1,31 @@
 #pragma once
 
-#include <boost/numeric/interval.hpp>
 #include <ID.h>
+
+#include <initializer_list>
+
+#include <boost/numeric/interval.hpp>
 
 template<typename T, bool useUncertainty=true>
 class ValueElement{
   private:
   public:
-    using DataType = typename boost::numeric::interval<T>;
+    using DataType = boost::numeric::interval<T>;
     using TypeID   = typename id::type::getTypeID<T>::type;
     using BaseType = T;
+    using InitType = std::initializer_list<T>;
   private:
     DataType data;
   public:
     ValueElement() : data(0,0){}
     ValueElement(T v, T u=0) : data(v-u,v+u){}
     ValueElement(const DataType& data) : data(data){}
+    ValueElement(InitType i){
+      auto iter = i.begin();
+      T v = *iter;
+      T u = *std::next(iter);
+      data=DataType(v-u, v+u);
+    }
 
     T value() const{return (data.lower()+data.upper())/2;}
     void value(const T& v){
@@ -79,8 +89,11 @@ class ValueElement<T, false>
     using TypeID   = typename id::type::getTypeID<T>::type;
     using DataType = T;
     using BaseType = T;
+    using InitType = std::initializer_list<T>;
+
     ValueElement() : data(0){}
     ValueElement(const T& v) : data(v){}
+    ValueElement(InitType i) : data(*i.begin()){}
 
     const T value() const{return data;}
     void value(const T& v){data=v;}
