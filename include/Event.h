@@ -50,6 +50,12 @@ class Event : public Attributes...
     };
 
   public:
+    
+    template<typename NewAttribute>
+    struct append{
+      using type = Event<e, Attributes..., NewAttribute>;
+    };
+
     template<typename ID>
     auto attribute(ID i) const -> const typename findAttribute<ID>::type&{
       using TargetAttribute = typename findAttribute<ID>::type;

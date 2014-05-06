@@ -1,6 +1,4 @@
-#include <Event.h>
-#include <Attribute.h>
-#include <Value.h>
+#include <BaseEvent.h>
 #include <IO.h>
 
 #include <iostream>
@@ -12,31 +10,27 @@ using namespace boost::units;
 using std::cout;
 using std::endl;
 
-using Vector1_16u          = Value<int16_t,  1 , true>;
-using Vector1_u8           = Value<uint8_t,  1, false>;
-using Vector1_64u          = Value<int64_t,  1, true>;
-using UUID                 = Value<uint64_t, 1, false>;
-using Vector2_16u          = Value<int16_t,  2, true>;
+struct EventConfig : public BaseConfig
+{
+  using PositionValueType    = Value<int16_t, 2>;
+  using PublisherIDValueType = Value<uint16_t, 1, false>;
+  using ValidityValueType    = Value<uint8_t, 1, false>;
+  using PositionScale        = std::ratio<1,1000>;
+  using ValidityScale        = std::ratio<1,100>;
+};
 
-using DistanceAttribute    = Attribute<Distance, Vector1_16u, si::length, std::ratio<1,1000>>;
-using PositionAttribute    = Attribute<Position, Vector2_16u, si::length, std::ratio<1,1000>>;
-using TimeAttribute        = Attribute<Time, Vector1_64u, si::time>;
-using PublisherIDAttribute = Attribute<PublisherID, UUID>;
-using ValidityAttribute    = Attribute<Validity, Vector1_u8>;
-
-using DistanceEvent       = Event<hostEndianess, DistanceAttribute, PositionAttribute, TimeAttribute, PublisherIDAttribute, ValidityAttribute>;
-
-
+using DistanceAttribute    = Attribute<Distance, Value<int16_t, 1>, si::length, std::ratio<1,1000>>;
+using DistanceEvent        = BaseEvent<EventConfig>::append<DistanceAttribute>::type;
 
 int main()
 {
   DistanceEvent e;
 
   e.attribute(Position()).value()    = {{1500, 100}, {3200,200}};
-  e.attribute(Time()).value()        = {{std::time(nullptr),1}};
-  e.attribute(Distance()).value()    = {{1000,300}};
+  e.attribute(Time()).value()        = {{(unsigned long)std::time(nullptr),1}};
   e.attribute(PublisherID()).value() = {{1337}};
-  e.attribute(Validity()).value()    = {{(uint16_t)UINT8_MAX*9/10}};
+  e.attribute(Validity()).value()    = {{90}};
+  e.attribute(Distance()).value()    = {{1000,300}};
 
   cout << e;
   cout << "Size: " << DistanceEvent::size() << endl;
