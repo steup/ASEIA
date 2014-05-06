@@ -10,9 +10,9 @@ enum class Endianess : uint8_t
 };
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-  Endianess hostEndianess=Endianess::little;
+  const Endianess hostEndianess=Endianess::little;
 #else
-  Endianess hostEndianess=Endianess::big;
+  const Endianess hostEndianess=Endianess::big;
 #endif
 
 template<std::size_t n>

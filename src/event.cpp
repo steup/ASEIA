@@ -1,44 +1,44 @@
+#include <Event.h>
+#include <Attribute.h>
+#include <Value.h>
+#include <IO.h>
+
 #include <iostream>
+#include <ctime>
 
-#include <sensorEventBaseScheme.h>
-#include <packetBuffer.h>
+using namespace id::attribute;
+using namespace boost::units;
 
-using namespace std;
-using DistanceAttribute   = Attribute<AttributeID::Distance, uint16_t, 1, boost::units::si::length>;
-using DistanceEventScheme = SensorBaseEventScheme<>::extent<DistanceAttribute>;
+using std::cout;
+using std::endl;
+
+using Vector1_16u          = Value<int16_t,  1 , true>;
+using Vector1_u8           = Value<uint8_t,  1, false>;
+using Vector1_64u          = Value<int64_t,  1, true>;
+using UUID                 = Value<uint64_t, 1, false>;
+using Vector2_16u          = Value<int16_t,  2, true>;
+
+using DistanceAttribute    = Attribute<Distance, Vector1_16u, si::length, std::ratio<1,1000>>;
+using PositionAttribute    = Attribute<Position, Vector2_16u, si::length, std::ratio<1,1000>>;
+using TimeAttribute        = Attribute<Time, Vector1_64u, si::time>;
+using PublisherIDAttribute = Attribute<PublisherID, UUID>;
+using ValidityAttribute    = Attribute<Validity, Vector1_u8>;
+
+using DistanceEvent       = Event<hostEndianess, DistanceAttribute, PositionAttribute, TimeAttribute, PublisherIDAttribute, ValidityAttribute>;
+
+
 
 int main()
 {
-  DistanceEventScheme des;
-  using Event = DistanceEventScheme::EventType;
-  Event de = des.createEvent();
-  Event check = des.createEvent();
-  DynamicPacketBuffer buffer;
+  DistanceEvent e;
 
-  auto& posValue=de.attribute<AttributeID::Position>().value();
-  posValue={{{1.0f,0.0f},{2.0f,0.0f},{3.0f,0.0f}}};
+  e.attribute(Position()).value()    = {{1500, 100}, {3200,200}};
+  e.attribute(Time()).value()        = {{std::time(nullptr),1}};
+  e.attribute(Distance()).value()    = {{1000,300}};
+  e.attribute(PublisherID()).value() = {{1337}};
+  e.attribute(Validity()).value()    = {{(uint16_t)UINT8_MAX*9/10}};
 
-  auto& timeValue=de.attribute<AttributeID::Time>().value();
-  timeValue={{{10.0f,0.0001f}}};
-
-  de.attribute<AttributeID::PublisherID>().value({{1337}});
-
-  de.attribute<AttributeID::Validity>().value({{0.1}});
-
-  de.attribute<AttributeID::Distance>().value({{{128, 5}}});
-
-  cout << de;
-
-  auto insertionIter = std::back_inserter(buffer);
-  insertionIter << de;
-//  insertionIter << sbes;
-
-  cout << buffer << endl;
-
-  auto parseIter = buffer.cbegin();
-  parseIter >> check;
-
-  cout << check;
-
+  cout << e;
+  cout << "Size: " << DistanceEvent::size() << endl;
   return 0;
 }

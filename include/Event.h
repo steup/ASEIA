@@ -1,116 +1,71 @@
 #pragma once
 
-#include <ostream>
-#include <tuple>
-#include <boost/mpl/fold.hpp>
-#include <boost/mpl/for_each.hpp>
+#include <Endianess.h>
+#include <ID.h>
 
-template<typename SchemeDefinition>
-class SensorEvent
+#include <type_traits>
+#include <functional>
+
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/find_if.hpp>
+#include <boost/mpl/plus.hpp>
+#include <boost/mpl/fold.hpp>
+#include <boost/mpl/int.hpp>
+#include <boost/mpl/plus.hpp>
+#include <boost/mpl/transform.hpp>
+#include <boost/mpl/lambda.hpp>
+
+
+template<Endianess e=hostEndianess, typename... Attributes>
+class Event : public Attributes...
 {
   public:
-    using Scheme = SchemeDefinition;
+    using AttributeList=boost::mpl::vector<Attributes...>;
 
   private:
-    SensorEvent() = default;
+    template<typename ID>
+    struct findAttribute{
+      struct compare{
+        template<typename Attr>
+        struct apply{
+          using type=typename std::is_same<ID, typename Attr::IDType>::type;
+        };
+      };
+      using TargetIterator  = typename boost::mpl::find_if<AttributeList, compare>::type;
+      using type = typename boost::mpl::deref<TargetIterator>::type;
+    };
 
-    struct concat
-    {
-      template<typename tuple, typename argument>
-      struct apply
-      {
-        using tupArg = std::tuple<argument>;
-        using type  =  decltype(std::tuple_cat(tuple(), tupArg()));
+    struct toConstInt{
+      template<typename Attr>
+      struct apply{
+        using type = boost::mpl::int_<Attr::size()>;
       };
     };
 
-    using AttrTuple = typename boost::mpl::fold<typename Scheme::AttrList, std::tuple<>, concat>::type;
-
-  private:
-    AttrTuple data;
-
-  public:
-    template<typename ID>
-    const typename Scheme::template attribute<ID>::type& attribute() const
-    {
-      using n = typename Scheme::template attribute<ID>::pos;
-      return std::get<n::value>(data);
-    }
-
-    template<typename ID>
-    typename Scheme::template attribute<ID>::type& attribute()
-    {
-      using n = typename Scheme::template attribute<ID>::pos;
-      return std::get<n::value>(data);
-    }
-
-  private:
-    struct ostreamFunctor
-    {
-      std::ostream& o;
-      const SensorEvent& e;
-      ostreamFunctor(std::ostream& o,const SensorEvent& e) : o(o),e(e){}
-      template<typename Attribute>
-      void operator()(Attribute& a)
-      {
-        o << "\t" << e.template attribute<typename Attribute::ID>() << std::endl;
-      }
-    };
-
-    template<typename PacketBufferIterator>
-    struct serializeFunctor
-    {
-      PacketBufferIterator& i;
-      const SensorEvent& e;
-      serializeFunctor(PacketBufferIterator& i,const SensorEvent& e) : i(i),e(e){}
-      template<typename Attribute>
-      void operator()(Attribute& a)
-      {
-        i << e.template attribute<typename Attribute::ID>().value();
-      }
-    };
-
-    template<typename PacketBufferConstIterator>
-    struct deserializeFunctor
-    {
-      PacketBufferConstIterator& i;
-      SensorEvent& e;
-      deserializeFunctor(PacketBufferConstIterator& i,SensorEvent& e) : i(i),e(e){}
-      template<typename Attribute>
-      void operator()(Attribute& a)
-      {
-        i >> e.template attribute<typename Attribute::ID>().value();
-      }
+    struct addConstInt{
+      template<typename Sum, typename V>
+      struct apply{
+        using type = boost::mpl::plus<Sum,V>;
+      };
     };
 
   public:
-  template<typename...> friend class SensorEventScheme;
+    template<typename ID>
+    auto attribute(ID i) const -> const typename findAttribute<ID>::type&{
+      using TargetAttribute = typename findAttribute<ID>::type;
+      return *static_cast<const TargetAttribute*>(this);
+    }
 
-  template<typename S> friend std::ostream& operator<<(std::ostream&,const SensorEvent<S>&);
-  template<typename I, typename S> friend I& operator<<(I&,const SensorEvent<S>&);
-  template<typename I, typename S> friend I& operator>>(I&,SensorEvent<S>&);
+    template<typename ID>
+    auto attribute(ID i) -> typename findAttribute<ID>::type&{
+      using TargetAttribute = typename findAttribute<ID>::type;
+      return *static_cast<TargetAttribute*>(this);
+    }
 
-
+    static constexpr std::size_t size() noexcept{
+      using namespace boost::mpl;
+      using sizes = typename transform<AttributeList, toConstInt>::type;
+      using sum   = typename fold<sizes, int_<0>, addConstInt>::type;
+      return sum::value;
+    }
 };
-
-template<typename Scheme>
-std::ostream& operator<<(std::ostream& o, const SensorEvent<Scheme>& e)
-{
-  o << "Sensor Event: " << std::endl;
-  boost::mpl::for_each<typename Scheme::AttrList>(typename SensorEvent<Scheme>::ostreamFunctor(o,e));
-  return o;
-}
-
-template<typename PacketBufferConstIterator, typename Scheme>
-PacketBufferConstIterator& operator>>(PacketBufferConstIterator& i, SensorEvent<Scheme>& e)
-{
-  boost::mpl::for_each<typename Scheme::AttrList>(typename SensorEvent<Scheme>::template deserializeFunctor<PacketBufferConstIterator>(i,e));
-  return i;
-}
-
-template<typename PacketBufferIterator, typename Scheme>
-PacketBufferIterator& operator<<(PacketBufferIterator& i, const SensorEvent<Scheme>& e)
-{
-  boost::mpl::for_each<typename Scheme::AttrList>(typename SensorEvent<Scheme>::template serializeFunctor<PacketBufferIterator>(i,e));
-  return i;
-}

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Event.h>
 #include <Attribute.h>
 #include <ValueElement.h>
 #include <Value.h>
@@ -8,6 +9,7 @@
 #include <ratio>
 
 #include <boost/units/io.hpp>
+#include <boost/mpl/for_each.hpp>
 
 template<typename T, bool u>
 std::ostream& operator<<(std::ostream& o, const ValueElement<T, u>& e)
@@ -81,7 +83,33 @@ std::ostream& operator<<(std::ostream& o, const std::ratio<1,100>& r){
   return o << "c";
 }
 
+std::ostream& operator<<(std::ostream& o, const std::ratio<1,1>& r){
+  return o;
+}
+
 template<std::intmax_t N, std::intmax_t D>
 std::ostream& operator<<(std::ostream& o, const std::ratio<N,D>& r){
   return o << N << "/" << D;
+}
+
+namespace helpers{
+    template<typename O, typename E>
+    struct OutputEvent{
+      const E& e;
+      O& o;
+      OutputEvent(O& o, const E& e) : e(e), o(o){}
+      template<typename Attr>
+      void operator()(Attr a){
+        o << "\t" << e.attribute(a.id()) << std::endl;
+      };
+    };
+}
+
+template<Endianess end, typename... Attributes>
+std::ostream& operator<<(std::ostream& o, const Event<end, Attributes...>& e){
+  using ThisEvent = Event<end, Attributes...>;
+  o << "Event:" << std::endl;
+  helpers::OutputEvent<std::ostream, ThisEvent> out(o,e);
+  boost::mpl::for_each<typename ThisEvent::AttributeList>(out);
+  return o;
 }
