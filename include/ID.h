@@ -13,12 +13,12 @@ namespace id{
 
     struct Position : public Base{
       constexpr Base::IDType value(){return 1;}
-      constexpr const char* name(){return "Position";}
+      constexpr const char* name(){return "Position    ";}
     };
     
     struct Time : public Base{
       constexpr Base::IDType value(){return 2;}
-      constexpr const char* name(){return "Time";}
+      constexpr const char* name(){return "Time        ";}
     };
     
     struct PublisherID : public Base{
@@ -28,12 +28,12 @@ namespace id{
     
     struct Validity : public Base{
       constexpr Base::IDType value(){return 4;}
-      constexpr const char* name(){return "Validity";}
+      constexpr const char* name(){return "Validity    ";}
     };
 
     struct Distance : public Base{
       constexpr Base::IDType value(){return 5;}
-      constexpr const char* name(){return "Distance";}
+      constexpr const char* name(){return "Distance    ";}
     };
   }
 

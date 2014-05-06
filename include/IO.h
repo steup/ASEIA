@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Attribute.h>
 #include <ValueElement.h>
 #include <Value.h>
 
@@ -8,16 +9,31 @@
 
 #include <boost/units/io.hpp>
 
-template<typename T>
-std::ostream& operator<<(std::ostream& o, const ValueElement<T, true>& e)
+template<typename T, bool u>
+std::ostream& operator<<(std::ostream& o, const ValueElement<T, u>& e)
 {
-  return o << e.value() << "+-" << e.uncertainty();
+  o << e.value();
+  if(u)
+    o << "+-" << e.uncertainty();
+  return o;
 }
 
-template<typename T>
-std::ostream& operator<<(std::ostream& o, const ValueElement<T, false>& e)
+template<bool u>
+std::ostream& operator<<(std::ostream& o, const ValueElement<uint8_t, u>& e)
 {
-  return o << e.value();
+  o << (uint16_t)e.value();
+  if(u)
+    o << "+-" << e.uncertainty();
+  return o;
+}
+
+template<bool u>
+std::ostream& operator<<(std::ostream& o, const ValueElement<uint16_t, u>& e)
+{
+  o << (uint16_t)e.value();
+  if(u)
+    o << "+-" << e.uncertainty();
+  return o;
 }
 
 template<typename T, std::size_t n, bool useUncertainty>
