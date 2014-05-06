@@ -7,9 +7,6 @@
 using namespace id::attribute;
 using namespace boost::units;
 
-using std::cout;
-using std::endl;
-
 struct EventConfig : public BaseConfig
 {
   using PositionValueType    = Value<int16_t, 2>;
@@ -32,7 +29,7 @@ int main()
   e.attribute(Validity()).value()    = {{90}};
   e.attribute(Distance()).value()    = {{1000,300}};
 
-  cout << e;
-  cout << "Size: " << DistanceEvent::size() << endl;
+  std::cout << e;
+  std::cout << "Size: " << DistanceEvent::size() << std::endl;
   return 0;
 }

@@ -1,25 +1,22 @@
 #pragma once
 
 #include <Endianess.h>
-#include <ID.h>
 
 #include <type_traits>
-#include <functional>
 
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/find_if.hpp>
 #include <boost/mpl/plus.hpp>
 #include <boost/mpl/fold.hpp>
 #include <boost/mpl/int.hpp>
-#include <boost/mpl/plus.hpp>
 #include <boost/mpl/transform.hpp>
-#include <boost/mpl/lambda.hpp>
 
 
 template<Endianess e=hostEndianess, typename... Attributes>
 class Event : public Attributes...
 {
   public:
+    static const Endianess endianess = e;
     using AttributeList=boost::mpl::vector<Attributes...>;
 
   private:
