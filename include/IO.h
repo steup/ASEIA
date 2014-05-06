@@ -53,6 +53,10 @@ std::ostream& operator<<(std::ostream& o, const Value<T,n,useUncertainty>& v)
   return o << ")";
 }
 
+std::ostream& operator<<(std::ostream& o, const boost::units::si::dimensionless& u){
+  return o;
+}
+
 template<typename ID, typename V, typename S, typename U>
 std::ostream& operator<<(std::ostream& o, const Attribute<ID,V,S,U>& a)
 {
@@ -77,10 +81,6 @@ std::ostream& operator<<(std::ostream& o, const std::mega& r){
 
 std::ostream& operator<<(std::ostream& o, const std::giga& r){
   return o << "G";
-}
-
-std::ostream& operator<<(std::ostream& o, const std::ratio<1,100>& r){
-  return o << "c";
 }
 
 std::ostream& operator<<(std::ostream& o, const std::ratio<1,1>& r){
