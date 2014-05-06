@@ -58,7 +58,7 @@ $(addprefix debug_,${TARGETS}): debug_%: %
 	@${DBG} ./${BIN}/$< -ex start ${ARGS}
 
 clean:
-	@rm -rf ${BIN} ${BUILD} ${DOC}
+	@rm -rf ${BIN} ${BUILD} ${DOC}/html
 
 doc:
 	@doxygen ${DOC}/doxyfile
