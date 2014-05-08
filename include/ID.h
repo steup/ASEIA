@@ -42,37 +42,37 @@ namespace id{
       using IDType = std::uint8_t;
       using Type = void;
       constexpr IDType value(){return 0;}
-      constexpr const char* name(){return "void";}
+      constexpr const char* name(){return "void  ";}
     };
 
     struct Int8 : public Base{
       using Type = std::int8_t;
       constexpr IDType value(){return 1;}
-      constexpr const char* name(){return "int8";}
+      constexpr const char* name(){return "int8  ";}
     };
 
     struct Int16 : public Base{
       using Type = int16_t;
       constexpr Base::IDType value(){return 2;}
-      constexpr const char* name(){return "int16";}
+      constexpr const char* name(){return "int16 ";}
     };
 
     struct Int32 : public Base{
       using Type = int32_t;
       constexpr Base::IDType value(){return 3;}
-      constexpr const char* name(){return "int32";}
+      constexpr const char* name(){return "int32 ";}
     };
 
     struct Int64 : public Base{
       using Type = int64_t;
       constexpr Base::IDType value(){return 4;}
-      constexpr const char* name(){return "int64";}
+      constexpr const char* name(){return "int64 ";}
     };
 
     struct UInt8 : public Base{
       using Type = std::uint8_t;
       constexpr Base::IDType value(){return 5;}
-      constexpr const char* name(){return "uint8";}
+      constexpr const char* name(){return "uint8 ";}
     };
 
     struct UInt16 : public Base{
@@ -96,7 +96,7 @@ namespace id{
     struct Float : public Base{
       using Type = float;
       constexpr Base::IDType value(){return 9;}
-      constexpr const char* name(){return "float";}
+      constexpr const char* name(){return "float ";}
     };
 
     struct Double : public Base{
@@ -108,7 +108,7 @@ namespace id{
     struct Char : public Base{
       using Type = char;
       constexpr Base::IDType value(){return 11;}
-      constexpr const char* name(){return "char";}
+      constexpr const char* name(){return "char  ";}
     };
 
     namespace helpers{
