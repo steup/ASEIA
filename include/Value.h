@@ -98,3 +98,10 @@ struct Value : public std::array<ValueElement<T, useUncertainty>,n>{
     constexpr static std::size_t size() noexcept{return n*BaseType::size();}
     constexpr bool hasUncertainty() noexcept {return (*this)[0].hasUncertainty();}
 };
+
+template<typename PB, typename T, std::size_t n, bool u>
+Serializer<PB>& operator<<(Serializer<PB>& s, const Value<T,n,u>& value){
+  for(const auto& v : value)
+    s << v;
+  return s;
+}

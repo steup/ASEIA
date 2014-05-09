@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Serializer.h>
+
 #include <boost/units/systems/si/dimensionless.hpp>
 #include <ratio>
 
@@ -27,3 +29,8 @@ class Attribute
     constexpr bool hasUncertainty() noexcept {return v.hasUncertainty();};
     constexpr static std::size_t size() noexcept {return ValueType::size();}
 };
+
+template<typename PB, typename ID, typename V, typename U, typename S>
+Serializer<PB>& operator<<(Serializer<PB>& s, const Attribute<ID,V,U,S>& attr){
+  return s << attr.value();
+}

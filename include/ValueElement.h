@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ID.h>
+#include <Serializer.h>
 
 #include <initializer_list>
 
@@ -142,3 +143,13 @@ class ValueElement<T, false>
     constexpr static std::size_t size() noexcept {return sizeof(BaseType);}
     constexpr bool hasUncertainty()     noexcept {return false;}
 };
+
+template<typename PB, typename T>
+Serializer<PB>& operator<<(Serializer<PB>& s, const ValueElement<T, true>& value){
+  return s << value.value() << value.uncertainty();
+}
+
+template<typename PB, typename T>
+Serializer<PB>& operator<<(Serializer<PB>& s, const ValueElement<T, false>& value){
+  return s << value.value();
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Endianess.h>
+#include <Serializer.h>
 
 #include <type_traits>
 
@@ -10,6 +11,7 @@
 #include <boost/mpl/fold.hpp>
 #include <boost/mpl/int.hpp>
 #include <boost/mpl/transform.hpp>
+#include <boost/mpl/for_each.hpp>
 
 
 template<Endianess e=hostEndianess, typename... Attributes>
@@ -46,6 +48,17 @@ class Event : public Attributes...
       };
     };
 
+    template<typename Serializer>
+    struct SerializationHelper{
+      Serializer& s;
+      const Event& ev;
+      SerializationHelper(Serializer& s, const Event& ev) : s(s), ev(ev){}
+      template<typename Attr>
+      void operator()(Attr a){
+          s << ev.attribute(a.id());
+      }
+    };
+
   public:
     
     template<typename NewAttribute>
@@ -71,4 +84,15 @@ class Event : public Attributes...
       using sum   = typename fold<sizes, int_<0>, addConstInt>::type;
       return sum::value;
     }
+
+  template<typename PB, Endianess end,typename... Attrs> friend Serializer<PB>& operator<<(Serializer<PB>&, const Event<end, Attrs...>&);
 };
+
+template<typename PB, Endianess end,typename... Attrs>
+Serializer<PB>& operator<<(Serializer<PB>& s, const Event<end, Attrs...>& e){
+  using E = Event<end, Attrs...>;
+  using Helper = typename E::template SerializationHelper<Serializer<PB>>;
+  using AttrList = typename E::AttributeList;
+  boost::mpl::for_each<AttrList>(Helper(s,e));
+  return s;
+}
