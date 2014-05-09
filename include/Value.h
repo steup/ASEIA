@@ -105,3 +105,10 @@ Serializer<PB>& operator<<(Serializer<PB>& s, const Value<T,n,u>& value){
     s << v;
   return s;
 }
+
+template<typename PB, typename T, std::size_t n, bool u>
+DeSerializer<PB>& operator>>(DeSerializer<PB>& s, Value<T,n,u>& value){
+  for(auto& v : value)
+    s >> v;
+  return s;
+}

@@ -2,6 +2,7 @@
 
 #include <ID.h>
 #include <Serializer.h>
+#include <DeSerializer.h>
 
 #include <initializer_list>
 
@@ -31,14 +32,12 @@ class ValueElement{
     T value() const{return (data.lower()+data.upper())/2;}
     void value(const T& v){
       T u = uncertainty();
-      data.lower(v-u);
-      data.upper(v+u);
+      data.assign(v-u, v+u);
     }
     T uncertainty() const{return (data.upper()-data.lower())/2;}
     void uncertainty(const T& u){
       T v = value();
-      data.lower(v-u);
-      data.upper(v+u);
+      data.assign(v-u, v+u);
     }
 
     ValueElement operator+=(const ValueElement& a){
@@ -152,4 +151,21 @@ Serializer<PB>& operator<<(Serializer<PB>& s, const ValueElement<T, true>& value
 template<typename PB, typename T>
 Serializer<PB>& operator<<(Serializer<PB>& s, const ValueElement<T, false>& value){
   return s << value.value();
+}
+
+template<typename PB, typename T>
+DeSerializer<PB>& operator>>(DeSerializer<PB>& s, ValueElement<T, true>& value){
+  T v,u;
+  s >> v >> u;
+  value.value(v);
+  value.uncertainty(u);
+  return s;
+}
+
+template<typename PB, typename T>
+DeSerializer<PB>& operator>>(DeSerializer<PB>& s, ValueElement<T, false>& value){
+  T v;
+  s >> v;
+  value.value(v);
+  return s;
 }

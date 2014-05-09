@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Serializer.h>
+#include <DeSerializer.h>
 
 #include <boost/units/systems/si/dimensionless.hpp>
 #include <ratio>
@@ -33,4 +34,9 @@ class Attribute
 template<typename PB, typename ID, typename V, typename U, typename S>
 Serializer<PB>& operator<<(Serializer<PB>& s, const Attribute<ID,V,U,S>& attr){
   return s << attr.value();
+}
+
+template<typename PB, typename ID, typename V, typename U, typename S>
+DeSerializer<PB>& operator>>(DeSerializer<PB>& s, Attribute<ID,V,U,S>& attr){
+  return s >> attr.value();
 }

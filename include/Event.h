@@ -2,6 +2,7 @@
 
 #include <Endianess.h>
 #include <Serializer.h>
+#include <DeSerializer.h>
 
 #include <type_traits>
 
@@ -59,6 +60,17 @@ class Event : public Attributes...
       }
     };
 
+    template<typename DeSerializer>
+    struct DeSerializationHelper{
+      DeSerializer& d;
+      Event& ev;
+      DeSerializationHelper(DeSerializer& d, Event& ev) : d(d), ev(ev){}
+      template<typename Attr>
+      void operator()(Attr a){
+          d >> ev.attribute(a.id());
+      }
+    };
+
   public:
     
     template<typename NewAttribute>
@@ -86,12 +98,22 @@ class Event : public Attributes...
     }
 
   template<typename PB, Endianess end,typename... Attrs> friend Serializer<PB>& operator<<(Serializer<PB>&, const Event<end, Attrs...>&);
+  template<typename PB, Endianess end,typename... Attrs> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, Event<end, Attrs...>&);
 };
 
 template<typename PB, Endianess end,typename... Attrs>
 Serializer<PB>& operator<<(Serializer<PB>& s, const Event<end, Attrs...>& e){
   using E = Event<end, Attrs...>;
   using Helper = typename E::template SerializationHelper<Serializer<PB>>;
+  using AttrList = typename E::AttributeList;
+  boost::mpl::for_each<AttrList>(Helper(s,e));
+  return s;
+}
+
+template<typename PB, Endianess end,typename... Attrs>
+DeSerializer<PB>& operator>>(DeSerializer<PB>& s, Event<end, Attrs...>& e){
+  using E = Event<end, Attrs...>;
+  using Helper = typename E::template DeSerializationHelper<DeSerializer<PB>>;
   using AttrList = typename E::AttributeList;
   boost::mpl::for_each<AttrList>(Helper(s,e));
   return s;
