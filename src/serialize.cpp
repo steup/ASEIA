@@ -12,71 +12,62 @@
 using namespace std;
 using namespace boost::units;
 
+using V=vector<uint8_t>;
+using S=Serializer<V>;
+
 template<typename T>
 void podOut(){
-  using V=vector<uint8_t>;
-  using I=back_insert_iterator<V>;
-  using S=Serializer<I>;
-  V v;
-  S s(back_inserter(v));
+  V v(sizeof(T));
+  S s(v, v.begin());
   T value = sizeof(T);
   s << value;
   cout << typename id::type::getTypeID<T>::type().name() << " " << value << ": ";
   for(auto byte : v)
       cout << hex << setw(2) << setfill('0') << byte << " ";
-  cout << dec << endl;
+  cout << endl << "Error: " << (s.error()?"true":"false") << dec << endl;
 }
 
 template<typename T, bool uncertainty>
 void valueElementOut(){
-  using V=vector<uint8_t>;
-  using I=back_insert_iterator<V>;
-  using S=Serializer<I>;
-  V v;
-  S s(back_inserter(v));
-  ValueElement<T, uncertainty> value = {sizeof(T), 1};
+  using VE=ValueElement<T, uncertainty>;
+  V v(VE::size());
+  S s(v, v.begin());
+  VE value = {sizeof(T), 1};
   s << value;
   cout << typename id::type::getTypeID<T>::type().name() << " " << value << ": ";
   for(auto byte : v)
       cout << hex << setw(2) << setfill('0') << byte << " ";
-  cout << dec << endl;
+  cout << endl << "Error: " << (s.error()?"true":"false") << dec << endl;
 }
 
 void valueOut(){
-  using V=vector<uint8_t>;
-  using I=back_insert_iterator<V>;
-  using S=Serializer<I>;
-  V v;
-  S s(back_inserter(v));
-  Value<float, 3, true> value = {{1.1, 0.2}, {0,0.2}, {4.2,1.1}};
+  using Val=Value<float, 3, true>;
+  V v(Val::size());
+  S s(v, v.begin());
+  Val value = {{1.1, 0.2}, {0,0.2}, {4.2,1.1}};
   s << value;
   cout << "float " << value << ": ";
   for(auto byte : v)
       cout << hex << setw(2) << setfill('0') << byte << " ";
-  cout << dec << endl;
+  cout << endl << "Error: " << (s.error()?"true":"false") << dec << endl;
 }
 
 void attributeOut(){
-  using V=vector<uint8_t>;
-  using I=back_insert_iterator<V>;
-  using S=Serializer<I>;
   using Val=Value<double, 3, true>;
-  V v;
-  S s(back_inserter(v));
-  Attribute<id::attribute::Position, Val, si::length, std::ratio<1,1000>> value = {{1.1, 0.2}, {0,0.2}, {4.2,1.1}};
+  using Attr=Attribute<id::attribute::Position, Val, si::length, std::ratio<1,1000>>;
+  V v(Attr::size()-10);
+  S s(v, v.begin());
+  Attr value = {{1.1, 0.2}, {0,0.2}, {4.2,1.1}};
   s << value;
   cout << "double " << value << ": ";
   for(auto byte : v)
       cout << hex << setw(2) << setfill('0') << byte << " ";
-  cout << dec << endl;
+  cout << endl << "Error: " << (s.error()?"true":"false") << dec << endl;
 }
 
 void baseEventOut(){
-  using V=vector<uint8_t>;
-  using I=back_insert_iterator<V>;
-  using S=Serializer<I>;
-  V v;
-  S s(back_inserter(v));
+  V v(BaseEvent<>::size());
+  S s(v, v.begin());
   BaseEvent<> e;
   e.attribute(id::attribute::PublisherID()).value() = {{1337}};
   e.attribute(id::attribute::Validity()).value() = {{0.9}};
@@ -84,7 +75,8 @@ void baseEventOut(){
   cout << e << ": ";
   for(auto byte : v)
       cout << hex << setw(2) << setfill('0') << byte << " ";
-  cout << dec << endl;
+  cout << endl << "Error: " << (s.error()?"true":"false") << dec << endl;
+  cout << "size: " << BaseEvent<>::size() << " - " << v.size() << endl;
 }
 
 int main(){

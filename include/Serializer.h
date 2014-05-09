@@ -1,29 +1,32 @@
 #pragma once
 
-#include <cstdint>
+#include <PODConverter.h>
 
-template<typename PacketBufferIterator>
+template<typename PacketBuffer>
 class Serializer{
   private:
-    using Iterator = PacketBufferIterator;
+    using Iterator = typename PacketBuffer::iterator;
+    PacketBuffer& mBuffer;
     Iterator mI;
-    union Converter{
-      std::uint8_t bytes[8];
-      std::uint8_t uint8;
-      std::uint16_t uint16;
-      std::uint32_t uint32;
-      std::uint64_t uint64;
-      std::int8_t int8;
-      std::int16_t int16;
-      std::int32_t int32;
-      std::int64_t int64;
-      float _float;
-      double _double;
-    };
+    Iterator mEnd;
+    bool mError;
+    bool copyBytes(uint8_t* bytes, std::size_t n){
+      while(n--){
+        if(mI==mEnd){
+          mError=true;
+          return false;
+        }
+        *mI++=*bytes++;
+      }
+      return true;
+    }
   public:
-    Serializer(Iterator i) : mI(i){}
+    Serializer(PacketBuffer& buffer, Iterator i) : mBuffer(buffer), mI(i), mEnd(buffer.end()), mError(false){}
 
     const Iterator& iterator() const{return mI;}
+    PacketBuffer& buffer() const{return mBuffer;}
+    bool error() const{return mError;}
+    void reset(){mError=false;mI=mBuffer.begin();}
 
     template<typename PB> friend Serializer<PB>& operator<<(Serializer<PB>&, std::uint8_t value);
     template<typename PB> friend Serializer<PB>& operator<<(Serializer<PB>&, std::uint16_t value);
@@ -39,90 +42,80 @@ class Serializer{
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, std::uint8_t value){
-  typename Serializer<PB>::Converter c;
+  PODConverter c;
   c.uint8=value;
-  for(unsigned int j=0;j<sizeof(std::uint8_t);j++)
-    *s.mI++=c.bytes[j];
+  s.copyBytes(c.bytes, sizeof(uint8_t));
   return s;
 }
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, std::uint16_t value){
-  typename Serializer<PB>::Converter c;
+  PODConverter c;
   c.uint16=value;
-  for(unsigned int j=0;j<sizeof(std::uint16_t);j++)
-    *s.mI++=c.bytes[j];
+  s.copyBytes(c.bytes, sizeof(uint16_t));
   return s;
 }
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, std::uint32_t value){
-  typename Serializer<PB>::Converter c;
+  PODConverter c;
   c.uint32=value;
-  for(unsigned int j=0;j<sizeof(std::uint32_t);j++)
-    *s.mI++=c.bytes[j];
+  s.copyBytes(c.bytes, sizeof(uint32_t));
   return s;
 }
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, std::uint64_t value){
-  typename Serializer<PB>::Converter c;
+  PODConverter c;
   c.uint64=value;
-  for(unsigned int j=0;j<sizeof(std::uint64_t);j++)
-    *s.mI++=c.bytes[j];
+  s.copyBytes(c.bytes, sizeof(uint64_t));
   return s;
 }
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, std::int8_t value){
-  typename Serializer<PB>::Converter c;
+  PODConverter c;
   c.int8=value;
-  for(unsigned int j=0;j<sizeof(std::int8_t);j++)
-    *s.mI++=c.bytes[j];
+  s.copyBytes(c.bytes, sizeof(int8_t));
   return s;
 }
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, std::int16_t value){
-  typename Serializer<PB>::Converter c;
+  PODConverter c;
   c.int16=value;
-  for(uint8_t j=0;j<sizeof(std::int16_t);j++)
-    *s.mI++=c.bytes[j];
+  s.copyBytes(c.bytes, sizeof(int16_t));
   return s;
 }
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, std::int32_t value){
-  typename Serializer<PB>::Converter c;
+  PODConverter c;
   c.int32=value;
-  for(unsigned int j=0;j<sizeof(std::int32_t);j++)
-    *s.mI++=c.bytes[j];
+  s.copyBytes(c.bytes, sizeof(int32_t));
   return s;
 }
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, std::int64_t value){
-  typename Serializer<PB>::Converter c;
+  PODConverter c;
   c.int64=value;
-  for(unsigned int j=0;j<sizeof(std::int64_t);j++)
-    *s.mI++=c.bytes[j];
+  s.copyBytes(c.bytes, sizeof(int64_t));
   return s;
 }
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, float value){
-  typename Serializer<PB>::Converter c;
+  PODConverter c;
   c._float=value;
-  for(unsigned int j=0;j<sizeof(float);j++)
-    *s.mI++=c.bytes[j];
+  s.copyBytes(c.bytes, sizeof(float));
   return s;
 }
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, double value){
-  typename Serializer<PB>::Converter c;
+  PODConverter c;
   c._double=value;
-  for(unsigned int j=0;j<sizeof(double);j++)
-    *s.mI++=c.bytes[j];
+  s.copyBytes(c.bytes, sizeof(double));
   return s;
 }
