@@ -11,6 +11,14 @@
 #include <boost/units/io.hpp>
 #include <boost/mpl/for_each.hpp>
 
+std::ostream& operator<<(std::ostream& o, const uint8_t& v){
+  return o << (uint16_t)v;
+}
+
+std::ostream& operator<<(std::ostream& o, const int8_t& v){
+  return o << (int16_t)v;
+}
+
 template<typename T, bool u>
 std::ostream& operator<<(std::ostream& o, const ValueElement<T, u>& e)
 {
