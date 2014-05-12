@@ -13,12 +13,12 @@ using namespace std;
 using namespace boost::units;
 
 using V=vector<uint8_t>;
-using S=Serializer<V>;
+using S=Serializer<V::iterator>;
 
 template<typename T>
 void podOut(){
   V v(sizeof(T));
-  S s(v, v.begin());
+  S s(v.begin(), v.end());
   T value = sizeof(T);
   s << value;
   cout << typename id::type::getTypeID<T>::type().name() << " " << value << ": ";
@@ -31,7 +31,7 @@ template<typename T, bool uncertainty>
 void valueElementOut(){
   using VE=ValueElement<T, uncertainty>;
   V v(VE::size());
-  S s(v, v.begin());
+  S s(v.begin(), v.end());
   VE value = {sizeof(T), 1};
   s << value;
   cout << typename id::type::getTypeID<T>::type().name() << " " << value << ": ";
@@ -43,7 +43,7 @@ void valueElementOut(){
 void valueOut(){
   using Val=Value<float, 3, true>;
   V v(Val::size());
-  S s(v, v.begin());
+  S s(v.begin(), v.end());
   Val value = {{1.1, 0.2}, {0,0.2}, {4.2,1.1}};
   s << value;
   cout << "float " << value << ": ";
@@ -56,7 +56,7 @@ void attributeOut(){
   using Val=Value<double, 3, true>;
   using Attr=Attribute<id::attribute::Position, Val, si::length, std::ratio<1,1000>>;
   V v(Attr::size()-10);
-  S s(v, v.begin());
+  S s(v.begin(), v.end());
   Attr value = {{1.1, 0.2}, {0,0.2}, {4.2,1.1}};
   s << value;
   cout << "double " << value << ": ";
@@ -67,7 +67,7 @@ void attributeOut(){
 
 void baseEventOut(){
   V v(BaseEvent<>::size());
-  S s(v, v.begin());
+  S s(v.begin(), v.end());
   BaseEvent<> e;
   e.attribute(id::attribute::PublisherID()).value() = {{1337}};
   e.attribute(id::attribute::Validity()).value() = {{0.9}};
