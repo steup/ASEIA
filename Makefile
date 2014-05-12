@@ -1,19 +1,17 @@
-PROFILING        ?= 1
+PROFILING        ?= 0
 DEBUG            ?= 1
 
 INCLUDES         :=
 LDPATHS          :=
 SYMBOLS          :=
-CXXFLAGS         := -std=gnu++11 -Wall
-LDFLAGS          := -O1
-LIBS             :=	boost_chrono \
-									  boost_system \
-										boost_program_options \
+CXXFLAGS         := -std=gnu++11 -Wall -ffunction-sections
+LDFLAGS          := -O1 -Wl,--gc-sections
+LIBS             :=
 
 ifeq (${DEBUG},1)
 	CXXFLAGS :=${CXXFLAGS} -O0 -g
 else
-	CXXFLAGS :=${CXXFLAGS} -O3
+	CXXFLAGS :=${CXXFLAGS} -Os
 endif
 
 ifeq (${PROFILING},1)
