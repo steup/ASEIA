@@ -2,15 +2,14 @@
 
 #include <PODConverter.h>
 
-template<typename PacketBuffer>
+template<typename PacketBufferIterator>
 class Serializer{
   private:
-    using Iterator = typename PacketBuffer::iterator;
-    PacketBuffer& mBuffer;
+    using Iterator = PacketBufferIterator;
     Iterator mI;
     Iterator mEnd;
     bool mError;
-    bool copyBytes(uint8_t* bytes, std::size_t n){
+    bool copyBytes(const uint8_t* bytes, std::size_t n){
       while(n--){
         if(mI==mEnd){
           mError=true;
@@ -21,12 +20,10 @@ class Serializer{
       return true;
     }
   public:
-    Serializer(PacketBuffer& buffer, Iterator i) : mBuffer(buffer), mI(i), mEnd(buffer.end()), mError(false){}
+    Serializer(Iterator start, Iterator end) : mI(start), mEnd(end), mError(false){}
 
     const Iterator& iterator() const{return mI;}
-    PacketBuffer& buffer() const{return mBuffer;}
     bool error() const{return mError;}
-    void reset(){mError=false;mI=mBuffer.begin();}
 
     template<typename PB> friend Serializer<PB>& operator<<(Serializer<PB>&, std::uint8_t value);
     template<typename PB> friend Serializer<PB>& operator<<(Serializer<PB>&, std::uint16_t value);

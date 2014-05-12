@@ -1,29 +1,29 @@
 #pragma once
 
-#include <cstdint>
+#include <PODConverter.h>
 
 template<typename ConstPacketBufferIterator>
 class DeSerializer{
   private:
     using Iterator = ConstPacketBufferIterator;
     Iterator mI;
-    union Converter{
-      std::uint8_t bytes[8];
-      std::uint8_t uint8;
-      std::uint16_t uint16;
-      std::uint32_t uint32;
-      std::uint64_t uint64;
-      std::int8_t int8;
-      std::int16_t int16;
-      std::int32_t int32;
-      std::int64_t int64;
-      float _float;
-      double _double;
-    };
+    Iterator mEnd;
+    bool mError;
+    bool copyBytes(uint8_t* bytes, std::size_t n){
+      while(n--){
+        if(mI==mEnd){
+          mError=true;
+          return false;
+        }
+        *bytes++=*mI++;
+      }
+      return true;
+    }
   public:
-    DeSerializer(Iterator i) : mI(i){}
+    DeSerializer(Iterator start, Iterator end) : mI(start), mEnd(end), mError(false){}
 
     const Iterator& iterator() const{return mI;}
+    bool error() const{return mError;}
 
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, std::uint8_t& value);
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, std::uint16_t& value);
@@ -39,90 +39,80 @@ class DeSerializer{
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& s, std::uint8_t& value){
-  typename DeSerializer<PB>::Converter c;
-  for(unsigned int j=0;j<sizeof(std::uint8_t);j++)
-    c.bytes[j]=*s.mI++;
+  PODConverter c;
+  s.copyBytes(c.bytes, sizeof(std::uint8_t));
   value=c.uint8;
   return s;
 }
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& s, std::uint16_t& value){
-  typename DeSerializer<PB>::Converter c;
-  for(unsigned int j=0;j<sizeof(std::uint16_t);j++)
-    c.bytes[j]=*s.mI++;
+  PODConverter c;
+  s.copyBytes(c.bytes, sizeof(std::uint16_t));
   value=c.uint16;
   return s;
 }
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& s, std::uint32_t& value){
-  typename DeSerializer<PB>::Converter c;
-  for(unsigned int j=0;j<sizeof(std::uint32_t);j++)
-    c.bytes[j]=*s.mI++;
+  PODConverter c;
+  s.copyBytes(c.bytes, sizeof(std::uint32_t));
   value=c.uint32;
   return s;
 }
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& s, std::uint64_t& value){
-  typename DeSerializer<PB>::Converter c;
-  for(unsigned int j=0;j<sizeof(std::uint64_t);j++)
-    c.bytes[j]=*s.mI++;
+  PODConverter c;
+  s.copyBytes(c.bytes, sizeof(std::uint64_t));
   value=c.uint64;
   return s;
 }
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& s, std::int8_t& value){
-  typename DeSerializer<PB>::Converter c;
-  for(unsigned int j=0;j<sizeof(std::int8_t);j++)
-    c.bytes[j]=*s.mI++;
+  PODConverter c;
+  s.copyBytes(c.bytes, sizeof(std::int8_t));
   value=c.int8;
   return s;
 }
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& s, std::int16_t& value){
-  typename DeSerializer<PB>::Converter c;
-  for(unsigned int j=0;j<sizeof(std::int16_t);j++)
-    c.bytes[j]=*s.mI++;
+  PODConverter c;
+  s.copyBytes(c.bytes, sizeof(std::int16_t));
   value=c.int16;;
   return s;
 }
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& s, std::int32_t& value){
-  typename DeSerializer<PB>::Converter c;
-  for(unsigned int j=0;j<sizeof(std::int32_t);j++)
-    c.bytes[j]=*s.mI++;
+  PODConverter c;
+  s.copyBytes(c.bytes, sizeof(std::int32_t));
   value=c.int32;
   return s;
 }
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& s, std::int64_t& value){
-  typename DeSerializer<PB>::Converter c;
-  for(unsigned int j=0;j<sizeof(std::int64_t);j++)
-    c.bytes[j]=*s.mI++;
+  PODConverter c;
+  s.copyBytes(c.bytes, sizeof(std::int64_t));
   value=c.int64;
   return s;
 }
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& s, float& value){
-  typename DeSerializer<PB>::Converter c;
-  for(unsigned int j=0;j<sizeof(float);j++)
-    c.bytes[j]=*s.mI++;
+  PODConverter c;
+  s.copyBytes(c.bytes, sizeof(float));
   value=c._float;
   return s;
 }
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& s, double& value){
-  typename DeSerializer<PB>::Converter c;
-  for(unsigned int j=0;j<sizeof(double);j++)
-    c.bytes[j]=*s.mI++;
+  PODConverter c;
+  s.copyBytes(c.bytes, sizeof(double));
   value=c._double;
   return s;
 }
