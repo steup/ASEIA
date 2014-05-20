@@ -13,27 +13,42 @@ namespace id{
 
     struct Position : public Base{
       constexpr Base::IDType value(){return 1;}
-      constexpr const char* name(){return "Position    ";}
+      constexpr const char* name(){return "Position      ";}
     };
     
     struct Time : public Base{
       constexpr Base::IDType value(){return 2;}
-      constexpr const char* name(){return "Time        ";}
+      constexpr const char* name(){return "Time          ";}
     };
     
     struct PublisherID : public Base{
       constexpr Base::IDType value(){return 3;}
-      constexpr const char* name(){return "Publisher ID";}
+      constexpr const char* name(){return "Publisher ID  ";}
     };
     
     struct Validity : public Base{
       constexpr Base::IDType value(){return 4;}
-      constexpr const char* name(){return "Validity    ";}
+      constexpr const char* name(){return "Validity      ";}
     };
 
     struct Distance : public Base{
       constexpr Base::IDType value(){return 5;}
-      constexpr const char* name(){return "Distance    ";}
+      constexpr const char* name(){return "Distance      ";}
+    };
+
+    struct Orientation : public Base{
+      constexpr Base::IDType value(){return 6;}
+      constexpr const char* name(){return "Orientation   ";}
+    };
+
+    struct PolarAngle : public Base{
+      constexpr Base::IDType value(){return 7;}
+      constexpr const char* name(){return "PolarAngle    ";}
+    };
+
+    struct PoseReference : public Base{
+      constexpr Base::IDType value(){return 8;}
+      constexpr const char* name(){return "Pose Reference";}
     };
   }
 
@@ -211,23 +226,23 @@ namespace id{
       template<>
       struct getUnitID<boost::units::si::dimensionless>{using type = Base;};
       template<>
-      struct getUnitID<boost::units::angle::steradian_base_unit>{using type = Steradian;};
+      struct getUnitID<boost::units::si::solid_angle>{using type = Steradian;};
       template<>
-      struct getUnitID<boost::units::angle::radian_base_unit>{using type = Radian;};
+      struct getUnitID<boost::units::si::plane_angle>{using type = Radian;};
       template<>
-      struct getUnitID<boost::units::si::candela_base_unit>{using type = Candela;};
+      struct getUnitID<boost::units::si::luminous_intensity>{using type = Candela;};
       template<>
-      struct getUnitID<boost::units::si::mole_base_unit>{using type = Mole;};
+      struct getUnitID<boost::units::si::amount>{using type = Mole;};
       template<>
-      struct getUnitID<boost::units::si::kelvin_base_unit>{using type = Kelvin;};
+      struct getUnitID<boost::units::si::temperature>{using type = Kelvin;};
       template<>
-      struct getUnitID<boost::units::si::ampere_base_unit>{using type = Ampere;};
+      struct getUnitID<boost::units::si::current>{using type = Ampere;};
       template<>
-      struct getUnitID<boost::units::si::second_base_unit>{using type = Second;};
+      struct getUnitID<boost::units::si::time>{using type = Second;};
       template<>
-      struct getUnitID<boost::units::si::kilogram_base_unit>{using type = Kilogram;};
+      struct getUnitID<boost::units::si::mass>{using type = Kilogram;};
       template<>
-      struct getUnitID<boost::units::si::meter_base_unit>{using type = Meter;};
+      struct getUnitID<boost::units::si::length>{using type = Meter;};
     }
     template<typename BoostUnit>
     struct getUnitID : public helpers::getUnitID<BoostUnit> {};
