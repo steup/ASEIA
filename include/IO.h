@@ -97,7 +97,7 @@ std::ostream& operator<<(std::ostream& o, const std::ratio<1,1>& r){
 
 template<std::intmax_t N, std::intmax_t D>
 std::ostream& operator<<(std::ostream& o, const std::ratio<N,D>& r){
-  return o << N << "/" << D;
+  return o << N << "/" << D << " ";
 }
 
 namespace helpers{
