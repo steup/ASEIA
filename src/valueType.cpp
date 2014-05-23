@@ -1,0 +1,28 @@
+#include <ValueType.h>
+#include <IO.h>
+
+#include <iostream>
+#include <iomanip>
+#include <array>
+#include <iterator>
+
+using namespace std;
+
+int main(){
+  array<uint8_t, ValueType::size()> buffer;
+  Serializer<decltype(buffer.begin())> s(buffer.begin(), buffer.end());
+  Value<float, 3, true> v3f;
+  ValueType out(v3f);
+  cout << "ValueType out: " << out << " = Value<3, float, true>" << endl;
+  s << out;
+  cout << "Binarystream: " << hex << setfill('0') << setw(2);
+  for(auto b : buffer)
+    cout << "0x" << b << " ";
+  cout << endl;
+  ValueType in;
+  DeSerializer<decltype(buffer.cbegin())> d(buffer.cbegin(), buffer.cend());
+  d >> in;
+  cout << (in==out?"Correct":"Error not same") << endl;
+  return 0;
+}
+
