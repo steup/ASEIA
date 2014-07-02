@@ -1,10 +1,10 @@
 PROFILING        ?= 0
-DEBUG            ?= 1
+DEBUG            ?= 0
 
 INCLUDES         :=
 LDPATHS          :=
 SYMBOLS          :=
-CXXFLAGS         := -std=gnu++11 -Wall -ffunction-sections
+CXXFLAGS         := -std=gnu++11 -Wall -ffunction-sections -fno-threadsafe-statics
 LDFLAGS          := -O1 -Wl,--gc-sections
 LIBS             :=
 

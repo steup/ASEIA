@@ -1,4 +1,4 @@
-#include <MetaValueType.h>
+#include <MetaAttributeType.h>
 #include <IO.h>
 
 #include <iostream>
@@ -6,15 +6,23 @@
 #include <array>
 #include <iterator>
 
+#include <boost/units/systems/si/length.hpp>
+
+using boost::units::si::length;
+using boost::units::si::seconds;
 using namespace std;
 
+using Vector3iu=Value<float,3,true>;
+
+using Position=Attribute<id::attribute::Position, Vector3iu, boost::units::si::length, std::ratio<1,10>>;
+
 int main(){
-  array<uint8_t, MetaValueType::size()> buffer;
+  array<uint8_t, MetaAttributeType::size()> buffer;
 
-  Value<float, 3, true> v3f;
-  MetaValueType out(v3f);
+  Position pos;
+  MetaAttributeType out(pos);
 
-  cout << "ValueType out: " << out << endl;
+  cout << "AttributeType out: " << out <<  endl;
 
   Serializer<decltype(buffer.begin())> s(buffer.begin(), buffer.end());
   s << out;
@@ -24,7 +32,7 @@ int main(){
     cout << "0x" << b << " ";
   cout << endl;
 
-  MetaValueType in;
+  MetaAttributeType in;
 
   DeSerializer<decltype(buffer.cbegin())> d(buffer.cbegin(), buffer.cend());
   d >> in;

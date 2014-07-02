@@ -116,4 +116,3 @@ DeSerializer<PB>& operator>>(DeSerializer<PB>& s, double& value){
   value=c._double;
   return s;
 }
-

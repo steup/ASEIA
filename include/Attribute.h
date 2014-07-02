@@ -15,8 +15,10 @@ class Attribute
     using ScaleType = Scale;
     using UnitType  = Unit;
     using InitType  = typename ValueType::InitType;
+
   private:
     ValueType v;
+
   public:
     Attribute(){}
     Attribute(InitType l) : v(l){}
