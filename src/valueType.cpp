@@ -1,4 +1,4 @@
-#include <MetaValueType.h>
+#include <ValueType.h>
 #include <IO.h>
 
 #include <iostream>
@@ -9,10 +9,10 @@
 using namespace std;
 
 int main(){
-  array<uint8_t, MetaValueType::size()> buffer;
+  array<uint8_t, ValueType::size()> buffer;
 
   Value<float, 3, true> v3f;
-  MetaValueType out(v3f);
+  ValueType out(v3f);
 
   cout << "ValueType out: " << out << endl;
 
@@ -24,7 +24,7 @@ int main(){
     cout << "0x" << b << " ";
   cout << endl;
 
-  MetaValueType in;
+  ValueType in;
 
   DeSerializer<decltype(buffer.cbegin())> d(buffer.cbegin(), buffer.cend());
   d >> in;

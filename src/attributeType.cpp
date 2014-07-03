@@ -1,4 +1,4 @@
-#include <MetaAttributeType.h>
+#include <AttributeType.h>
 #include <IO.h>
 
 #include <iostream>
@@ -17,10 +17,10 @@ using Vector3iu=Value<float,3,true>;
 using Position=Attribute<id::attribute::Position, Vector3iu, boost::units::si::length, std::ratio<1,10>>;
 
 int main(){
-  array<uint8_t, MetaAttributeType::size()> buffer;
+  array<uint8_t, AttributeType::size()> buffer;
 
   Position pos;
-  MetaAttributeType out(pos);
+  AttributeType out(pos);
 
   cout << "AttributeType out: " << out <<  endl;
 
@@ -32,7 +32,7 @@ int main(){
     cout << "0x" << b << " ";
   cout << endl;
 
-  MetaAttributeType in;
+  AttributeType in;
 
   DeSerializer<decltype(buffer.cbegin())> d(buffer.cbegin(), buffer.cend());
   d >> in;

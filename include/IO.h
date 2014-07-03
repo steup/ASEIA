@@ -3,10 +3,9 @@
 #include <Event.h>
 #include <Attribute.h>
 #include <ValueElement.h>
-#include <MetaValueElementType.h>
 #include <Value.h>
-#include <MetaValueType.h>
-#include <MetaAttributeType.h>
+#include <ValueType.h>
+#include <AttributeType.h>
 
 #include <ostream>
 #include <ratio>
@@ -125,15 +124,11 @@ std::ostream& operator<<(std::ostream& o, const Event<end, Attributes...>& e){
   return o;
 }
 
-std::ostream& operator<<(std::ostream& o, const MetaValueElementType& t){
-  return o << (t.hasUncertainty()?"uncertain ":"") << id::type::getName(t.typeId());
+std::ostream& operator<<(std::ostream& o, const ValueType& t){
+  return o << (t.hasUncertainty()?"uncertain ":"") << id::type::getName(t.typeId()) << "[" << t.n() << "]";
 }
 
-std::ostream& operator<<(std::ostream& o, const MetaValueType& t){
-  return o << static_cast<const MetaValueElementType&>(t) << "[" << t.n() << "]";
-}
-
-std::ostream& operator<<(std::ostream& o, const MetaScaleType& t){
+std::ostream& operator<<(std::ostream& o, const ScaleType& t){
   if(t.num()==1 && t.denom()==1)
     return o;
   if(t.denom()!=1)
@@ -142,6 +137,6 @@ std::ostream& operator<<(std::ostream& o, const MetaScaleType& t){
     return o << t.num() << " ";
 }
 
-std::ostream& operator<<(std::ostream& o, const MetaAttributeType& t){
-  return o << id::attribute::getName(t.attributeId()) << ": " << static_cast<const MetaValueType&>(t) << " " << t.scale();
+std::ostream& operator<<(std::ostream& o, const AttributeType& t){
+  return o << id::attribute::getName(t.attributeId()) << ": " << t.value() << " " << t.scale();
 }
