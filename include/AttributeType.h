@@ -11,10 +11,10 @@
 
 class AttributeType{
   private:
-    id::type::Base::IDType mAttributeId = id::attribute::Base::value();
-    ValueType mValue;
-    ScaleType mScale;
-    UnitType mUnit;
+    id::attribute::ID mAttributeId = id::attribute::Base::value();
+    ValueType         mValue;
+    ScaleType         mScale;
+    UnitType          mUnit;
   public:
     AttributeType() = default;
     
@@ -27,21 +27,23 @@ class AttributeType{
   {}
 
     
-    id::attribute::Base::IDType attributeId() const { return mAttributeId; }
-    const UnitType&             unit()        const { return mUnit;        }
-    const ScaleType&            scale()       const { return mScale;       }
-    const ValueType&            value()       const { return mValue;       }
+    id::attribute::ID attributeId() const { return mAttributeId; }
+    const UnitType&   unit()        const { return mUnit;        }
+    const ScaleType&  scale()       const { return mScale;       }
+    const ValueType&  value()       const { return mValue;       }
 
-    constexpr static std::size_t size() noexcept {return sizeof(mAttributeId) +
-                                                         ValueType::size() +
-                                                         ScaleType::size() +
-                                                         UnitType::size();}
+    constexpr static std::size_t size() noexcept {
+      return sizeof(id::attribute::ID) +
+             ValueType::size()         +
+             ScaleType::size()         +
+             UnitType::size()          ;
+    }
 
     bool operator==(const AttributeType& b){
       return mAttributeId == b.mAttributeId &&
              mValue       == b.mValue       &&
              mScale       == b.mScale       &&
-             mUnit        == b.mUnit;
+             mUnit        == b.mUnit        ;
     }
 
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, AttributeType&);

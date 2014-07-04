@@ -21,7 +21,7 @@ void podOut(){
   S s(v.begin(), v.end());
   T value = sizeof(T);
   s << value;
-  cout << typename id::type::getTypeID<T>::type().name() << " " << value << ": ";
+  cout << typename id::type::t2Type<T>::type().name() << " " << value << ": ";
   for(auto byte : v)
       cout << hex << setw(2) << setfill('0') << byte << " ";
   cout << endl << "Error: " << (s.error()?"true":"false") << dec << endl;
@@ -34,7 +34,7 @@ void valueElementOut(){
   S s(v.begin(), v.end());
   VE value = {sizeof(T), 1};
   s << value;
-  cout << typename id::type::getTypeID<T>::type().name() << " " << value << ": ";
+  cout << typename id::type::t2Type<T>::type().name() << " " << value << ": ";
   for(auto byte : v)
       cout << hex << setw(2) << setfill('0') << byte << " ";
   cout << endl << "Error: " << (s.error()?"true":"false") << dec << endl;

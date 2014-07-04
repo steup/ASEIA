@@ -13,7 +13,7 @@ class ValueElement{
   private:
   public:
     using DataType = boost::numeric::interval<T>;
-    using TypeID   = typename id::type::getTypeID<T>::type;
+    using TypeID   = typename id::type::t2Type<T>::type;
     using BaseType = T;
     using InitType = std::initializer_list<T>;
   private:
@@ -86,7 +86,7 @@ class ValueElement<T, false>
   private:
     T data;
   public:
-    using TypeID   = typename id::type::getTypeID<T>::type;
+    using TypeID   = typename id::type::t2Type<T>::type;
     using DataType = T;
     using BaseType = T;
     using InitType = std::initializer_list<T>;

@@ -6,6 +6,8 @@
 #include <Value.h>
 #include <ValueType.h>
 #include <AttributeType.h>
+#include <UnitType.h>
+#include <ScaleType.h>
 
 #include <ostream>
 #include <ratio>
@@ -125,7 +127,7 @@ std::ostream& operator<<(std::ostream& o, const Event<end, Attributes...>& e){
 }
 
 std::ostream& operator<<(std::ostream& o, const ValueType& t){
-  return o << (t.hasUncertainty()?"uncertain ":"") << id::type::getName(t.typeId()) << "[" << t.n() << "]";
+  return o << (t.hasUncertainty()?"uncertain ":"") << id::type::name(t.typeId()) << "[" << t.n() << "]";
 }
 
 std::ostream& operator<<(std::ostream& o, const ScaleType& t){
@@ -137,6 +139,20 @@ std::ostream& operator<<(std::ostream& o, const ScaleType& t){
     return o << t.num() << " ";
 }
 
+std::ostream& operator<<(std::ostream& o, const UnitType& t){
+  unsigned int i=0;
+  for(auto v : t)
+    switch(v){
+      case(0): i++;
+               continue;
+      case(1): o << id::unit::shortName(i++);
+               continue;
+      default: o << id::unit::shortName(i++) << "^" << v;
+               continue;
+    }
+  return o;
+}
+
 std::ostream& operator<<(std::ostream& o, const AttributeType& t){
-  return o << id::attribute::getName(t.attributeId()) << ": " << t.value() << " " << t.scale();
+  return o << id::attribute::name(t.attributeId()) << ": " << t.value() << " " << t.scale() << t.unit();
 }

@@ -8,29 +8,30 @@
 
 class ValueType{
   private:
-    id::type::Base::IDType mTypeId         = id::type::Base::value();
-    bool                   mHasUncertainty = false;
-    uint32_t               mN              = 1;
+    id::type::ID mTypeId         = id::type::Base::value();
+    bool         mHasUncertainty = false;
+    uint32_t     mN              = 1;
   public:
     union Converter{
       uint8_t data;
       struct{
-        bool              uncertainty : 1;
-        decltype(mTypeId) id          : sizeof(mTypeId)*8-1;
+        bool         uncertainty : 1;
+        id::type::ID id          : sizeof(id::type::ID)*8-1;
       };
     };
 
     ValueType() = default;
     
     template<typename T, std::size_t n, bool u>
-    ValueType(Value<T, n, u>) : mHasUncertainty(u), mN(n){
-      using DataType = typename id::type::getTypeID<T>::type;
-      mTypeId = DataType::value();
-    }
+    ValueType(Value<T, n, u>) : 
+      mTypeId(id::type::id(T())),
+      mHasUncertainty(u),
+      mN(n)
+    {}
 
-    decltype(mTypeId) typeId()         const { return mTypeId;         }
-    bool              hasUncertainty() const { return mHasUncertainty; }
-    uint32_t          n()              const { return mN;              }
+    id::type::ID typeId()         const { return mTypeId;         }
+    bool         hasUncertainty() const { return mHasUncertainty; }
+    uint32_t     n()              const { return mN;              }
 
     static constexpr unsigned int size() { return sizeof(mTypeId) + sizeof(mN);}
 

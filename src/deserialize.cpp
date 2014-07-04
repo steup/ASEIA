@@ -24,7 +24,7 @@ void podIn(){
   for(auto byte : v)
       cout << hex << setw(2) << setfill('0') << byte << " ";
   cout << dec;
-  cout << typename id::type::getTypeID<T>::type().name() << " " << value << ": " << endl;
+  cout << typename id::type::t2Type<T>::type().name() << " " << value << ": " << endl;
 }
 
 template<>
@@ -36,7 +36,7 @@ void podIn<float>(){
   for(auto byte : v)
       cout << hex << setw(2) << setfill('0') << byte << " ";
   cout << dec;
-  cout << typename id::type::getTypeID<float>::type().name() << " " << value << ": " << endl;
+  cout << typename id::type::t2Type<float>::type().name() << " " << value << ": " << endl;
 }
 
 template<>
@@ -48,7 +48,7 @@ void podIn<double>(){
   for(auto byte : v)
       cout << hex << setw(2) << setfill('0') << byte << " ";
   cout << dec;
-  cout << typename id::type::getTypeID<double>::type().name() << " " << value << ": " << endl;
+  cout << typename id::type::t2Type<double>::type().name() << " " << value << ": " << endl;
 }
 
 void valueElementIn(){
