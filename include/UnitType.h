@@ -27,6 +27,12 @@ class UnitType{
         mStorage[id] = Dim::value_type::numerator();
       }
     };
+
+    using iterator = StorageType::iterator;
+
+    iterator begin() { return mStorage.begin(); }
+    iterator end() { return mStorage.end(); }
+
   public:
     using const_iterator = StorageType::const_iterator;
 
@@ -49,13 +55,13 @@ class UnitType{
       return 0;
     }
 
-    const_iterator begin() const { return mStorage.begin(); }
+    const_iterator begin() const { return mStorage.cbegin(); }
 
-    const_iterator end() const { return mStorage.end(); }
+    const_iterator end() const { return mStorage.cend(); }
 
     constexpr static std::size_t size() noexcept { return id::unit::Base::value(); }
 
-    bool operator==(const UnitType& b){
+    bool operator==(const UnitType& b) const{
       for(uint8_t i=0;i<mStorage.size();i++)
         if(mStorage[i]!=b.mStorage[i])
             return false;
@@ -68,14 +74,14 @@ class UnitType{
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, const UnitType& unit){
-  for(uint8_t i=0;i<UnitType::size();i++)
-    s << unit[i];
+  for(auto v : unit)
+    s << v;
   return s;
 }
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& d, UnitType& unit){
-  for(auto& v : unit.mStorage)
+  for(auto& v : unit)
     d >> v;
   return d;
 }

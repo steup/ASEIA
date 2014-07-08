@@ -39,7 +39,7 @@ class AttributeType{
              UnitType::size()          ;
     }
 
-    bool operator==(const AttributeType& b){
+    bool operator==(const AttributeType& b) const{
       return mAttributeId == b.mAttributeId &&
              mValue       == b.mValue       &&
              mScale       == b.mScale       &&

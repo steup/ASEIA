@@ -8,6 +8,7 @@
 #include <AttributeType.h>
 #include <UnitType.h>
 #include <ScaleType.h>
+#include <EventType.h>
 
 #include <ostream>
 #include <ratio>
@@ -141,7 +142,7 @@ std::ostream& operator<<(std::ostream& o, const ScaleType& t){
 
 std::ostream& operator<<(std::ostream& o, const UnitType& t){
   unsigned int i=0;
-  for(auto v : t)
+  for(const auto& v : t)
     switch(v){
       case(0): i++;
                continue;
@@ -155,4 +156,11 @@ std::ostream& operator<<(std::ostream& o, const UnitType& t){
 
 std::ostream& operator<<(std::ostream& o, const AttributeType& t){
   return o << id::attribute::name(t.attributeId()) << ": " << t.value() << " " << t.scale() << t.unit();
+}
+
+std::ostream& operator<<(std::ostream& o, const EventType& t){
+  o << "EventType: " << std::endl;
+  for(const auto& aT : t)
+    o << "\t" << aT << std::endl;
+  return o;
 }

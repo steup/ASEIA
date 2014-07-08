@@ -35,8 +35,8 @@ class ValueType{
 
     static constexpr unsigned int size() { return sizeof(mTypeId) + sizeof(mN);}
 
-    bool operator==(const ValueType& b){
-      return mTypeId == b.mTypeId && mHasUncertainty && b.mHasUncertainty && mN == b.mN;
+    bool operator==(const ValueType& b) const{
+      return mTypeId == b.mTypeId && mHasUncertainty == b.mHasUncertainty && mN == b.mN;
     }
 
     template<typename I> friend DeSerializer<I>& operator>>(DeSerializer<I>&, ValueType&);

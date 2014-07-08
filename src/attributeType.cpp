@@ -30,12 +30,14 @@ int main(){
   cout << "Binarystream: " << hex << setfill('0') << setw(2);
   for(auto b : buffer)
     cout << "0x" << b << " ";
-  cout << endl;
+  cout << dec << endl;
 
   AttributeType in;
 
   DeSerializer<decltype(buffer.cbegin())> d(buffer.cbegin(), buffer.cend());
   d >> in;
+
+  cout << "AttributeType  in: " << out <<  endl;
 
   cout << (in==out?"Correct":"Error: not identical") << endl;
 
