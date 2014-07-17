@@ -1,5 +1,7 @@
 #pragma once
 
+#include <IDIO.h>
+
 #include <Event.h>
 #include <Attribute.h>
 #include <ValueElement.h>
@@ -73,7 +75,7 @@ std::ostream& operator<<(std::ostream& o, const boost::units::si::dimensionless&
 template<typename ID, typename V, typename S, typename U>
 std::ostream& operator<<(std::ostream& o, const Attribute<ID,V,S,U>& a)
 {
-  return o << a.id().name() << ": " << a.value() << " " << a.scale() << "" << a.unit();
+  return o << id::attribute::name(ID().value()) << ": " << a.value() << " " << a.scale() << "" << a.unit();
 }
 
 std::ostream& operator<<(std::ostream& o, const std::milli& r){
