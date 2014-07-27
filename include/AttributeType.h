@@ -19,18 +19,17 @@ class AttributeType{
     AttributeType() = default;
     
     template<typename I, typename V, typename U, typename S>
-    AttributeType(const Attribute<I,V,U,S> a) 
-    : mAttributeId(I::value()),
-      mValue(a.value()),
-      mScale(S()),
-      mUnit(U())
-  {}
-
+    AttributeType(const Attribute<I,V,U,S> a)
+      : mAttributeId(I::value()),
+        mValue(a.value()),
+        mScale(S()),
+        mUnit(U())
+    {}
     
-    id::attribute::ID attributeId() const { return mAttributeId; }
-    const UnitType&   unit()        const { return mUnit;        }
-    const ScaleType&  scale()       const { return mScale;       }
-    const ValueType&  value()       const { return mValue;       }
+    id::attribute::ID attributeId() const;
+    const UnitType&   unit()        const;
+    const ScaleType&  scale()       const;
+    const ValueType&  value()       const;
 
     constexpr static std::size_t size() noexcept {
       return sizeof(id::attribute::ID) +
@@ -39,12 +38,7 @@ class AttributeType{
              UnitType::size()          ;
     }
 
-    bool operator==(const AttributeType& b) const{
-      return mAttributeId == b.mAttributeId &&
-             mValue       == b.mValue       &&
-             mScale       == b.mScale       &&
-             mUnit        == b.mUnit        ;
-    }
+    bool operator==(const AttributeType& b) const;
 
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, AttributeType&);
 };

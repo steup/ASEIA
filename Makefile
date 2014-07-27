@@ -4,7 +4,7 @@ DEBUG            ?= 0
 INCLUDES         :=
 LDPATHS          :=
 SYMBOLS          :=
-CXXFLAGS         := -std=gnu++11 -Wall -ffunction-sections -fno-threadsafe-statics
+CXXFLAGS         := -std=gnu++11 -Wall -ffunction-sections -fno-threadsafe-statics -fPIC
 LDFLAGS          := -O1 -Wl,--gc-sections
 LIBS             :=
 
@@ -62,7 +62,7 @@ ${STATLIB}: ${OBJECTS} | ${LIB}
 
 ${EXAMPLES}: %: ${BIN}/%
 	
-$(addprefix ${BIN}/, ${EXAMPLES}): ${BIN}/%: ${BUILD}/%.o ${DYNLIB} | ${BIN}
+$(addprefix ${BIN}/, ${EXAMPLES}): ${BIN}/%: ${BUILD}/%.o | ${DYNLIB} ${BIN}
 	@echo "Linking Example $@ <- $<"
 	@${CXX} ${LDFLAGS} -o $@ $^ ${LDPATHS} ${LIBS}
 
