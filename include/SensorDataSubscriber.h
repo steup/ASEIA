@@ -1,6 +1,8 @@
 #pragma once
 
 #include <DeSerializer.h>
+#include <EventTypePublisher.h>
+#include <FormatID.h>
 
 #include <mw/api/SubscriberEventChannel.h>
 #include <case/Delegate.h>
@@ -15,6 +17,9 @@ class SensorDataSubscriber : public famouso::mw::api::SubscriberEventChannel<ECH
     using Subject = famouso::mw::Subject;
     using Callback = famouso::util::Delegate<const SensorEvent&>;
 
+    EventTypePublisher<ECH> etp;
+    FormatID id;
+
     void handle(famouso::mw::api::SECCallBackData& cbd){
       SensorEvent e;
       DeSerializer<const uint8_t*> d(cbd.data, cbd.data+cbd.length);
@@ -27,8 +32,13 @@ class SensorDataSubscriber : public famouso::mw::api::SubscriberEventChannel<ECH
 
     Callback callback;
 
-    SensorDataSubscriber(const Subject& s) : Base(s){
+    SensorDataSubscriber(const famouso::mw::Subject& s, uint16_t nodeID) : Base(s), id(nodeID){
       Base::callback.template bind<SensorDataSubscriber, &SensorDataSubscriber::handle>(this);
+    }
+
+    void subscribe(){
+      etp.publish(Base::subject(), id.value(), SensorEvent());
+      Base::subscribe();
     }
 };
 
