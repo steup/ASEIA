@@ -11,6 +11,7 @@
 #include <UnitType.h>
 #include <ScaleType.h>
 #include <EventType.h>
+#include <FormatID.h>
 
 #include <ostream>
 #include <ratio>
@@ -120,3 +121,5 @@ std::ostream& operator<<(std::ostream& o, const UnitType& t);
 std::ostream& operator<<(std::ostream& o, const AttributeType& t);
 
 std::ostream& operator<<(std::ostream& o, const EventType& t);
+
+std::ostream& operator<<(std::ostream& o, const FormatID& id);

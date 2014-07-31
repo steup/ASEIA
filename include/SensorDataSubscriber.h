@@ -32,12 +32,12 @@ class SensorDataSubscriber : public famouso::mw::api::SubscriberEventChannel<ECH
 
     Callback callback;
 
-    SensorDataSubscriber(const famouso::mw::Subject& s, uint16_t nodeID) : Base(s), id(nodeID){
+    SensorDataSubscriber(const famouso::mw::Subject& s, uint16_t nodeID) : Base(s), id(nodeID, FormatID::Direction::subscriber){
       Base::callback.template bind<SensorDataSubscriber, &SensorDataSubscriber::handle>(this);
     }
 
     void subscribe(){
-      etp.publish(Base::subject(), id.value(), SensorEvent());
+      etp.publish(Base::subject(), id, SensorEvent());
       Base::subscribe();
     }
 };

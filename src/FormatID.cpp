@@ -1,12 +1,29 @@
 #include <FormatID.h>
 
-FormatID::FormatID(uint16_t nodeID) : mValue(((uint32_t)(nodeID)<<sizeof(nodeID)*8) | sFormatNr++){
-
+FormatID::FormatID(uint16_t nodeID, FormatID::Direction dir) {
+  if(dir==Direction::publisher)
+    mData.nr = sPubNr++;
+  else
+    mData.nr = sSubNr++;
+  mData.dir = dir;
+  mData.node = nodeID;
 }
 
-uint32_t FormatID::value() const { 
-  return mValue; 
-} 
+uint16_t FormatID::node() const{
+  return mData.node;
+}
 
-uint16_t FormatID::sFormatNr = 0;
+FormatID::Direction FormatID::direction() const{
+  return mData.dir;
+}
 
+uint16_t FormatID::nr() const{
+  return mData.nr;
+}
+
+bool FormatID::operator==(const FormatID& b) const{
+  return mData.node == b.mData.node && mData.dir == b.mData.dir && mData.nr == b.mData.nr;
+}
+
+uint16_t FormatID::sPubNr = 0;
+uint16_t FormatID::sSubNr = 0;

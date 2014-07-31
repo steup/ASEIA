@@ -2,6 +2,7 @@
 
 #include <DeSerializer.h>
 #include <EventType.h>
+#include <FormatID.h>
 
 #include <mw/api/SubscriberEventChannel.h>
 
@@ -13,7 +14,7 @@ class EventTypeSubscriber : public famouso::mw::api::SubscriberEventChannel<ECH>
   public:
     struct CallbackData{
       famouso::mw::Subject sub;
-      uint32_t formatID;
+      FormatID id;
       EventType eT;
     };
 
@@ -22,7 +23,7 @@ class EventTypeSubscriber : public famouso::mw::api::SubscriberEventChannel<ECH>
       CallbackData data;
       DeSerializer<uint8_t*> d(cbd.data, cbd.data+cbd.length);
       uint64_t subject;
-      d >> subject >> data.formatID >> data.eT;
+      d >> subject >> data.id >> data.eT;
       data.sub=famouso::mw::Subject(subject);
       callback(data);
     }

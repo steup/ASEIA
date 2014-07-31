@@ -73,3 +73,7 @@ std::ostream& operator<<(std::ostream& o, const uint8_t& v) {
 std::ostream& operator<<(std::ostream& o, const int8_t& v) {
   return o << (int16_t)v;
 }
+
+std::ostream& operator<<(std::ostream& o, const FormatID& id) {
+  return o << id.node() << ":" << (id.direction()==FormatID::Direction::publisher?"P":"S") << id.nr();
+}
