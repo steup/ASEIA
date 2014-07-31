@@ -1,6 +1,8 @@
 #pragma once
 
 #include <Serializer.h>
+#include <EventTypePublisher.h>
+#include <FormatID.h>
 
 #include "mw/api/PublisherEventChannel.h"
 
@@ -12,8 +14,16 @@ class SensorDataPublisher : public famouso::mw::api::PublisherEventChannel<ECH>{
   private:
     using Base = famouso::mw::api::PublisherEventChannel<ECH>;
     using Subject = famouso::mw::Subject;
+
+    EventTypePublisher<ECH> etp;
+    FormatID id;
   public:
-    SensorDataPublisher(const Subject& s) : Base(s){}
+    SensorDataPublisher(const Subject& s, uint16_t nodeID) : Base(s), id(nodeID, FormatID::Direction::publisher){}
+
+    void announce(){
+      etp.publish(Base::subject(), id, SensorEvent());
+      Base::announce();
+    }
 
     void publish(const SensorEvent& e){
       using Wrapper = famouso::mw::Event;
