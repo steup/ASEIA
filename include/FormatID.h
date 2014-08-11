@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <Serializer.h>
 #include <DeSerializer.h>
+#include <Endianess.h>
 
 class FormatID{
   public:
@@ -33,6 +34,7 @@ class FormatID{
     Direction direction() const;
     uint16_t  nr() const;
     bool operator==(const FormatID& b) const;
+    bool operator<(const FormatID& b) const;
     static constexpr std::size_t size() noexcept { return sizeof(mData); }
 
 template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, FormatID&);
@@ -41,10 +43,12 @@ template<typename PB> friend Serializer<PB>& operator<<(Serializer<PB>&, const F
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, const FormatID& id){
-  return s << id.mData.value;
+  return s << hton(id.mData.value);
 }
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& d, FormatID& id){
-  return d >> id.mData.value;
+  d >> id.mData.value;
+  id.mData.value=ntoh(id.mData.value);
+  return d;
 }

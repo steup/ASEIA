@@ -25,5 +25,17 @@ bool FormatID::operator==(const FormatID& b) const{
   return mData.node == b.mData.node && mData.dir == b.mData.dir && mData.nr == b.mData.nr;
 }
 
+bool FormatID::operator<(const FormatID& b) const{
+  if( mData.node < b.mData.node )
+    return true;
+  if( mData.node > b.mData.node )
+    return false;
+  if( mData.nr < b.mData.nr )
+    return true;
+  if( mData.nr > b.mData.nr )
+    return false;
+  return mData.dir < b.mData.dir;
+}
+
 uint16_t FormatID::sPubNr = 0;
 uint16_t FormatID::sSubNr = 0;
