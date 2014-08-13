@@ -15,15 +15,13 @@ class ScaleType{
     template<std::intmax_t num, std::intmax_t denom>
     ScaleType(const std::ratio<num, denom> scale): mNum(num), mDenom(denom){}
 
-    int32_t num() const {return mNum;}
-    void num(int32_t num) {mNum=num;}
+    int32_t num() const;
+    void num(int32_t num);
 
-    uint32_t denom() const {return mDenom;}
-    void denom(uint32_t denom) {mDenom=denom;}
+    uint32_t denom() const;
+    void denom(uint32_t denom);
 
-    bool operator==(const ScaleType& b) const{
-      return mNum==b.mNum && mDenom == b.mDenom;
-    }
+    bool operator==(const ScaleType& b) const;
 
     constexpr static std::size_t size() noexcept {return sizeof(mNum) + sizeof(mDenom);}
 

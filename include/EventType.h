@@ -20,21 +20,21 @@ class EventType{
       private:
         StorageType::iterator i;
       public:
-        iterator(StorageType::iterator i) : i(i){}
-        iterator&   operator++() { i++; return *this; }
-        ValueType& operator*()  { return i->second; }
-        bool operator==(const iterator& b) { return i == b.i; }
-        bool operator!=(const iterator& b) { return !(*this== b); }
+        iterator(StorageType::iterator i);
+        iterator&   operator++();
+        ValueType& operator*();
+        bool operator==(const iterator& b);
+        bool operator!=(const iterator& b);
     };
 
-    iterator begin(){ return iterator(mStorage.begin()); }
-    iterator end(){ return iterator(mStorage.end()); }
+    iterator begin();
+    iterator end();
 
     class Parser{
       private:
         StorageType& mStorage;
       public:
-        Parser(StorageType& storage) : mStorage(storage){}
+        Parser(StorageType& storage);
         template<typename Attr>
         void operator()(Attr attr){
           AttributeType aT(attr);
@@ -47,15 +47,15 @@ class EventType{
       protected:
         StorageType::const_iterator i;
       public:
-        const_iterator(StorageType::const_iterator i) : i(i){}
-        const_iterator&   operator++() { i++; return *this; }
-        const ValueType& operator*() const { return i->second; }
-        bool operator==(const const_iterator& b) { return i == b.i; }
-        bool operator!=(const const_iterator& b) { return !(*this== b); }
+        const_iterator(StorageType::const_iterator i);
+        const_iterator&   operator++();
+        const ValueType& operator*() const;
+        bool operator==(const const_iterator& b);
+        bool operator!=(const const_iterator& b);
     };
 
-    const_iterator begin() const{ return const_iterator(mStorage.cbegin()); }
-    const_iterator end() const { return const_iterator(mStorage.cend()); }
+    const_iterator begin() const;
+    const_iterator end() const;
 
     EventType() = default;
 
@@ -65,33 +65,13 @@ class EventType{
       boost::mpl::for_each<typename Event::AttributeList>(p);
     }
 
-    const AttributeType* attribute(KeyType key) const{
-      auto i = mStorage.find(key);
-      if(i == mStorage.end())
-        return NULL;
-      else
-        return &i->second;
-    }
+    const AttributeType* attribute(KeyType key) const;
     
-    bool operator==(const EventType& b) const{
-      if(mStorage.size() != b.mStorage.size())
-        return false;
+    bool operator==(const EventType& b) const;
 
-      for( const auto& p : mStorage ){
-        auto i = b.mStorage.find(p.first);
-        if( i == b.mStorage.end())
-          return false;
-        if( !(p.second == i->second) )
-          return false;
-      }
-      return true;
-    }
+    uint8_t length() const;
 
-    uint8_t length() const throw() { return mStorage.size(); }
-
-    std::size_t size() const throw() {
-      return AttributeType::size()*length()+1;
-    }
+    std::size_t size() const throw();
 
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, EventType&);
 };

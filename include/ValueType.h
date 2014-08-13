@@ -29,15 +29,13 @@ class ValueType{
       mN(n)
     {}
 
-    id::type::ID typeId()         const { return mTypeId;         }
-    bool         hasUncertainty() const { return mHasUncertainty; }
-    uint32_t     n()              const { return mN;              }
+    id::type::ID typeId()         const;
+    bool         hasUncertainty() const;
+    uint32_t     n()              const;
 
     static constexpr unsigned int size() { return sizeof(mTypeId) + sizeof(mN);}
 
-    bool operator==(const ValueType& b) const{
-      return mTypeId == b.mTypeId && mHasUncertainty == b.mHasUncertainty && mN == b.mN;
-    }
+    bool operator==(const ValueType& b) const;
 
     template<typename I> friend DeSerializer<I>& operator>>(DeSerializer<I>&, ValueType&);
 };

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ID.h>
+
 #include <Serializer.h>
 #include <DeSerializer.h>
 
@@ -19,7 +21,7 @@ class UnitType{
       private:
         StorageType& mStorage;
       public:
-        DimensionConverter(StorageType& storage) : mStorage(storage){}
+        DimensionConverter(StorageType& storage);
 
       template<typename Dim>
       void operator()(Dim d){
@@ -30,8 +32,8 @@ class UnitType{
 
     using iterator = StorageType::iterator;
 
-    iterator begin() { return mStorage.begin(); }
-    iterator end() { return mStorage.end(); }
+    iterator begin();
+    iterator end();
 
   public:
     using const_iterator = StorageType::const_iterator;
@@ -49,24 +51,15 @@ class UnitType{
       boost::mpl::for_each<typename Unit::dimension_type>(c);
     }
 
-    int8_t operator[](uint8_t i) const{
-      if(i<mStorage.size())
-        return mStorage[i];
-      return 0;
-    }
+    int8_t operator[](uint8_t i) const;
 
-    const_iterator begin() const { return mStorage.cbegin(); }
+    const_iterator begin() const;
 
-    const_iterator end() const { return mStorage.cend(); }
+    const_iterator end() const;
 
     constexpr static std::size_t size() noexcept { return id::unit::Base::value(); }
 
-    bool operator==(const UnitType& b) const{
-      for(uint8_t i=0;i<mStorage.size();i++)
-        if(mStorage[i]!=b.mStorage[i])
-            return false;
-      return true;
-    }
+    bool operator==(const UnitType& b) const;
   
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, UnitType&);
 
