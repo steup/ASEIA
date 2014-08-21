@@ -25,14 +25,15 @@ std::ostream& operator<<(std::ostream& o, const int8_t& v);
 
 template<typename T, bool u>
 std::ostream& operator<<(std::ostream& o, const ValueElement<T, u>& e)
-{
-  o << e.value();
+{ 
   if(u)
-    o << "+-" << e.uncertainty();
+    o << "[" << e.value() << " +- " << e.uncertainty() << "]";
+  else
+    o << e.value();
   return o;
 }
 
-template<bool u>
+/*template<bool u>
 std::ostream& operator<<(std::ostream& o, const ValueElement<uint8_t, u>& e)
 {
   o << (uint16_t)e.value();
@@ -48,7 +49,7 @@ std::ostream& operator<<(std::ostream& o, const ValueElement<uint16_t, u>& e)
   if(u)
     o << "+-" << e.uncertainty();
   return o;
-}
+}*/
 
 template<typename T, std::size_t n, bool useUncertainty>
 std::ostream& operator<<(std::ostream& o, const Value<T,n,useUncertainty>& v)

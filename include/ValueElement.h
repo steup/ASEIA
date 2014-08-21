@@ -4,9 +4,18 @@
 #include <Serializer.h>
 #include <DeSerializer.h>
 
+#include <type_traits>
 #include <initializer_list>
 
 namespace {
+  template<typename T>
+  inline T abs(T a){
+    if(a<0)
+      return -a;
+    else
+      return a;
+  }
+  
   template<typename T>
   inline T satAdd(T& a, T b) {
     T diff = std::numeric_limits<T>::max() - a;
@@ -47,6 +56,31 @@ namespace {
       return std::numeric_limits<T2>::max();
     return u;
   }
+
+  template<typename T>
+  struct multType{
+    using type  = T;
+  };
+
+  template<>
+  struct multType<uint8_t>{
+    using type  = int16_t;
+  };
+
+  template<>
+  struct multType<uint16_t>{
+    using type  = int32_t;
+  };
+
+  template<>
+  struct multType<uint32_t>{
+    using type  = int64_t;
+  };
+
+  template<>
+  struct multType<uint64_t>{
+    using type  = int64_t;
+  };
 }
 
 template<typename T, bool U =true>
@@ -74,6 +108,27 @@ class ValueElement<T, false> {
     
     ValueElement& operator=(const ValueElement& data) = default;
     ~ValueElement() = default;
+
+    ValueElement operator+=(const ValueElement& a){
+      mValue+=a.mValue;
+      return *this;
+    }
+
+    ValueElement operator*=(const ValueElement& a){
+      mValue*=a.mValue;
+      return *this;
+    }
+
+    ValueElement operator-=(const ValueElement& a){
+      mValue-=a.mValue;
+      return *this;
+    }
+
+    ValueElement operator/=(const ValueElement& a){
+      mValue/=a.mValue;
+      return *this;
+    }
+
 
     const T value() const { return mValue; }
     void value(const T& v) { mValue=v; }
@@ -109,8 +164,7 @@ class ValueElement<T, true>{
       auto iter = i.begin();
       mValue = *iter;
       mUncertainty = *std::next(iter);
-      if (mUncertainty < 0)
-        mUncertainty = std::numeric_limits<T>::max();
+      mUncertainty=checkBounds(mValue, mUncertainty, T());
     }
 
     template<typename T2>
@@ -145,6 +199,60 @@ class ValueElement<T, true>{
       return *this;
     }
 
+    ValueElement operator*=(const ValueElement& a){
+      typename multType<BaseType>::type p1, m1, p2, m2, temp[4], min, max;
+      min = std::numeric_limits<T>::max();
+      max = std::numeric_limits<T>::min();
+      p1 =   mValue +   mUncertainty;
+      p2 = a.mValue + a.mUncertainty;
+      m1 =   mValue -   mUncertainty;
+      m2 = a.mValue - a.mUncertainty;
+      temp[0] = p1 * p2;
+      temp[1] = p1 * m2;
+      temp[2] = m1 * p2;
+      temp[3] = m1 * m2;
+      for(unsigned int i = 0; i < 4; i++) {
+        if(temp[i] < min)
+          min = temp[i];
+        if(temp[i] > max)
+          max = temp[i];
+      }
+      mUncertainty = (max - min) / 2;
+      mValue       = min + mUncertainty;
+      
+      return *this;
+    }
+
+    ValueElement operator/=(const ValueElement& a){
+      if(a.mUncertainty >= abs(a.mValue)){
+        mValue = 0;
+        mUncertainty = std::numeric_limits<T>::max();
+        return *this;
+      }
+
+      typename multType<BaseType>::type p1, m1, p2, m2, temp[4], min, max;
+      min = std::numeric_limits<T>::max();
+      max = std::numeric_limits<T>::min();
+      p1 =   mValue +   mUncertainty;
+      p2 = a.mValue + a.mUncertainty;
+      m1 =   mValue -   mUncertainty;
+      m2 = a.mValue - a.mUncertainty;
+      temp[0] = p1 / p2;
+      temp[1] = p1 / m2;
+      temp[2] = m1 / p2;
+      temp[3] = m1 / m2;
+      for(unsigned int i = 0; i < 4; i++) {
+        if(temp[i] < min)
+          min = temp[i];
+        if(temp[i] > max)
+          max = temp[i];
+      }
+      mUncertainty = (max - min) / 2;
+      mValue       = min + mUncertainty;
+      
+      return *this;
+    }
+
     ValueElement operator+=(const BaseType& a){
       return *this+=ValueElement(a, 0);
     }
@@ -169,12 +277,26 @@ class ValueElement<T, true>{
       return ValueElement(*this)-=a;
     }
 
+    ValueElement operator*(const ValueElement& a) const{
+      return ValueElement(*this)*=a;    }
+
+    ValueElement operator/(const ValueElement& a) const{
+      return ValueElement(*this)/=a;
+    }
+
     ValueElement operator+(const BaseType& a) const{
       return ValueElement(*this)+=a;
     }
 
     ValueElement operator-(const BaseType& a) const{
       return ValueElement(*this)-=a;
+    }
+
+    ValueElement operator*(const BaseType& a) const{
+      return ValueElement(*this)*=a;    }
+
+    ValueElement operator/(const BaseType& a) const{
+      return ValueElement(*this)/=a;
     }
 
     explicit operator BaseType() { return mValue; }
@@ -184,14 +306,41 @@ class ValueElement<T, true>{
     constexpr bool hasUncertainty()     noexcept {return true;}
 };
 
-template<typename T, bool U>
-ValueElement<T, U> operator+(const T& a, const ValueElement<T,U>& b) {
-  return ValueElement<T,U>({a, 0})+=b;
+template<typename T1, typename T2, bool U>
+ValueElement<T1, U> operator+(const T2& a, const ValueElement<T1,U>& b) {
+  T1 v,u;
+  v = a+b.value();
+  u = b.uncertainty();
+  return ValueElement<T1, U>({v, u});
 }
 
-template<typename T, bool U>
-ValueElement<T, U> operator-(const T& a, const ValueElement<T,U>& b) {
-  return ValueElement<T,U>({a, 0})-=b;
+template<typename T1, typename T2, bool U>
+ValueElement<T1, U> operator-(const T2& a, const ValueElement<T1,U>& b) {
+  T1 v,u;
+  v = a-b.value();
+  u = b.uncertainty();
+  return ValueElement<T1, U>({v, u});
+}
+
+template<typename T1, typename T2, bool U>
+ValueElement<T1, U> operator*(const T2& a, const ValueElement<T1,U>& b) {
+  T1 v,u;
+  v = a*b.value();
+  u = a*b.uncertainty();
+  return ValueElement<T1, U>({v, u});
+}
+
+template<typename T1, typename T2, bool U>
+ValueElement<T1, U> operator/(const T2& a, const ValueElement<T1,U>& b) {
+  T1 v,u;
+  v = a/b.value();
+  if(!b.uncertainty())
+    u = 0;
+  if(b.uncertainty()>abs(b.value())) {
+    v = 0;
+    u = std::numeric_limits<T1>::max();
+  }
+  return ValueElement<T1, U>({v, u});
 }
 
 template<typename PB, typename T>
