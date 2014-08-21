@@ -5,15 +5,15 @@
 
 using namespace std;
 
-using V1 = ValueElement<int>;
-using V2 = ValueElement<uint64_t>;
+using V1 = ValueElement<float>;
+using V2 = ValueElement<unsigned int>;
 
 int main(){
-  V1 a={{1,2}};
+  V1 a={{1,-2}};
   MetaValueElement mve(a);
   cout << "V1 - a: " << a << endl;
   V2 b;
-  cout << (mve.extract(b)?"":"not ") << "extracted" << endl;;
+  mve.extract(b);
   cout << "V2 - b: " << b << endl;
   return 0;
 }

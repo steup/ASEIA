@@ -3,16 +3,16 @@
 
 #include <iostream>
 
-using V = ValueElement<int>;
+using V = ValueElement<int, true>;
 
 int main(){
-  V a(1,1);
-  V b(2,3);
-  V c(5,0);
+  V a={1,1};
+  V b={2,3};
+  V c={5,0};
   std::cout << "a  : " << a << std::endl;
   std::cout << "b  : " << b << std::endl;
   std::cout << "a+1: " << (a+1) << std::endl;
-  std::cout << "2a : " << (a*2) << std::endl;
+  std::cout << "2a : " << (2*a) << std::endl;
   std::cout << "a+b: " << (a+b) << std::endl;
   std::cout << "a*b: " << (a*b) << std::endl;
   std::cout << "a+c: " << (a+c) << std::endl;
