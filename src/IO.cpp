@@ -1,10 +1,21 @@
 #include <IO.h>
 
-std::ostream& operator<<(std::ostream& o, const ValueType& t) {
+#include <ValueType.h>
+#include <UnitType.h>
+#include <ScaleType.h>
+#include <AttributeType.h>
+#include <EventType.h>
+#include <FormatID.h>
+#include <MetaValueElement.h>
+
+using std::ostream;
+using std::endl;
+
+ostream& operator<<(ostream& o, const ValueType& t) {
   return o << (t.hasUncertainty()?"uncertain ":"") << id::type::name(t.typeId()) << "[" << t.n() << "]";
 }
 
-std::ostream& operator<<(std::ostream& o, const ScaleType& t) {
+ostream& operator<<(ostream& o, const ScaleType& t) {
   if(t.num()==1 && t.denom()==1)
     return o;
   if(t.denom()!=1)
@@ -13,7 +24,7 @@ std::ostream& operator<<(std::ostream& o, const ScaleType& t) {
     return o << t.num() << " ";
 }
 
-std::ostream& operator<<(std::ostream& o, const UnitType& t) {
+ostream& operator<<(ostream& o, const UnitType& t) {
   unsigned int i=0;
   for(const auto& v : t)
     switch(v){
@@ -27,53 +38,41 @@ std::ostream& operator<<(std::ostream& o, const UnitType& t) {
   return o;
 }
 
-std::ostream& operator<<(std::ostream& o, const AttributeType& t) {
+ostream& operator<<(ostream& o, const AttributeType& t) {
   return o << id::attribute::name(t.attributeId()) << ": " << t.value() << " " << t.scale() << t.unit();
 }
 
-std::ostream& operator<<(std::ostream& o, const EventType& t) {
-  o << "EventType: " << std::endl;
+ostream& operator<<(ostream& o, const EventType& t) {
+  o << "EventType: " << endl;
   for(const auto& aT : t)
-    o << "\t" << aT << std::endl;
+    o << "\t" << aT << endl;
   return o;
 }
 
-std::ostream& operator<<(std::ostream& o, const std::milli& r) {
-  return o << "m";
-}
-
-std::ostream& operator<<(std::ostream& o, const std::nano& r) {
-  return o << "n";
-}
-
-std::ostream& operator<<(std::ostream& o, const std::kilo& r) {
-  return o << "k";
-}
-
-std::ostream& operator<<(std::ostream& o, const std::mega& r) {
-  return o << "M";
-}
-
-std::ostream& operator<<(std::ostream& o, const std::giga& r) {
-  return o << "G";
-}
-
-std::ostream& operator<<(std::ostream& o, const std::ratio<1,1>& r) {
-  return o;
-}
-
-std::ostream& operator<<(std::ostream& o, const boost::units::si::dimensionless& u) {
-  return o;
-}
-
-std::ostream& operator<<(std::ostream& o, const uint8_t& v) {
-  return o << (uint16_t)v;
-}
-
-std::ostream& operator<<(std::ostream& o, const int8_t& v) {
-  return o << (int16_t)v;
-}
-
-std::ostream& operator<<(std::ostream& o, const FormatID& id) {
+ostream& operator<<(ostream& o, const FormatID& id) {
   return o << id.node() << ":" << (id.direction()==FormatID::Direction::publisher?"P":"S") << id.nr();
+}
+
+ostream& operator<<(ostream& o, const MetaValueElement& mve) {
+  o << "(" << id::type::name(mve.id()) << ")";
+  switch(mve.id()){
+    case(id::type::UInt8::value()):  
+    case(id::type::UInt16::value()): 
+    case(id::type::UInt32::value()): 
+    case(id::type::UInt64::value()): o << mve._uint;
+                                     break;
+
+    case(id::type::Int8::value())  : 
+    case(id::type::Int16::value()) : 
+    case(id::type::Int32::value()) : 
+    case(id::type::Int64::value()) : o << mve._int;
+                                     break;
+
+    case(id::type::Float::value()) : o << mve._float;
+                                     break;
+
+    case(id::type::Double::value()): o << mve._double;
+                                     break;
+  }
+  return o;
 }

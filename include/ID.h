@@ -71,43 +71,43 @@ namespace id{
       static constexpr ID value(){return 0;}
     };
 
-    struct Int8 : public Base{
-      using Type = std::int8_t;
-      static constexpr ID value(){return 1;}
-    };
-
-    struct Int16 : public Base{
-      using Type = int16_t;
-      static constexpr ID value(){return 2;}
-    };
-
-    struct Int32 : public Base{
-      using Type = int32_t;
-      static constexpr ID value(){return 3;}
-    };
-
-    struct Int64 : public Base{
-      using Type = int64_t;
-      static constexpr ID value(){return 4;}
-    };
-
-    struct UInt8 : public Base{
+        struct UInt8 : public Base{
       using Type = std::uint8_t;
-      static constexpr ID value(){return 5;}
+      static constexpr ID value(){return 1;}
     };
 
     struct UInt16 : public Base{
       using Type = uint16_t;
-      static constexpr ID value(){return 6;}
+      static constexpr ID value(){return 2;}
     };
 
     struct UInt32 : public Base{
       using Type = uint32_t;
-      static constexpr ID value(){return 7;}
+      static constexpr ID value(){return 3;}
     };
 
     struct UInt64 : public Base{
       using Type = uint64_t;
+      static constexpr ID value(){return 4;}
+    };
+
+    struct Int8 : public Base{
+      using Type = std::int8_t;
+      static constexpr ID value(){return 5;}
+    };
+
+    struct Int16 : public Base{
+      using Type = int16_t;
+      static constexpr ID value(){return 6;}
+    };
+
+    struct Int32 : public Base{
+      using Type = int32_t;
+      static constexpr ID value(){return 7;}
+    };
+
+    struct Int64 : public Base{
+      using Type = int64_t;
       static constexpr ID value(){return 8;}
     };
 

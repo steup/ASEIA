@@ -6,7 +6,7 @@
 
 class MetaValueElement{
   private:
-    id::type::ID id = id::type::Base::value();
+    id::type::ID mId = id::type::Base::value();
     union{
       ValueElement<int64_t , true> _int = 0;
       ValueElement<uint64_t, true> _uint;
@@ -14,8 +14,13 @@ class MetaValueElement{
       ValueElement<double  , true> _double;
     };
 
+    void equalize(MetaValueElement& b);
+
   public:
     MetaValueElement() = default;
+    MetaValueElement(const MetaValueElement& mve);
+
+    id::type::ID id() const { return mId; }
     
     template<typename T>
     MetaValueElement(const ValueElement<T,true>& v){
@@ -24,8 +29,8 @@ class MetaValueElement{
 
     template<typename T>
     void extract(ValueElement<T,true>& v){
-      convert(ValueElement<T,true>::TypeID::value());
-      switch(id){
+      convert(id::type::id(T()));
+      switch(mId){
         case(id::type::UInt8::value()) :
         case(id::type::UInt16::value()):
         case(id::type::UInt32::value()):
@@ -46,10 +51,12 @@ class MetaValueElement{
       }
     }
 
+    void convert(id::type::ID newType);
+
     template<typename T>
     MetaValueElement& operator=(const ValueElement<T,true>& v){
-      id = id::type::id(T());
-      switch( id ){
+      mId = id::type::id(T());
+      switch( mId ){
         case(id::type::UInt8::value()):  
         case(id::type::UInt16::value()): 
         case(id::type::UInt32::value()): 
@@ -71,61 +78,77 @@ class MetaValueElement{
       return *this;
     }
 
-    void convert(id::type::ID newType){
-      ValueElement<uint64_t, true> tempU;
-      ValueElement<int64_t , true> tempI;
-      ValueElement<float   , true> tempF;
-      ValueElement<double  , true> tempD;
+    MetaValueElement& operator+=(const MetaValueElement& b);
+    MetaValueElement& operator-=(const MetaValueElement& b);
+    MetaValueElement& operator*=(const MetaValueElement& b);
+    MetaValueElement& operator/=(const MetaValueElement& b);
+    MetaValueElement operator+(const MetaValueElement& b) const;
+    MetaValueElement operator-(const MetaValueElement& b) const;
+    MetaValueElement operator*(const MetaValueElement& b) const;
+    MetaValueElement operator/(const MetaValueElement& b) const;
 
-      switch(id){
-          case(id::type::Int8::value()) : 
-          case(id::type::Int16::value()):
-          case(id::type::Int32::value()):
-          case(id::type::Int64::value()):  tempU = _int;
-                                           tempI = _int;
-                                           tempF = _int;
-                                           tempD = _int;
-                                           break;
-          case(id::type::UInt8::value()) : 
-          case(id::type::UInt16::value()):
-          case(id::type::UInt32::value()):
-          case(id::type::UInt64::value()): tempU = _uint;
-                                           tempI = _uint;
-                                           tempF = _uint;
-                                           tempD = _uint;
-                                           break;
+    template<typename T>
+    MetaValueElement& operator+=(const T& b) const{
 
-          case(id::type::Float::value()) : tempU = _float;
-                                           tempI = _float;
-                                           tempF = _float;
-                                           tempD = _float;
-                                           break;
-
-          case(id::type::Double::value()): tempU = _double;
-                                           tempI = _double;
-                                           tempF = _double;
-                                           tempD = _double;
-                                           break;
-      }
-
-      switch(newType){
-          case(id::type::Int8::value()) : 
-          case(id::type::Int16::value()):
-          case(id::type::Int32::value()):
-          case(id::type::Int64::value()):  _int = tempI;
-                                           break;
-          case(id::type::UInt8::value()) : 
-          case(id::type::UInt16::value()):
-          case(id::type::UInt32::value()):
-          case(id::type::UInt64::value()): _uint = tempU;
-                                           break;
-
-          case(id::type::Float::value()) : _float = tempF;
-                                           break;
-
-          case(id::type::Double::value()): _double= tempD;
-                                           break;
-      }
-      id=newType;
+      return *this;
     }
+
+    template<typename T>
+    MetaValueElement& operator-=(const T& b) const{
+
+      return *this;
+    }
+
+    template<typename T>
+    MetaValueElement& operator*=(const T& b) const{
+
+      return *this;
+    }
+
+    template<typename T>
+    MetaValueElement& operator/=(const T& b) const{
+
+      return *this;
+    }
+
+    template<typename T>
+    MetaValueElement operator+(const T& b) const{
+      
+    }
+
+    template<typename T>
+    MetaValueElement operator-(const T& b) const{
+
+    }
+
+    template<typename T>
+    MetaValueElement operator*(const T& b) const{
+
+    }
+
+    template<typename T>
+    MetaValueElement operator/(const T& b) const{
+
+    }
+    friend std::ostream& operator<<(std::ostream&, const MetaValueElement&);
 };
+
+template<typename T>
+MetaValueElement operator+(const T& a, const MetaValueElement& b){
+  
+};
+
+template<typename T>
+MetaValueElement operator-(const T& a, const MetaValueElement& b){
+
+}
+
+template<typename T>
+MetaValueElement operator*(const T& a, const MetaValueElement& b){
+
+}
+
+template<typename T>
+MetaValueElement operator/(const T& a, const MetaValueElement& b){
+
+}
