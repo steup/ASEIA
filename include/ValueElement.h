@@ -40,6 +40,32 @@ namespace {
     }
   }
 
+  float modifyU(float u, double dummy){
+    return u;
+  }
+
+  double modifyU(double u, float dummy){
+    satAdd(u, (double)std::numeric_limits<float>::epsilon());
+    return u;
+  }
+
+  template<typename T>
+  float modifyU(float u, T dummy){
+    satAdd(u, 1.0f);
+    return u;
+  }
+
+  template<typename T>
+  double modifyU(double u, T dummy){
+    satAdd(u, 1.0);
+    return u;
+  }
+
+  template<typename T1, typename T2>
+  T1 modifyU(T1 u, T2 dummy){
+    return u;
+  }
+
   template<typename T1, typename T2>
   inline T2 checkBounds(T1& v, T1 u, T2 dummy) {
     if( v > std::numeric_limits<T2>::max() ) {
@@ -52,6 +78,7 @@ namespace {
       v = std::numeric_limits<T2>::min();
       satAdd( u, temp );
     }
+    u=modifyU(u, dummy);
     if(u<0 || u>std::numeric_limits<T2>::max())
       return std::numeric_limits<T2>::max();
     return u;
