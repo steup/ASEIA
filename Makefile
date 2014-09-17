@@ -27,7 +27,7 @@ BIN      := ./bin
 DOC      := ./doc
 LIB      := ./lib
 
-LIBNAME  := ASE
+LIBNAME  := ASEIA
 DYNLIB   := ${LIB}/lib${LIBNAME}.so
 STATLIB  := ${LIB}/lib${LIBNAME}.a
 TARGETS  := ${DYNLIB} ${STATLIB}
