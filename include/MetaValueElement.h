@@ -113,42 +113,42 @@ class MetaValueElement{
 
     template<typename T>
     MetaValueElement operator+(const T& b) const{
-      
+      return *this;
     }
 
     template<typename T>
     MetaValueElement operator-(const T& b) const{
-
+      return *this;
     }
 
     template<typename T>
     MetaValueElement operator*(const T& b) const{
-
+      return *this;
     }
 
     template<typename T>
     MetaValueElement operator/(const T& b) const{
-
+      return *this;
     }
     friend std::ostream& operator<<(std::ostream&, const MetaValueElement&);
 };
 
 template<typename T>
 MetaValueElement operator+(const T& a, const MetaValueElement& b){
-  
+  return b;
 };
 
 template<typename T>
 MetaValueElement operator-(const T& a, const MetaValueElement& b){
-
+  return b;
 }
 
 template<typename T>
 MetaValueElement operator*(const T& a, const MetaValueElement& b){
-
+  return b;
 }
 
 template<typename T>
 MetaValueElement operator/(const T& a, const MetaValueElement& b){
-
+  return b;
 }

@@ -193,7 +193,7 @@ MetaValueElement MetaValueElement::operator+(const MetaValueElement& b) const{
   MetaValueElement a(*this);
   MetaValueElement temp(b);
   a.equalize(temp);
-  switch( mId ){
+  switch( a.mId ){
     case(id::type::UInt8::value()):  
     case(id::type::UInt16::value()): 
     case(id::type::UInt32::value()): 

@@ -7,7 +7,7 @@ using namespace std;
 
 using V1 = ValueElement<float>;
 using V2 = ValueElement<unsigned int>;
-using V3 = ValueElement<int>;
+using V3 = ValueElement<unsigned int>;
 
 int main(){
   V1 a={{1.1, 0}};
@@ -21,8 +21,9 @@ int main(){
   mA+=mB;
   cout << "MVE - mA += mB: " << mA << endl;
   cout << "MVE - mA + mB : " << mA + mB << endl;
+  cout << "MVE - mB + mA : " << mB + mA << endl;
   V3 c;
   mA.extract(c);
-  cout << "V3 - mA: " << c << endl;
+  cout << "V3  -       mA: " << c << endl;
   return 0;
 }
