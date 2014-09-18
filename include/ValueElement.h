@@ -85,6 +85,19 @@ namespace {
   }
 
   template<typename T>
+  T opError(T result){
+    return 0;
+  }
+
+  float opError(float result){
+    return std::numeric_limits<float>::epsilon()*result;
+  }
+
+  double opError(double result){
+    return std::numeric_limits<double>::epsilon()*result;
+  }
+
+  template<typename T>
   struct multType{
     using type  = T;
   };
@@ -215,6 +228,9 @@ class ValueElement<T, true>{
       if(temp)
         satAdd(mUncertainty, temp);
       satAdd(mUncertainty, a.mUncertainty);
+      T e = opError(mValue);
+      if(e)
+        satAdd(mUncertainty, e);
       return *this;
     }
 
@@ -223,6 +239,9 @@ class ValueElement<T, true>{
       if(temp)
         satAdd(mUncertainty, temp);
       satAdd(mUncertainty, a.mUncertainty);
+      T e = opError(mValue);
+      if(e)
+        satAdd(mUncertainty, e);
       return *this;
     }
 
@@ -246,7 +265,9 @@ class ValueElement<T, true>{
       }
       mUncertainty = (max - min) / 2;
       mValue       = min + mUncertainty;
-      
+      T e = opError(mValue);
+      if(e)
+        satAdd(mUncertainty, e);
       return *this;
     }
 
@@ -276,7 +297,9 @@ class ValueElement<T, true>{
       }
       mUncertainty = (max - min) / 2;
       mValue       = min + mUncertainty;
-      
+      T e = opError(mValue);
+      if(e)
+        satAdd(mUncertainty, e);
       return *this;
     }
 
