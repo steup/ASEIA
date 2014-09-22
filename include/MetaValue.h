@@ -1,62 +1,104 @@
 #pragma once
 
 #include <ID.h>
+#include <IO.h>
 #include <ostream>
 #include <valarray>
+#include <ValueElement.h>
 
-class BaseValue {
-  public:
-    virtual ~BaseValue() = default;
-    virtual id::type::ID id() const = 0;
-    virtual BaseValue& operator+=(const BaseValue& b) = 0;
-    virtual std::size_t size() const = 0;
-    virtual void print(std::ostream& o) const = 0;
-    virtual std::size_t n() const = 0;
-    virtual BaseValue* copy() const = 0;
-};
+namespace implementation {
+  class BaseValue {
+    public:
+      static BaseValue sInstance;
+      virtual ~BaseValue() = default;
+      virtual id::type::ID id() const { return id::type::Base::value(); }
+      virtual BaseValue& operator+=(const BaseValue& b) { return *this; }
+      virtual std::size_t size() const { return sizeof(BaseValue); }
+      virtual void print(std::ostream& o) const { o << "void"; }
+      virtual std::size_t n() const { return 0; }
+      virtual BaseValue* copy() const { return &sInstance; }
+  };
 
-template<typename T>
-class Value : public BaseValue{
-  private:
-    std::valarray<T> mData;
-  public:
-    Value(const std::initializer_list<T>& values) : mData(values) { }
-    virtual id::type::ID id() const {return id::type::id(T()); }
-    virtual BaseValue& operator+=(const BaseValue& b) {
-      mData += reinterpret_cast<const Value&>(b).mData;
-      return *this;
-    }
-    virtual std::size_t size() const { return sizeof(Value)+sizeof(T)*n(); }
-    virtual std::size_t n() const { return mData.size(); }
-    virtual void print(std::ostream& o) const {
-      o << "[";
-      for(const auto& e : mData)
-        o << e <<", ";
-      o << "]";
-    }
-    virtual BaseValue* copy() const {
-      return new Value(*this);
-    }
-};
+  template<typename T>
+  class Value : public BaseValue{
+    private:
+      std::valarray<ValueElement<T>> mData;
+    public:
+      using DataType = T;
+      using ElementInitType = typename ValueElement<T>::InitType;
+      using InitType = std::initializer_list<ElementInitType>;
+
+      Value(T value) {
+        mData.resize(1);
+        mData[0]=ValueElement<T>(value);
+      }
+
+      Value(ElementInitType value) {
+        mData.resize(1);
+        mData[0]=ValueElement<T>(*value.begin(), *std::next(value.begin()));
+      }
+
+      Value(InitType values) {
+        mData.resize(values.end()-values.begin());
+        std::size_t i = 0;
+        for( const auto& v : values ) {
+          mData[i++]=ValueElement<T>(*v.begin(), *std::next(v.begin()));
+        }
+      }
+
+      virtual id::type::ID id() const {return id::type::id(T()); }
+      virtual BaseValue& operator+=(const BaseValue& b) {
+        mData += reinterpret_cast<const Value&>(b).mData;
+        return *this;
+      }
+      virtual std::size_t size() const { return sizeof(Value)+sizeof(ValueElement<T>)*n(); }
+      virtual std::size_t n() const { return mData.size(); }
+      virtual void print(std::ostream& o) const {
+        o << "[";
+        for(const auto& e : mData)
+          o << e <<", ";
+        o << "]";
+      }
+      virtual BaseValue* copy() const {
+        return new Value(*this);
+      }
+  };
+
+}
+
+implementation::BaseValue implementation::BaseValue::sInstance;
 
 class MetaValue {
   private:
-    BaseValue* mImpl = nullptr;
+    implementation::BaseValue* mImpl = &implementation::BaseValue::sInstance;
   public:
     MetaValue() = default;
-    ~MetaValue() { delete mImpl; }
+    ~MetaValue() { 
+      if(mImpl != &implementation::BaseValue::sInstance)
+        delete mImpl; 
+    }
 
     template<typename T>
-    MetaValue(const std::initializer_list<T>& i) : mImpl(new Value<T>(i)) {}
+    MetaValue(T i) : mImpl(new implementation::Value<T>(i)) {}
 
-    MetaValue(const MetaValue& value) {
-      if(value.valid())
-        mImpl = value.mImpl->copy();
+    template<typename T>
+    MetaValue(std::initializer_list<T> i) : mImpl(new implementation::Value<T>(i)) {}
+
+    template<typename T>
+    MetaValue(std::initializer_list<std::initializer_list<T>> i) : mImpl(new implementation::Value<T>(i)) {}
+
+    MetaValue(const MetaValue& value) : mImpl(value.mImpl->copy()) {}
+
+    MetaValue& operator=(const MetaValue& b) {
+      if(mImpl != &implementation::BaseValue::sInstance)
+        delete mImpl;
+      mImpl = b.mImpl->copy();
+      return *this;
     }
 
     MetaValue operator+(const MetaValue& b) {
-      MetaValue temp(*this);
-      if(temp.compatible(b)) {
+      if(compatible(b)) {
+        MetaValue temp(*this);
         *temp.mImpl+=*b.mImpl;
         return temp;
       } else
@@ -64,32 +106,23 @@ class MetaValue {
     }
 
     std::size_t size() const { 
-      if(valid())
         return sizeof(MetaValue) + mImpl->size();
-      else
-        return sizeof(MetaValue);
     }
 
     std::size_t n() const { 
-      if(valid())
         return mImpl->n();
-      else
-        return 0;
     }
 
     id::type::ID id() const { 
-      if(valid()) 
         return mImpl->id(); 
-      else 
-        return id::type::Base::value();
     }
 
     bool valid() const {
-      return mImpl;
+      return mImpl->id() != id::type::Base::value();
     }
 
     bool compatible(const MetaValue& b) const {
-      return valid() && b.valid() && mImpl->id() == b.mImpl->id() && mImpl->n() == b.mImpl->n();
+      return valid() && mImpl->id() == b.mImpl->id() && mImpl->n() == b.mImpl->n();
     }
 
     bool hasUncertainty() const { return false; }
@@ -98,9 +131,6 @@ class MetaValue {
 };
 
 std::ostream& operator<<(std::ostream& o, const MetaValue& v) {
-  if(v.valid())
-      v.mImpl->print(o);
-  else
-    o << "invalid";
+  v.mImpl->print(o);
   return o;
 }
