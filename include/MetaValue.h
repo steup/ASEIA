@@ -11,7 +11,7 @@ namespace implementation {
     public:
       static BaseValue sInstance;
       virtual ~BaseValue() = default;
-      virtual id::type::ID id() const { return id::type::Base::value(); }
+      virtual id::type::ID typeId() const { return id::type::Base::value(); }
       virtual BaseValue& operator+=(const BaseValue& b) { return *this; }
       virtual std::size_t size() const { return sizeof(BaseValue); }
       virtual void print(std::ostream& o) const { o << "void"; }
@@ -27,6 +27,10 @@ namespace implementation {
       using DataType = T;
       using ElementInitType = typename ValueElement<T>::InitType;
       using InitType = std::initializer_list<ElementInitType>;
+
+      Value(std::size_t n, bool hasUncertainty) {
+        mData.resize(n);
+      }
 
       Value(T value) {
         mData.resize(1);
@@ -46,7 +50,7 @@ namespace implementation {
         }
       }
 
-      virtual id::type::ID id() const {return id::type::id(T()); }
+      virtual id::type::ID typeId() const {return id::type::id(T()); }
       virtual BaseValue& operator+=(const BaseValue& b) {
         mData += reinterpret_cast<const Value&>(b).mData;
         return *this;
@@ -72,6 +76,8 @@ class MetaValue {
     MetaValue() = default;
     ~MetaValue();
 
+    MetaValue(implementation::BaseValue* ptr) : mImpl(ptr) {}
+
     template<typename T>
     MetaValue(T i) : mImpl(new implementation::Value<T>(i)) {}
 
@@ -91,7 +97,7 @@ class MetaValue {
 
     std::size_t n() const { return mImpl->n(); }
 
-    id::type::ID id() const { return mImpl->id(); }
+    id::type::ID typeId() const { return mImpl->typeId(); }
 
     bool valid() const;
 
@@ -102,7 +108,7 @@ class MetaValue {
     friend std::ostream& operator<<(std::ostream&, const MetaValue&);
 };
 
-std::ostream& operator<<(std::ostream& o, const MetaValue& v) {
+inline std::ostream& operator<<(std::ostream& o, const MetaValue& v) {
   v.mImpl->print(o);
   return o;
 }

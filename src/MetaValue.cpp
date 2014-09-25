@@ -24,11 +24,11 @@ MetaValue MetaValue::operator+(const MetaValue& b) const {
 }
 
 bool MetaValue::valid() const {
-  return mImpl->id() != id::type::Base::value();
+  return mImpl->typeId() != id::type::Base::value();
 }
 
 bool MetaValue::compatible(const MetaValue& b) const {
-  return valid() && mImpl->id() == b.mImpl->id() && mImpl->n() == b.mImpl->n();
+  return valid() && mImpl->typeId() == b.mImpl->typeId() && mImpl->n() == b.mImpl->n();
 }
 
 template class implementation::Value<uint8_t>;
