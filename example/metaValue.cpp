@@ -5,8 +5,8 @@
 using namespace std;
 
 int main() {
-  MetaValue d1={{1.1, 2.2}, {2.2, 3.3}};
-  MetaValue d2({{2.2, 3.3}, {3.3, 4.4}});
+  MetaValue d1={{1.1, 2.2}, {2.2, 0.0}};
+  MetaValue d2({{2.2, 3.3}, {3.3, 0.0}});
   cout << "d1   (" << d1.size() << "): " << d1 << endl;
   cout << "d2   (" << d2.size() << "): " << d2 << endl;
   cout << "d1+d2    : " << d1+d2 << endl;

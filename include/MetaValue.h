@@ -65,18 +65,12 @@ namespace implementation {
   };
 
 }
-
-implementation::BaseValue implementation::BaseValue::sInstance;
-
 class MetaValue {
   private:
     implementation::BaseValue* mImpl = &implementation::BaseValue::sInstance;
   public:
     MetaValue() = default;
-    ~MetaValue() { 
-      if(mImpl != &implementation::BaseValue::sInstance)
-        delete mImpl; 
-    }
+    ~MetaValue();
 
     template<typename T>
     MetaValue(T i) : mImpl(new implementation::Value<T>(i)) {}
@@ -89,41 +83,19 @@ class MetaValue {
 
     MetaValue(const MetaValue& value) : mImpl(value.mImpl->copy()) {}
 
-    MetaValue& operator=(const MetaValue& b) {
-      if(mImpl != &implementation::BaseValue::sInstance)
-        delete mImpl;
-      mImpl = b.mImpl->copy();
-      return *this;
-    }
+    MetaValue& operator=(const MetaValue& b);
 
-    MetaValue operator+(const MetaValue& b) {
-      if(compatible(b)) {
-        MetaValue temp(*this);
-        *temp.mImpl+=*b.mImpl;
-        return temp;
-      } else
-        return MetaValue();
-    }
+    MetaValue operator+(const MetaValue& b) const;
 
-    std::size_t size() const { 
-        return sizeof(MetaValue) + mImpl->size();
-    }
+    std::size_t size() const { return sizeof(MetaValue) + mImpl->size(); }
 
-    std::size_t n() const { 
-        return mImpl->n();
-    }
+    std::size_t n() const { return mImpl->n(); }
 
-    id::type::ID id() const { 
-        return mImpl->id(); 
-    }
+    id::type::ID id() const { return mImpl->id(); }
 
-    bool valid() const {
-      return mImpl->id() != id::type::Base::value();
-    }
+    bool valid() const;
 
-    bool compatible(const MetaValue& b) const {
-      return valid() && mImpl->id() == b.mImpl->id() && mImpl->n() == b.mImpl->n();
-    }
+    bool compatible(const MetaValue& b) const;
 
     bool hasUncertainty() const { return false; }
 
