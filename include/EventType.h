@@ -1,6 +1,7 @@
 #pragma once
 
 #include <AttributeType.h>
+#include <Foreach.h>
 
 #include <map>
 
@@ -62,7 +63,7 @@ class EventType{
     template<typename Event>
     EventType(const Event& e){
       Parser p(mStorage);
-      boost::mpl::for_each<typename Event::AttributeList>(p);
+      foreach<typename Event::AttributeList>(p);
     }
 
     const AttributeType* attribute(KeyType key) const;

@@ -10,7 +10,6 @@
 #include <iterator>
 
 using namespace std;
-using namespace boost::units;
 
 using V=vector<uint8_t>;
 using S=Serializer<V::iterator>;
@@ -54,7 +53,7 @@ void valueOut(){
 
 void attributeOut(){
   using Val=Value<double, 3, true>;
-  using Attr=Attribute<id::attribute::Position, Val, si::length, std::ratio<1,1000>>;
+  using Attr=Attribute<id::attribute::Position, Val, Meter, std::ratio<1,1000>>;
   V v(Attr::size()-10);
   S s(v.begin(), v.end());
   Attr value = {{1.1, 0.2}, {0,0.2}, {4.2,1.1}};

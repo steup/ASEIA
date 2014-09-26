@@ -38,30 +38,30 @@ namespace id {
   namespace unit {
     const char* name(ID id) {
       switch(id){
-        case(Steradian::value()): return "steradian";
-        case(Radian   ::value()): return "radian";
-        case(Candela  ::value()): return "candela";
-        case(Mole     ::value()): return "mole";
-        case(Kelvin   ::value()): return "kelvin";
-        case(Ampere   ::value()): return "ampere";
-        case(Second   ::value()): return "second";
-        case(Kilogram ::value()): return "kilogram";
-        case(Meter    ::value()): return "meter";
+        case(Steradian::value): return "steradian";
+        case(Radian   ::value): return "radian";
+        case(Candela  ::value): return "candela";
+        case(Mole     ::value): return "mole";
+        case(Kelvin   ::value): return "kelvin";
+        case(Ampere   ::value): return "ampere";
+        case(Second   ::value): return "second";
+        case(Kilogram ::value): return "kilogram";
+        case(Meter    ::value): return "meter";
         default                 : return "none";
       };
     }
 
     const char* shortName(ID id) {
       switch(id){
-        case(Steradian::value()): return "srad";
-        case(Radian   ::value()): return "rad";
-        case(Candela  ::value()): return "cd";
-        case(Mole     ::value()): return "mol";
-        case(Kelvin   ::value()): return "K";
-        case(Ampere   ::value()): return "A";
-        case(Second   ::value()): return "s";
-        case(Kilogram ::value()): return "kg";
-        case(Meter    ::value()): return "m";
+        case(Steradian::value): return "srad";
+        case(Radian   ::value): return "rad";
+        case(Candela  ::value): return "cd";
+        case(Mole     ::value): return "mol";
+        case(Kelvin   ::value): return "K";
+        case(Ampere   ::value): return "A";
+        case(Second   ::value): return "s";
+        case(Kilogram ::value): return "kg";
+        case(Meter    ::value): return "m";
         default                 : return "";
       };
     }

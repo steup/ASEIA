@@ -8,7 +8,6 @@
 #include <vector>
 
 using namespace id::attribute;
-using namespace boost::units;
 using namespace std;
 
 struct EventConfig : public BaseConfig
@@ -20,7 +19,7 @@ struct EventConfig : public BaseConfig
   using ValidityScale        = std::ratio<1,100>;
 };
 
-using DistanceAttribute    = Attribute<Distance, Value<int16_t, 1>, si::length, std::ratio<1,1000>>;
+using DistanceAttribute    = Attribute<Distance, Value<int16_t, 1>, Meter, std::ratio<1,1000>>;
 using DistanceEvent        = BaseEvent<EventConfig>::append<DistanceAttribute>::type;
 
 int main(){

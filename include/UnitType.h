@@ -1,32 +1,29 @@
 #pragma once
 
 #include <ID.h>
-
+#include <Unit.h>
 #include <Serializer.h>
 #include <DeSerializer.h>
+#include <Foreach.h>
 
 #include <array>
 
-#include <boost/units/systems/si/base.hpp>
-#include <boost/units/is_unit_of_system.hpp>
-#include <boost/mpl/for_each.hpp>
-
 class UnitType{
   private:
-    using StorageType = std::array<int8_t, id::unit::Base::value()>;
+    using StorageType = std::array<id::unit::ID, id::unit::NumDim::value>;
 
     StorageType mStorage;
 
     class DimensionConverter{
       private:
         StorageType& mStorage;
+        unsigned int i = 0;
       public:
         DimensionConverter(StorageType& storage);
 
       template<typename Dim>
       void operator()(Dim d){
-        auto id      = id::unit::id(typename Dim::tag_type());
-        mStorage[id] = Dim::value_type::numerator();
+        mStorage[i++] = Dim::value;
       }
     };
 
@@ -40,15 +37,12 @@ class UnitType{
 
     UnitType() = default;
 
-    template<typename Unit>
-    UnitType(const Unit& u){
-      static_assert( boost::units::is_unit_of_system< Unit, boost::units::si::system >::value, 
-                     "Only SI-Units are supported"
-      );
+    template<typename Dimensions>
+    UnitType(const Unit<Dimensions>& u){
       for(auto& v : mStorage)
         v=0;
       DimensionConverter c(mStorage);
-      boost::mpl::for_each<typename Unit::dimension_type>(c);
+      foreach<Dimensions>(c);
     }
 
     int8_t operator[](uint8_t i) const;
@@ -57,7 +51,7 @@ class UnitType{
 
     const_iterator end() const;
 
-    constexpr static std::size_t size() noexcept { return id::unit::Base::value(); }
+    constexpr static std::size_t size() noexcept { return id::unit::NumDim::value * sizeof(id::unit::ID); }
 
     bool operator==(const UnitType& b) const;
   

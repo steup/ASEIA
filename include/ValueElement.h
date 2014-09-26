@@ -6,6 +6,8 @@
 
 #include <type_traits>
 #include <initializer_list>
+#include <limits>
+#include <iterator>
 
 namespace {
   template<typename T>

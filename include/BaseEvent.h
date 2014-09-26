@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Attribute.h>
+#include <Unit.h>
 #include <ID.h>
 #include <Event.h>
 #include <Value.h>
@@ -20,16 +21,25 @@ struct BaseConfig
 
 template<typename Config = BaseConfig>
 using BaseEvent = Event< Config::end,
-  Attribute < id::attribute::Position   , typename Config::PositionValueType
-              , boost::units::si::length       ,typename Config::PositionScale >,
-
-  Attribute < id::attribute::Time       , typename Config::TimeValueType
-              , boost::units::si::time         ,typename Config::TimeScale     >,
-
-  Attribute < id::attribute::PublisherID, typename Config::PublisherIDValueType
-              , boost::units::si::dimensionless,typename Config::PublisherIDScale >,
-
-  Attribute < id::attribute::Validity   , typename Config::ValidityValueType
-              , boost::units::si::dimensionless,typename Config::ValidityScale >
->;
+                         Attribute < id::attribute::Position,
+                                     typename Config::PositionValueType,
+                                     Meter,
+                                     typename Config::PositionScale
+                         >,
+                         Attribute < id::attribute::Time,
+                                     typename Config::TimeValueType, 
+                                     Second,
+                                     typename Config::TimeScale
+                         >,
+                         Attribute < id::attribute::PublisherID,
+                                     typename Config::PublisherIDValueType,
+                                     Dimensionless,
+                                     typename Config::PublisherIDScale
+                         >,
+                         Attribute < id::attribute::Validity,
+                                     typename Config::ValidityValueType,
+                                     Dimensionless,
+                                     typename Config::ValidityScale
+                         >
+                  >;
 

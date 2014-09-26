@@ -6,12 +6,10 @@
 #include <Attribute.h>
 #include <ValueElement.h>
 #include <Value.h>
+#include <Foreach.h>
 
 #include <ostream>
 #include <ratio>
-
-#include <boost/units/io.hpp>
-#include <boost/mpl/for_each.hpp>
 
 class ValueType;
 class AttributeType;
@@ -46,6 +44,30 @@ std::ostream& operator<<(std::ostream& o, const Value<T,n,useUncertainty>& v)
   return o << ")";
 }
 
+namespace {
+  struct UnitOutputHelper {
+    std::ostream& o;
+    id::unit::ID i = 0;
+    UnitOutputHelper(std::ostream& o) : o(o) {}
+    template<typename Value>
+    void operator()(Value& v) {
+      if(Value::value) {
+        o << id::unit::shortName(i);
+        if(Value::value != 1)
+          o << "^" << (int16_t)Value::value;
+      }
+      i++;
+    }
+  };
+}
+
+template<typename Dimensions>
+std::ostream& operator<<(std::ostream& o, const Unit<Dimensions>& u) {
+  UnitOutputHelper h(o);
+  foreach<Dimensions>(h);
+  return o;
+}
+
 template<typename ID, typename V, typename S, typename U>
 std::ostream& operator<<(std::ostream& o, const Attribute<ID,V,S,U>& a)
 {
@@ -76,7 +98,7 @@ inline std::ostream& operator<<(std::ostream& o, const std::ratio<1,1>& r) {
   return o;
 }
 
-inline std::ostream& operator<<(std::ostream& o, const boost::units::si::dimensionless& u) {
+inline std::ostream& operator<<(std::ostream& o, const Dimensionless& u) {
   return o;
 }
 
@@ -100,9 +122,9 @@ namespace {
       O& o;
       OutputEvent(O& o, const E& e) : e(e), o(o){}
       template<typename Attr>
-      void operator()(Attr a){
+      void operator()(Attr& a){
         o << "\t" << e.attribute(a.id()) << std::endl;
-      };
+      }
     };
 }
 
@@ -111,7 +133,7 @@ std::ostream& operator<<(std::ostream& o, const Event<end, Attributes...>& e){
   using ThisEvent = Event<end, Attributes...>;
   o << "Event:" << std::endl;
   OutputEvent<std::ostream, ThisEvent> out(o,e);
-  boost::mpl::for_each<typename ThisEvent::AttributeList>(out);
+  foreach<typename ThisEvent::AttributeList>(out);
   return o;
 }
 

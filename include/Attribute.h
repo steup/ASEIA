@@ -1,12 +1,12 @@
 #pragma once
 
+#include <Unit.h>
 #include <Serializer.h>
 #include <DeSerializer.h>
 
-#include <boost/units/systems/si/dimensionless.hpp>
 #include <ratio>
 
-template<typename AttributeID, typename Value, typename Unit=boost::units::si::dimensionless, typename Scale=std::ratio<1>>
+template<typename AttributeID, typename Value, typename Unit=Dimensionless, typename Scale=std::ratio<1>>
 class Attribute
 {
   public:
