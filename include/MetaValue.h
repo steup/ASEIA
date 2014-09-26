@@ -5,6 +5,7 @@
 #include <ostream>
 #include <valarray>
 #include <ValueElement.h>
+#include <ValueType.h>
 
 namespace implementation {
   class BaseValue {
@@ -17,32 +18,34 @@ namespace implementation {
       virtual void print(std::ostream& o) const { o << "void"; }
       virtual std::size_t n() const { return 0; }
       virtual BaseValue* copy() const { return &sInstance; }
+      virtual bool hasUncertainty() const { return false; }
   };
 
   template<typename T>
   class Value : public BaseValue{
     private:
       std::valarray<ValueElement<T>> mData;
+      bool mHasUncertainty;
     public:
       using DataType = T;
       using ElementInitType = typename ValueElement<T>::InitType;
       using InitType = std::initializer_list<ElementInitType>;
 
-      Value(std::size_t n, bool hasUncertainty) {
+      Value(std::size_t n, bool u) : mHasUncertainty(u) {
         mData.resize(n);
       }
 
-      Value(T value) {
+      Value(T value) : mHasUncertainty(false) {
         mData.resize(1);
         mData[0]=ValueElement<T>(value);
       }
 
-      Value(ElementInitType value) {
+      Value(ElementInitType value) : mHasUncertainty(true) {
         mData.resize(1);
         mData[0]=ValueElement<T>(*value.begin(), *std::next(value.begin()));
       }
 
-      Value(InitType values) {
+      Value(InitType values) : mHasUncertainty(true) {
         mData.resize(values.end()-values.begin());
         std::size_t i = 0;
         for( const auto& v : values ) {
@@ -57,10 +60,14 @@ namespace implementation {
       }
       virtual std::size_t size() const { return sizeof(Value)+sizeof(ValueElement<T>)*n(); }
       virtual std::size_t n() const { return mData.size(); }
+      virtual bool hasUncertainty() const { return mHasUncertainty; }
       virtual void print(std::ostream& o) const {
         o << "[";
         for(const auto& e : mData)
-          o << e <<", ";
+          if(mHasUncertainty)
+            o << e <<", ";
+          else
+            o << e.value() <<", ";
         o << "]";
       }
       virtual BaseValue* copy() const {
@@ -72,6 +79,7 @@ namespace implementation {
 class MetaValue {
   private:
     implementation::BaseValue* mImpl = &implementation::BaseValue::sInstance;
+    bool mHasUncertainty;
   public:
     MetaValue() = default;
     ~MetaValue();
@@ -103,7 +111,9 @@ class MetaValue {
 
     bool compatible(const MetaValue& b) const;
 
-    bool hasUncertainty() const { return false; }
+    bool hasUncertainty() const { return mImpl->hasUncertainty(); }
+
+    operator ValueType();
 
     friend std::ostream& operator<<(std::ostream&, const MetaValue&);
 };

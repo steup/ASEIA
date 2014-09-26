@@ -31,6 +31,10 @@ bool MetaValue::compatible(const MetaValue& b) const {
   return valid() && mImpl->typeId() == b.mImpl->typeId() && mImpl->n() == b.mImpl->n();
 }
 
+MetaValue::operator ValueType() {
+  return ValueType(typeId(), n(), hasUncertainty());
+}
+
 template class implementation::Value<uint8_t>;
 template class implementation::Value<uint16_t>;
 template class implementation::Value<uint32_t>;

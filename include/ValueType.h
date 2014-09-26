@@ -16,11 +16,13 @@ class ValueType{
       uint8_t data;
       struct{
         bool         uncertainty : 1;
-        id::type::ID id          : sizeof(id::type::ID)*8-1;
+        id::type::ID id          : 7;
       };
     };
 
     ValueType() = default;
+
+    ValueType(id::type::ID id, std::size_t n, bool u) : mTypeId(id), mHasUncertainty(u), mN(n) { }
     
     template<typename T, std::size_t n, bool u>
     ValueType(Value<T, n, u>) : 
