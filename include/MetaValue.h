@@ -84,7 +84,7 @@ class MetaValue {
     MetaValue() = default;
     ~MetaValue();
 
-    MetaValue(implementation::BaseValue* ptr) : mImpl(ptr) {}
+    MetaValue(implementation::BaseValue& ref) : mImpl(&ref) {}
 
     template<typename T>
     MetaValue(T i) : mImpl(new implementation::Value<T>(i)) {}
@@ -116,6 +116,7 @@ class MetaValue {
     operator ValueType();
 
     friend std::ostream& operator<<(std::ostream&, const MetaValue&);
+    friend class MetaFactoryImplementation;
 };
 
 inline std::ostream& operator<<(std::ostream& o, const MetaValue& v) {

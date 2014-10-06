@@ -9,17 +9,19 @@
 
 class MetaFactoryImplementation {
   private:
+    using Base = implementation::BaseValue;
     // from id -> to id
-    //using ConverterKey = std::pair<id::type::ID, id::type::ID>;
-    //using ConverterValue = void(*)(const MetaValue&, MetaValue&);
-    using CreatorValue = implementation::BaseValue* (*)(std::size_t n, bool u);
-    //std::map<ConverterKey, ConverterValue> converters;
+    using ConverterKey = std::pair<id::type::ID, id::type::ID>;
+    using ConverterValue = Base& (*)(const Base&);
+    using CreatorValue = Base& (*)(std::size_t n, bool u);
+    
     std::vector<CreatorValue> creators;
+    std::map<ConverterKey, ConverterValue> converters;
   public:
     MetaFactoryImplementation();
     ~MetaFactoryImplementation();
     MetaValue create(const ValueType& type) const;
-    //MetaValue convert(const ValueType& type, const MetaValue& value) const;
+    MetaValue convert(const ValueType& type, const MetaValue& value) const;
 };
 
 using MetaFactory = Singleton<MetaFactoryImplementation>;

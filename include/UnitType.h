@@ -51,7 +51,9 @@ class UnitType{
 
     const_iterator end() const;
 
-    constexpr static std::size_t size() noexcept { return id::unit::NumDim::value * sizeof(id::unit::ID); }
+    constexpr static std::size_t length() noexcept { return id::unit::NumDim::value; }
+
+    constexpr static std::size_t size() noexcept { return length() * sizeof(id::unit::ID); }
 
     bool operator==(const UnitType& b) const;
   
