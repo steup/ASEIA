@@ -3,17 +3,19 @@
 #include <Singleton.h>
 #include <MetaValue.h>
 #include <ValueType.h>
+#include <ID.h>
 
 #include <map>
 #include <utility>
+#include <vector>
 
 class MetaFactoryImplementation {
   private:
-    using Base = implementation::BaseValue;
+    using Implementation = MetaValueBaseImplementation;
     // from id -> to id
     using ConverterKey = std::pair<id::type::ID, id::type::ID>;
-    using ConverterValue = Base& (*)(const Base&);
-    using CreatorValue = Base& (*)(std::size_t n, bool u);
+    using ConverterValue = Implementation& (*)(const Implementation&);
+    using CreatorValue = Implementation& (*)(std::size_t n, bool u);
     
     std::vector<CreatorValue> creators;
     std::map<ConverterKey, ConverterValue> converters;
@@ -21,6 +23,7 @@ class MetaFactoryImplementation {
     MetaFactoryImplementation();
     ~MetaFactoryImplementation();
     MetaValue create(const ValueType& type) const;
+    MetaValue create(id::type::ID id, std::size_t n, bool u) const;
     MetaValue convert(const ValueType& type, const MetaValue& value) const;
 };
 
