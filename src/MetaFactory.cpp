@@ -3,16 +3,16 @@
 
 MetaFactoryImplementation::MetaFactoryImplementation() : 
   creators{
-    &MetaValueImplementation<uint64_t>::factoryCreate,
-    &MetaValueImplementation<uint64_t>::factoryCreate,
-    &MetaValueImplementation<uint64_t>::factoryCreate,
-    &MetaValueImplementation<uint64_t>::factoryCreate,
-    &MetaValueImplementation<int64_t>::factoryCreate,
-    &MetaValueImplementation<int64_t>::factoryCreate,
-    &MetaValueImplementation<int64_t>::factoryCreate,
-    &MetaValueImplementation<int64_t>::factoryCreate,
-    &MetaValueImplementation<double>::factoryCreate,
-    &MetaValueImplementation<double>::factoryCreate
+    {id::type::UInt8 ::value(), &MetaValueImplementation<uint64_t>::factoryCreate},
+    {id::type::UInt16::value(), &MetaValueImplementation<uint64_t>::factoryCreate},
+    {id::type::UInt32::value(), &MetaValueImplementation<uint64_t>::factoryCreate},
+    {id::type::UInt64::value(), &MetaValueImplementation<uint64_t>::factoryCreate},
+    {id::type::Int8  ::value(), &MetaValueImplementation<int64_t >::factoryCreate},
+    {id::type::Int16 ::value(), &MetaValueImplementation<int64_t >::factoryCreate},
+    {id::type::Int32 ::value(), &MetaValueImplementation<int64_t >::factoryCreate},
+    {id::type::Int64 ::value(), &MetaValueImplementation<int64_t >::factoryCreate},
+    {id::type::Float ::value(), &MetaValueImplementation<double  >::factoryCreate},
+    {id::type::Double::value(), &MetaValueImplementation<double  >::factoryCreate},
   },
   converters{
     //{{id::type::UInt16::value(), id::type::UInt8::value()},&::convert<uint16_t, uint8_t>}
@@ -24,11 +24,19 @@ MetaFactoryImplementation::~MetaFactoryImplementation() {
 }
 
 MetaValue MetaFactoryImplementation::create(const ValueType& type) const {
-  return MetaValue(creators[type.typeId()](type.n(), type.hasUncertainty()));
+  auto iter = creators.find(type.typeId());
+  if(iter!=creators.end())
+    return MetaValue(iter->second(type.n(), type.hasUncertainty()));
+  else
+    return MetaValue();
 }
 
 MetaValue MetaFactoryImplementation::create(id::type::ID id, std::size_t n, bool u) const {
-  return MetaValue(creators[id](n, u));
+  auto iter = creators.find(id);
+  if(iter!=creators.end())
+    return MetaValue(iter->second(n, u));
+  else
+    return MetaValue();
 }
 
 MetaValue MetaFactoryImplementation::convert(const ValueType& type, const MetaValue& value) const {
@@ -36,7 +44,9 @@ MetaValue MetaFactoryImplementation::convert(const ValueType& type, const MetaVa
     return value;
   ConverterKey key = {value.typeId(), type.typeId()};
   auto converter = converters.find(key);
-  MetaValueBaseImplementation& converted = converter->second(value.mImpl);
+  if(converter==converters.end())
+    return MetaValue();
+  MetaValueBaseImplementation& converted = converter->second(value.implementation());
  return MetaValue(converted);
 }
 

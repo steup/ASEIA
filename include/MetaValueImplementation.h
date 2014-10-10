@@ -2,7 +2,9 @@
 
 #include <MetaValueBaseImplementation.h>
 #include <MetaValue.h>
+#include <MetaFactory.h>
 #include <ValueElement.h>
+#include <Value.h>
 #include <ID.h>
 #include <IO.h>
 
@@ -23,18 +25,10 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
     static Base& factoryCreate(std::size_t n, bool u);
 
   protected:
-    using ElementInitType = typename ValueElement<T>::InitType;
-    using InitType = std::initializer_list<ElementInitType>;
     
     MetaValueImplementation(const Type&) = default;
 
     MetaValueImplementation(std::size_t n, bool u);
-
-    MetaValueImplementation(T value);
-
-    MetaValueImplementation(ElementInitType value);
-
-    MetaValueImplementation(InitType values);
 
     virtual Base& copy() const;
 
@@ -49,9 +43,52 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
   public:
     using DataType = T;
 
-    static MetaValue create();
-    static MetaValue create(T value);
-    static MetaValue create(InitType& i);
+    /*MetaValueImplementation(T value) : mData(value), mHasUncertainty(false){     
+    }
+
+    MetaValueImplementation(T value, T uncertainty)
+      : mData({value, uncertanity}), mHasUncertainty(true)
+      {
+    }*/
+
+    /*MetaValueImplementation(const std::initializer_list<T>& i) : mData(i), mHasUncertainty(false){     
+    }*/
+
+    MetaValueImplementation(std::initializer_list<std::initializer_list<T>> values)
+      : mHasUncertainty(true)
+    {
+      {
+        auto temp = values.begin();
+        std::size_t n=0;
+        while(temp!=values.end()){n++;temp=std::next(temp);}
+        mData.resize(n);
+        n=0;
+      }
+      std::size_t i=0;
+      for(const std::initializer_list<T>& elem : values){
+        auto uI = std::next(elem.begin());
+        T v = *elem.begin();
+        if(uI!=elem.end()) {
+          T u = *uI;
+          mData[i++]=ValueElement<T>(v,u);
+        }else
+          mData[i++]=ValueElement<T>(v);
+      }
+    }
+
+    MetaValueImplementation(std::initializer_list<T> i)
+      : mHasUncertainty(false)
+    {
+      {
+        auto temp = i.begin();
+        std::size_t n=0;
+        while(temp!=i.end()){n++;temp=std::next(temp);}
+        mData.resize(n);
+      }
+      std::size_t n=0;
+      for(const auto& elem : i)
+          mData[n++]=ValueElement<T>(elem);
+    }
 
     virtual ~MetaValueImplementation() = default;
 
