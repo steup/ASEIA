@@ -11,6 +11,8 @@
 class MetaFactoryImplementation {
   private:
     using Implementation = MetaValueBaseImplementation;
+    
+  public:
     // from id -> to id
     using ConverterKey   = std::pair<id::type::ID, id::type::ID>;
     using ConverterValue = Implementation& (*)(const Implementation&);

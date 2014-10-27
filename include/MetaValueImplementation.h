@@ -115,4 +115,5 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
     virtual void print(std::ostream& o) const;
 
     friend class MetaFactoryImplementation;
+    template<typename T1, typename T2> friend class Converter;
 };
