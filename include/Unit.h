@@ -5,30 +5,14 @@
 #include <boost/mpl/transform.hpp>
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/int.hpp>
+#include <boost/mpl/find.hpp>
 #include <boost/mpl/arithmetic.hpp>
 #include <boost/mpl/placeholders.hpp>
 
-
-namespace mpl {
-  using namespace boost::mpl;
-
-  template<unsigned int n, typename dim = int_<-1> >
-  struct createUnit {
-    using match   =          integral_c<int8_t, 1>;
-    using noMatch =          integral_c<int8_t, 0>;
-    using element = typename if_c< n == dim::value + 1,
-                                               match,
-                                               noMatch
-                             >::type;
-    using next    = typename createUnit< n-1, dim >::type;
-    using type    = typename push_back< next , element>::type;
-  };
-
-  template<typename dim>
-  struct createUnit<0, dim> {
-    using type = vector<>;
-  };
-}
+template<typename DimID, int value>
+struct Dimension : public boost::mpl::int_<value> {
+  using ID = DimID;
+};
 
 template<typename dims>
 class Unit {
@@ -36,12 +20,15 @@ class Unit {
     using Dimensions = dims; 
     
   private:
-    
     template<typename UnitB>
     struct add {
       using dimA   =          Dimensions;
       using dimB   = typename UnitB::Dimensions;
-      using dimRes = typename mpl::transform< dimA, dimB, mpl::plus<mpl::_1, mpl::_2> >::type;
+      using dimRes = typename boost::mpl::transform< dimA, dimB, 
+                                                     boost::mpl::plus<
+                                                       boost::mpl::_1,
+                                                       boost::mpl::_2
+                                                     > >::type;
       using type   =          Unit< dimRes >;
     };
 
@@ -49,14 +36,22 @@ class Unit {
     struct sub {
       using dimA   =          Dimensions;
       using dimB   = typename UnitB::Dimensions;
-      using dimRes = typename mpl::transform< dimA, dimB, mpl::minus<mpl::_1, mpl::_2> >::type;
+      using dimRes = typename boost::mpl::transform< dimA, dimB, 
+                                                     boost::mpl::minus<
+                                                       boost::mpl::_1, 
+                                                       boost::mpl::_2
+                                                     > >::type;
       using type   =          Unit< dimRes >;
     };
 
-    template<typename Int>
+    template<typename Exp>
     struct mult {
       using dimA   =          Dimensions;
-      using dimRes = typename mpl::transform< dimA, mpl::times<mpl::_1, Int> >::type;
+      using dimRes = typename boost::mpl::transform< dimA, 
+                                                     boost::mpl::times<
+                                                       boost::mpl::_1,
+                                                       Exp
+                                                     > >::type;
       using type   =          Unit< dimRes >;
     };
 
@@ -77,13 +72,57 @@ class Unit {
     { return typename mult<Int>::type(); }
 };
 
-using Dimensionless = Unit<mpl::createUnit< id::unit::NumDim::value                     >::type>;
-using Steradian     = Unit<mpl::createUnit< id::unit::NumDim::value, id::unit::Steradian>::type>;
-using Radian        = Unit<mpl::createUnit< id::unit::NumDim::value, id::unit::Radian   >::type>;
-using Candela       = Unit<mpl::createUnit< id::unit::NumDim::value, id::unit::Candela  >::type>;
-using Mole          = Unit<mpl::createUnit< id::unit::NumDim::value, id::unit::Mole     >::type>;
-using Kelvin        = Unit<mpl::createUnit< id::unit::NumDim::value, id::unit::Kelvin   >::type>;
-using Ampere        = Unit<mpl::createUnit< id::unit::NumDim::value, id::unit::Ampere   >::type>;
-using Second        = Unit<mpl::createUnit< id::unit::NumDim::value, id::unit::Second   >::type>;
-using Kilogram      = Unit<mpl::createUnit< id::unit::NumDim::value, id::unit::Kilogram >::type>;
-using Meter         = Unit<mpl::createUnit< id::unit::NumDim::value, id::unit::Meter    >::type>;
+namespace helper {
+  using namespace boost::mpl;
+
+  template<typename ID>
+  struct findOp{
+    template<typename Dim>
+    struct apply{
+      using type = typename std::is_same<ID, typename Dim::ID>::type;
+    };
+  };
+
+  template<typename inputVec, typename inputIter>
+  struct extract{
+    using type = typename deref< inputIter >::type;
+  };
+
+  template<typename inputVec>
+  struct extract< inputVec, typename end< inputVec >::type>{
+     using type = typename int_<0>::type;
+  };
+
+  template<typename inputVec, unsigned int n = id::unit::NumDim::value>
+  struct createDimVec {
+    using ID      = typename id::unit::id2Type< n-1 >::type;
+    using pred    = findOp< ID >;
+    using dimIter = typename boost::mpl::find_if< inputVec, pred >::type;
+    using next    = typename createDimVec< inputVec, n-1 >::type;
+    using value   = typename extract< inputVec, dimIter >::type;
+    using type    = typename push_back< next , value >::type;
+  };
+
+  template<typename dimVec>
+  struct createDimVec< dimVec, 0> {
+    using type = typename vector<>::type;
+  };
+}
+
+template<typename... Dimensions>
+struct createUnit{
+  using inputVec = typename boost::mpl::vector< Dimensions... >::type;
+  using dimVec   = typename helper::createDimVec< inputVec >::type;
+  using type = Unit< dimVec >;
+};
+
+using Dimensionless = createUnit<>::type;
+using Steradian     = createUnit< Dimension< id::unit::Steradian, 1> >::type;
+using Radian        = createUnit< Dimension< id::unit::Radian   , 1> >::type;
+using Candela       = createUnit< Dimension< id::unit::Candela  , 1> >::type;
+using Mole          = createUnit< Dimension< id::unit::Mole     , 1> >::type;
+using Kelvin        = createUnit< Dimension< id::unit::Kelvin   , 1> >::type;
+using Ampere        = createUnit< Dimension< id::unit::Ampere   , 1> >::type;
+using Second        = createUnit< Dimension< id::unit::Second   , 1> >::type;
+using Kilogram      = createUnit< Dimension< id::unit::Kilogram , 1> >::type;
+using Meter         = createUnit< Dimension< id::unit::Meter    , 1> >::type;
