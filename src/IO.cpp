@@ -50,7 +50,7 @@ ostream& operator<<(ostream& o, const EventType& t) {
 }
 
 ostream& operator<<(ostream& o, const FormatID& id) {
-  return o << id.node() << ":" << (id.direction()==FormatID::Direction::publisher?"P":"S") << id.nr();
+  return o << id.node() << (id.direction()==FormatID::Direction::publisher?"P":"S") << id.nr();
 }
 
 ostream& operator<<(ostream& o, const MetaValueElement& mve) {
