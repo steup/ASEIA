@@ -1,0 +1,10 @@
+prefix=/home/ssj5kc/eos/research/vrep/aseia/
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: ASEIA
+Description: Abstract Sensor Event Interface Architecture
+Version: 0.0.1
+Libs: -L${libdir} -lASEIA
+CFlags: -I${includedir} -std=c++11
