@@ -1,4 +1,4 @@
-prefix=/home/ssj5kc/eos/research/vrep/aseia/
+prefix=/home/steup/software/aseia
 exec_prefix=${prefix}
 libdir=${prefix}/lib
 includedir=${prefix}/include
