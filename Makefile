@@ -1,6 +1,8 @@
 PROFILING        ?= 0
 DEBUG            ?= 0
 
+CWD              := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
 INCLUDES         :=
 LDPATHS          :=
 SYMBOLS          :=
@@ -19,13 +21,19 @@ ifeq (${PROFILING},1)
 	LDFLAGS  :=${LDFLAGS} -pg
 endif
 
-BUILD    := ./build
 SRC      := ./src
 EXAMPLE  := ./example
-INC      := ./include
-BIN      := ./bin
 DOC      := ./doc
+INC      := ./include
+
+BIN      := ./bin
+BUILD    := ./build
 LIB      := ./lib
+PKG      := ./pkgconfig
+CMAKE    := ./cmake
+
+DIRS     := ${PKG} ${CMAKE} ${LIB} ${BUILD} ${BIN}
+CONFIGS  := ${PKG}/aseia.pc ${CMAKE}/aseiaConfig.cmake
 
 LIBNAME  := ASEIA
 DYNLIB   := ${LIB}/lib${LIBNAME}.so
@@ -51,24 +59,44 @@ all: ${DYNLIB} ${STATLIB}
 	
 examples: ${EXAMPLES}
 
-${DYNLIB}: ${OBJECTS} | ${LIB}
+${DIRS}: 
+	mkdir -p $@
+
+${DYNLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
 	@echo "Building dynamic library: $@ <- [$^]"
 	@g++ --shared -o $@ $^
 
-${STATLIB}: ${OBJECTS} | ${LIB}
+${STATLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
 	@echo "Building static library: $@ <- [$^]"
 	@ar r $@ $^
 	@ranlib $@
+
+${PKG}/aseia.pc: | ${PKG}
+	@echo "prefix=${CWD}" >> $@
+	@echo "exec_prefix=${CWD}" >> $@
+	@echo "libdir=${CWD}/lib" >> $@
+	@echo "includedir=${CWD}/include" >> $@
+	@echo "" >> $@
+	@echo "Name: ASEIA" >> $@
+	@echo "Description: Abstract Sensor Event Interface Architecture" >> $@
+	@echo "Version: 0.0.1" >> $@
+	@echo "Libs: -L${libdir} -lASEIA" >> $@
+	@echo "CFlags: -I${includedir} -std=c++11" >> $@
+
+${CMAKE}/aseiaConfig.cmake: | ${CMAKE}
+	@echo "set(aseia_BASE_DIR ${CWD})" >> $@
+	@echo "set(aseia_DEFINITIONS  -std=c++11)" >> $@
+	@echo "set(aseia_INCLUDE_DIRS ${CWD}/include)" >> $@
+	@echo "set(aseia_LIBRARIES    ${CWD}/lib/libASEIA.so)" >> $@
+	@echo "include(FindPackageHandleStandardArgs)" >> $@
+	@echo "find_package_handle_standard_args(aseia DEFAULT_MSG aseia_LIBRARIES aseia_INCLUDE_DIRS)" >> $@
+	@echo "mark_as_advanced(aseia_INCLUDE_DIR aseia_LIBRARIES)" >> $@
 
 ${EXAMPLES}: %: ${BIN}/%
 	
 $(addprefix ${BIN}/, ${EXAMPLES}): ${BIN}/%: ${BUILD}/%.o | ${DYNLIB} ${BIN}
 	@echo "Linking Example $@ <- $<"
 	@${CXX} ${LDFLAGS} -o $@ $^ ${LDPATHS} ${LIBS}
-
-${BIN} ${BUILD} ${LIB}: %:
-	@echo "Creating $@"
-	@mkdir -p $@
 
 ${BUILD}/%.o: %.cpp Makefile | ${BUILD}
 	@echo "Compiling $@ <- $<"
@@ -84,7 +112,7 @@ $(addprefix debug_,${EXAMPLES}): debug_%: %
 
 clean:
 	@echo "Clean"
-	@rm -rf ${BIN} ${BUILD} ${DOC}/html ${LIB}
+	@rm -rf ${DIRS} ${DOC}/html
 
 doc:
 	@echo "Creating Documentation"
