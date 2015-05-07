@@ -59,7 +59,7 @@ LIBS     += ${LIBNAME}
 LDPATHS  += ${LIB}
 LDFLAGS  += -Wl,--rpath=$(abspath ${LIB})
 
-EXAMPLES := $(addprefix ${BIN}/, $(notdir $(basename $(wildcard ${EXAMPLE}/*.cpp))))
+EXAMPLES := $(notdir $(basename $(wildcard ${EXAMPLE}/*.cpp)))
 OBJECTS  := $(addprefix ${BUILD}/, $(addsuffix .o, $(notdir $(basename $(wildcard ${SRC}/*.cpp)))))
 LIBS     := $(addprefix -l, ${LIBS})
 LDPATHS  := $(addprefix -L, ${LDPATHS})
