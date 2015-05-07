@@ -1,7 +1,0 @@
-set(aseia_BASE_DIR /home/steup/software/aseia)
-set(aseia_DEFINITIONS  "-std=c++11")
-set(aseia_INCLUDE_DIRS "${aseia_BASE_DIR}/include")
-set(aseia_LIBRARIES    "${aseia_BASE_DIR}/lib/libASEIA.so")
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(aseia DEFAULT_MSG aseia_LIBRARIES aseia_INCLUDE_DIRS)
-mark_as_advanced(aseia_INCLUDE_DIR aseia_LIBRARIES)

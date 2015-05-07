@@ -1,12 +1,21 @@
 PROFILING        ?= 0
 DEBUG            ?= 0
 
+CWD              := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
 INCLUDES         :=
 LDPATHS          :=
 SYMBOLS          :=
-CXXFLAGS         := -std=gnu++11 -Wall -ffunction-sections -fno-threadsafe-statics -fPIC
-LDFLAGS          := -O1 -Wl,--gc-sections
+CXXFLAGS         := -std=gnu++11 -Wall
+LDFLAGS          := -O1 
 LIBS             :=
+
+ifeq (${EMBEDDED},1)
+	CXXFLAGS :=${CXXFLAGS} -ffunction-sections -fno-threadsafe-statics
+	LDFLAGS  :=${LDFLAGS} -Wl,--gc-sections
+else
+	CXXFLAGS :=${CXXFLAGS} -fPIC
+endif
 
 ifeq (${DEBUG},1)
 	CXXFLAGS :=${CXXFLAGS} -O0 -g
@@ -19,14 +28,28 @@ ifeq (${PROFILING},1)
 	LDFLAGS  :=${LDFLAGS} -pg
 endif
 
-BUILD    := ./build
-SRC      := ./src
-EXAMPLE  := ./example
-INC      := ./include
-BIN      := ./bin
-DOC      := ./doc
-LIB      := ./lib
+MAKEFILE := $(lastword ${MAKEFILE_LIST})
 
+BASEDIR  := $(dir $(abspath ${MAKEFILE}))
+
+SRC      := src
+EXAMPLE  := example
+INC      := include
+DOC      := doc
+
+HTML     := ${DOC}/html
+BIN      := bin
+BUILD    := build
+LIB      := lib
+CMAKE    := cmake
+PKG      := pkgconfig
+
+DIRS     := ${BIN} ${BUILD} ${LIB} ${CMAKE} ${PKG}
+GARBAGE  := ${HTML} ${DIRS}
+
+CMAKEFILE:= ${CMAKE}/aseiaConfig.cmake
+PKGFILE  := ${PKG}/aseia.pc
+CONFIGS  := ${PKG}/aseia.pc ${CMAKE}/aseiaConfig.cmake
 LIBNAME  := ASEIA
 DYNLIB   := ${LIB}/lib${LIBNAME}.so
 STATLIB  := ${LIB}/lib${LIBNAME}.a
@@ -51,14 +74,35 @@ all: ${DYNLIB} ${STATLIB}
 	
 examples: ${EXAMPLES}
 
-${DYNLIB}: ${OBJECTS} | ${LIB}
+${DYNLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
 	@echo "Building dynamic library: $@ <- [$^]"
 	@g++ --shared -o $@ $^
 
-${STATLIB}: ${OBJECTS} | ${LIB}
+${STATLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
 	@echo "Building static library: $@ <- [$^]"
 	@ar r $@ $^
 	@ranlib $@
+
+${CMAKEFILE}: ${MAKEFILE}  | ${CMAKE}
+	@echo 'set(aseia_BASE_DIR ${BASEDIR})' > $@
+	@echo 'set(aseia_DEFINITIONS  ${CXXFLAGS})' >> $@
+	@echo 'set(aseia_INCLUDE_DIRS $${aseia_BASE_DIR}/${INC})' >> $@
+	@echo 'set(aseia_LIBRARIES    $${aseia_BASE_DIR}/${DYNLIB})' >> $@
+	@echo 'include(FindPackageHandleStandardArgs)' >> $@
+	@echo 'find_package_handle_standard_args(aseia DEFAULT_MSG aseia_LIBRARIES aseia_INCLUDE_DIRS)' >> $@
+	@echo 'mark_as_advanced(aseia_INCLUDE_DIR aseia_LIBRARIES)' >> $@
+
+${PKGFILE}: ${MAKEFILE} | ${PKG}
+	@echo 'prefix=${BASEDIR}' > $@
+	@echo 'exec_prefix=$${prefix}' >> $@
+	@echo 'libdir=$${prefix}/${LIB}' >> $@
+	@echo 'includedir=$${prefix}/${INC}' >> $@
+	@echo "" >> $@
+	@echo 'Name: ${LIBNAME}' >> $@
+	@echo 'Description: Abstract Sensor Event Interface Architecture'>> $@
+	@echo 'Version: 0.0.1' >> $@
+	@echo 'Libs: -L$${libdir} -l${LIBNAME} ${LDFLAGS}' >> $@
+	@echo 'CFlags: -I$${includedir} ${CXXFLAGS}' >> $@
 
 ${EXAMPLES}: %: ${BIN}/%
 	
@@ -66,13 +110,17 @@ $(addprefix ${BIN}/, ${EXAMPLES}): ${BIN}/%: ${BUILD}/%.o | ${DYNLIB} ${BIN}
 	@echo "Linking Example $@ <- $<"
 	@${CXX} ${LDFLAGS} -o $@ $^ ${LDPATHS} ${LIBS}
 
-${BIN} ${BUILD} ${LIB}: %:
+${DIRS}: %:
 	@echo "Creating $@"
 	@mkdir -p $@
 
-${BUILD}/%.o: %.cpp Makefile | ${BUILD}
+${BUILD}/%.o: %.cpp ${MAKEFILE} | ${BUILD}
 	@echo "Compiling $@ <- $<"
 	@${CXX} -MMD -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
+
+${BIN}/%: ${BUILD}/%.o ${MAKEFILE} ${DYNLIB} | ${BIN}
+	@echo "Linking $@ <- $<"
+	@${CXX} $< ${LDFLAGS} ${LDPATHS} ${LIBS} -o $@
 
 $(addprefix run_,${EXAMPLES}): run_%: %
 	@echo "Running $<"
@@ -84,7 +132,7 @@ $(addprefix debug_,${EXAMPLES}): debug_%: %
 
 clean:
 	@echo "Clean"
-	@rm -rf ${BIN} ${BUILD} ${DOC}/html ${LIB}
+	@rm -rf ${GARBAGE}
 
 doc:
 	@echo "Creating Documentation"
