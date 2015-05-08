@@ -69,6 +69,8 @@ DEPS     := $(wildcard ${BUILD}/*.d)
 .PHONY: all examples clean run_% debug_% doc
 
 vpath %.cpp ${SRC} ${EXAMPLE}
+vpath %.o   ${BUILD}
+vpath %     ${BIN}
 
 all: ${DYNLIB} ${STATLIB} 
 	
@@ -104,8 +106,6 @@ ${PKGFILE}: ${MAKEFILE} | ${PKG}
 	@echo 'Libs: -L$${libdir} -l${LIBNAME} ${LDFLAGS}' >> $@
 	@echo 'CFlags: -I$${includedir} ${CXXFLAGS}' >> $@
 
-${EXAMPLES}: %: ${BIN}/%
-	
 $(addprefix ${BIN}/, ${EXAMPLES}): ${BIN}/%: ${BUILD}/%.o | ${DYNLIB} ${BIN}
 	@echo "Linking Example $@ <- $<"
 	@${CXX} ${LDFLAGS} -o $@ $^ ${LDPATHS} ${LIBS}
@@ -118,7 +118,7 @@ ${BUILD}/%.o: %.cpp ${MAKEFILE} | ${BUILD}
 	@echo "Compiling $@ <- $<"
 	@${CXX} -MMD -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
 
-${BIN}/%: ${BUILD}/%.o ${MAKEFILE} ${DYNLIB} | ${BIN}
+${BIN}/%: %.o ${MAKEFILE} ${DYNLIB} | ${BIN}
 	@echo "Linking $@ <- $<"
 	@${CXX} $< ${LDFLAGS} ${LDPATHS} ${LIBS} -o $@
 
