@@ -41,11 +41,14 @@ DOC      := doc
 HTML     := ${DOC}/html
 BIN      := bin
 BUILD    := build
+BLIB     := ${BUILD}/lib
+BPROG    := ${BUILD}/prog
 LIB      := lib
 CMAKE    := cmake
 PKG      := pkgconfig
+LOG      := log
 
-DIRS     := ${BIN} ${BUILD} ${LIB} ${CMAKE} ${PKG}
+DIRS     := ${BIN} ${BLIB} ${BPROG} ${BUILD} ${LIB} ${CMAKE} ${PKG} ${LOG}
 GARBAGE  := ${HTML} ${DIRS}
 
 CMAKEFILE:= ${CMAKE}/aseiaConfig.cmake
@@ -61,26 +64,22 @@ LDPATHS  += ${LIB}
 LDFLAGS  += -Wl,--rpath=$(abspath ${LIB})
 
 EXAMPLES := $(notdir $(basename $(wildcard ${EXAMPLE}/*.cpp)))
-EXP      := $(notdir $(basename $(wildcard ${EXPERIMENTS}/*.cpp)))
-OBJECTS  := $(addprefix ${BUILD}/, $(addsuffix .o, $(notdir $(basename $(wildcard ${SRC}/*.cpp)))))
+OBJECTS  := $(addprefix ${BLIB}/, $(addsuffix .o, $(notdir $(basename $(wildcard ${SRC}/*.cpp)))))
 LIBS     := $(addprefix -l, ${LIBS})
 LDPATHS  := $(addprefix -L, ${LDPATHS})
 INCLUDES := $(addprefix -I, ${INCLUDES} ${INC})
 DEPS     := $(wildcard ${BUILD}/*.d)
 
-.PHONY: all examples experiments clean run_% debug_% doc
-
-vpath %.cpp ${SRC} ${EXAMPLE}
-vpath %.o   ${BUILD}
-vpath %     ${BIN}
+.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% doc
 
 all: ${DYNLIB} ${STATLIB} 
 	
 examples: ${EXAMPLES}
-experiments: ${EXP}
+
+${EXAMPLES}: %: ${BIN}/%
 
 ${DYNLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
-	@echo "Building dynamic library: $@ <- [$^]"
+	@echo "Linking dynamic library: $@ <- [$^]"
 	@g++ --shared -o $@ $^
 
 ${STATLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
@@ -109,29 +108,31 @@ ${PKGFILE}: ${MAKEFILE} | ${PKG}
 	@echo 'Libs: -L$${libdir} -l${LIBNAME} ${LDFLAGS}' >> $@
 	@echo 'CFlags: -I$${includedir} ${CXXFLAGS}' >> $@
 
-$(addprefix ${BIN}/, ${EXAMPLES}): ${BIN}/%: ${BUILD}/%.o | ${DYNLIB} ${BIN}
-	@echo "Linking Example $@ <- $<"
-	@${CXX} ${LDFLAGS} -o $@ $^ ${LDPATHS} ${LIBS}
-
 ${DIRS}: %:
 	@echo "Creating $@"
 	@mkdir -p $@
 
-${BUILD}/%.o: %.cpp ${MAKEFILE} | ${BUILD}
-	@echo "Compiling $@ <- $<"
+${BLIB}/%.o: ${SRC}/%.cpp ${MAKEFILE} | ${BLIB}
+	@echo "Compiling lib file $@ <- $<"
 	@${CXX} -MMD -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
 
-${BIN}/%: %.o ${MAKEFILE} ${DYNLIB} | ${BIN}
-	@echo "Linking $@ <- $<"
+${BPROG}/%.o: ${EXAMPLE}/%.cpp ${MAKEFILE} | ${BPROG}
+	@echo "Compiling prog $@ <- $<"
+	@${CXX} -MMD -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
+
+${BIN}/%: ${BPROG}/%.o ${MAKEFILE} ${DYNLIB} | ${BIN}
+	@echo "Linking prog $@ <- $<"
 	@${CXX} $< ${LDFLAGS} ${LDPATHS} ${LIBS} -o $@
 
-$(addprefix run_,${EXAMPLES}): run_%: %
-	@echo "Running $<"
-	@./${BIN}/$< ${ARGS}
+run_examples: $(addprefix run_,${EXAMPLES})
 
-$(addprefix debug_,${EXAMPLES}): debug_%: %
+run_%: % | ${LOG}
+	@echo "Running $<"
+	@./${BIN}/$< ${ARGS} &> ${LOG}/$<.log
+
+debug_%: ${BIN}/%
 	@echo "Running $< in debug mode"
-	@${DBG} ./${BIN}/$< -ex start ${ARGS}
+	@${DBG} ./$< -ex start ${ARGS}
 
 clean:
 	@echo "Clean"
