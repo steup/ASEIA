@@ -34,6 +34,7 @@ BASEDIR  := $(dir $(abspath ${MAKEFILE}))
 
 SRC      := src
 EXAMPLE  := example
+EXPERIMENTS  := experiments
 INC      := include
 DOC      := doc
 
@@ -60,19 +61,21 @@ LDPATHS  += ${LIB}
 LDFLAGS  += -Wl,--rpath=$(abspath ${LIB})
 
 EXAMPLES := $(notdir $(basename $(wildcard ${EXAMPLE}/*.cpp)))
+EXP      := $(notdir $(basename $(wildcard ${EXPERIMENTS}/*.cpp)))
 OBJECTS  := $(addprefix ${BUILD}/, $(addsuffix .o, $(notdir $(basename $(wildcard ${SRC}/*.cpp)))))
 LIBS     := $(addprefix -l, ${LIBS})
 LDPATHS  := $(addprefix -L, ${LDPATHS})
 INCLUDES := $(addprefix -I, ${INCLUDES} ${INC})
 DEPS     := $(wildcard ${BUILD}/*.d)
 
-.PHONY: all examples clean run_% debug_% doc
+.PHONY: all examples experiments clean run_% debug_% doc
 
-vpath %.cpp ${SRC} ${EXAMPLE}
+vpath %.cpp ${SRC} ${EXAMPLE} ${EXPERIMENTS}
 
 all: ${DYNLIB} ${STATLIB} 
 	
 examples: ${EXAMPLES}
+experiments: ${EXP}
 
 ${DYNLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
 	@echo "Building dynamic library: $@ <- [$^]"
@@ -105,6 +108,7 @@ ${PKGFILE}: ${MAKEFILE} | ${PKG}
 	@echo 'CFlags: -I$${includedir} ${CXXFLAGS}' >> $@
 
 ${EXAMPLES}: %: ${BIN}/%
+${EXP}: %: ${BIN}/%
 	
 $(addprefix ${BIN}/, ${EXAMPLES}): ${BIN}/%: ${BUILD}/%.o | ${DYNLIB} ${BIN}
 	@echo "Linking Example $@ <- $<"
