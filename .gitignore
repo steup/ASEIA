@@ -1,5 +1,7 @@
+bin
 build
 cmake
 doc/html
 lib
+log
 pkgconfig
