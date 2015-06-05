@@ -1,0 +1,5 @@
+build
+cmake
+doc/html
+lib
+pkgconfig
