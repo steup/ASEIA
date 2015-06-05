@@ -59,7 +59,7 @@ DYNLIB   := ${LIB}/lib${LIBNAME}.so
 STATLIB  := ${LIB}/lib${LIBNAME}.a
 TARGETS  := ${DYNLIB} ${STATLIB}
 
-LIBS     += ${LIBNAME}
+LIBS     += ${LIBNAME} boost_graph
 LDPATHS  += ${LIB}
 LDFLAGS  += -Wl,--rpath=$(abspath ${LIB})
 
