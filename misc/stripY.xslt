@@ -1,4 +1,4 @@
-<xsl:stylesheet version="2.0" xmlns="http://graphml.graphdrawing.org/xmlns" 
+<xsl:stylesheet version="1.0" xmlns="http://graphml.graphdrawing.org/xmlns" 
 															xmlns:ns="http://graphml.graphdrawing.org/xmlns" 
 															xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 															xmlns:y="http://www.yworks.com/xml/graphml"

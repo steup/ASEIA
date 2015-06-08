@@ -59,7 +59,7 @@ DYNLIB   := ${LIB}/lib${LIBNAME}.so
 STATLIB  := ${LIB}/lib${LIBNAME}.a
 TARGETS  := ${DYNLIB} ${STATLIB}
 
-LIBS     += ${LIBNAME} boost_graph
+LIBS     += ${LIBNAME} boost_graph boost_program_options
 LDPATHS  += ${LIB}
 LDFLAGS  += -Wl,--rpath=$(abspath ${LIB})
 
@@ -70,11 +70,14 @@ LDPATHS  := $(addprefix -L, ${LDPATHS})
 INCLUDES := $(addprefix -I, ${INCLUDES} ${INC})
 DEPS     := $(wildcard ${BUILD}/*.d)
 
-.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% doc
+.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% doc akgs
 
 all: ${DYNLIB} ${STATLIB} 
 	
-examples: ${EXAMPLES}
+akgs:
+	${MAKE} -C misc all
+
+examples: ${EXAMPLES} | akgs
 
 ${EXAMPLES}: %: ${BIN}/%
 
@@ -137,6 +140,7 @@ debug_%: ${BIN}/%
 clean:
 	@echo "Clean"
 	@rm -rf ${GARBAGE}
+	@${MAKE} -C misc clean
 
 doc:
 	@echo "Creating Documentation"
