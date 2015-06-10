@@ -44,7 +44,11 @@
 	<xsl:template match="y:Shape">
 		<xsl:element name="data">
 			<xsl:attribute name="key">d0</xsl:attribute>
-		<xsl:value-of select="./@type"/>
+      <xsl:choose>
+        <xsl:when test="@type = 'rectangle'">rule</xsl:when>
+        <xsl:when test="@type = 'ellipse'">event</xsl:when>
+      </xsl:choose>
+		<!--<xsl:value-of select="./@type"/>-->
 		</xsl:element>
 	</xsl:template>
 
