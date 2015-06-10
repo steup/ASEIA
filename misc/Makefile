@@ -8,7 +8,7 @@ XSLT    = xsltproc
 
 all: ${TARGETS}
 
-%.akg: %.graphml
+%.akg: %.graphml ${DE_Y}
 	@echo "Removing yED extensiona from $<"
 	@xsltproc ${DE_Y} $< > $@
 
