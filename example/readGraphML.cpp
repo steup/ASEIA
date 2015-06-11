@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
+#include <string>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphml.hpp>
 #include <boost/program_options/options_description.hpp>
@@ -7,42 +9,156 @@
 #include <boost/program_options/parsers.hpp>
 
 using namespace boost;
-namespace po = boost::program_options;
 using namespace std;
 
-struct NodeInfo{
-	string name, type;
+
+
+class KnowledgeGraph{
+public:
+
+  struct NodeInfo{
+	  string name, type;
+  };
+
+  struct EdgeInfo { };
+
+private:
+  using Graph = adjacency_list<vecS, vecS, bidirectionalS, NodeInfo, EdgeInfo>;
+
+  template<class IterType, class ObjectType>
+  class GraphIterator{
+    private:
+      IterType i;
+      Graph& g;
+    public:
+      GraphIterator(IterType i, Graph& g) : i(i), g(g){}
+      GraphIterator operator++(int){ GraphIterator t(*this); i++; return t;}
+      GraphIterator& operator++(){ ++i; return *this; }
+      ObjectType operator*() { return ObjectType(*i, g); }
+      ObjectType operator*() const { return ObjectType(*i, g); }
+      bool operator!=(const GraphIterator& b) { return i != b.i; }
+  };
+public:
+  
+  class InEdges;
+
+  class Vertex {
+    private:
+      Graph::vertex_descriptor v;
+      Graph& g;
+    public:
+      Vertex(Graph::vertex_descriptor v, Graph& g) : v(v), g(g) {}
+      operator Graph::vertex_descriptor() const{ return v; }
+      NodeInfo* operator->() const { return &g[v]; }
+      InEdges incoming() const;
+    friend class KnowledgeGraph;
+  };
+
+  using VIterator = GraphIterator<Graph::vertex_iterator, Vertex>;
+  
+  class Vertices{
+    private:
+      VIterator mBegin, mEnd;
+    public:
+      Vertices(Graph& g) : mBegin(::vertices(g).first, g), mEnd(::vertices(g).second, g){}
+      VIterator begin() const { return mBegin; }
+      VIterator end() const { return mEnd; }
+  };
+
+  class Edge {
+    private:
+      Graph::edge_descriptor e;
+      Graph& g;
+    public:
+      Edge(Graph::edge_descriptor e, Graph& g) : e(e), g(g) {}
+      operator Graph::edge_descriptor() const{ return e; }
+      EdgeInfo* operator->() const { return &g[e]; }
+      Vertex source() const {return Vertex(::source(e, g), g); }
+      Vertex target() const {return Vertex(::target(e, g), g); }
+  };
+
+  using EIterator = GraphIterator<Graph::edge_iterator, Edge>;
+  using IEIterator = GraphIterator<Graph::in_edge_iterator, Edge>;
+
+  class Edges{
+    private:
+      EIterator mBegin, mEnd;
+    public:
+      Edges(Graph& g) : mBegin(::edges(g).first, g), mEnd(::edges(g).second, g){}
+      EIterator begin() const { return mBegin; }
+      EIterator end() const { return mEnd; }
+  };
+  
+  class InEdges{
+    private:
+      IEIterator mBegin, mEnd;
+    public:
+      InEdges(Graph::vertex_descriptor v, Graph& g) : mBegin(::in_edges(v, g).first, g), mEnd(::in_edges(v, g).second, g){}
+      IEIterator begin() const { return mBegin; }
+      IEIterator end() const { return mEnd; }
+  };
+
+private:
+  Graph g;
+
+public:
+  KnowledgeGraph() = default;
+  KnowledgeGraph(const string& fileName) {
+    import(fileName);
+  }
+  void import(const string& fileName) {
+	  dynamic_properties props;
+	  props.property("name", get(&NodeInfo::name, g));
+	  props.property("type", get(&NodeInfo::type, g));
+	  ifstream inGraph(fileName);
+	  read_graphml(inGraph, g, props);
+  }
+  Vertices vertices() { return Vertices(g); }
+  Edges edges() { return Edges(g); }
+  vector<Vertex> events() {
+    vector<Vertex> storage;
+    for(auto vertex : vertices())
+      if( vertex->type == "event" )
+        storage.push_back(vertex);
+    return storage;
+  }
+  vector<Vertex> rules() {
+    vector<Vertex> storage;
+    for(auto vertex : vertices())
+      if( vertex->type == "rule" )
+        storage.push_back(vertex);
+    return storage;
+  }
+
+  VIterator findEvent(const string& name) {
+    for(auto i = vertices().begin(); i != vertices().end(); i++)
+      if( (*i)->type == "event" && (*i)->name == name)
+        return i;
+    return vertices().end();
+  }
+
+  bool valid(VIterator i) { return i != vertices().end(); }
 };
 
-using Graph = adjacency_list<vecS, vecS, directedS, NodeInfo>;
-
-using VIter  = graph_traits<Graph>::vertex_iterator;
-using EIter  = graph_traits<Graph>::edge_iterator;
-using VPair  = std::pair<VIter, VIter>; 
-using EPair  = std::pair<EIter, EIter>;
-
-namespace std{
-	VIter begin(VPair pair) { return pair.first; }
-	VIter end(VPair pair) { return pair.second; }
-	EIter begin(EPair pair) { return pair.first; }
-	EIter end(EPair pair) { return pair.second; }
+KnowledgeGraph::InEdges KnowledgeGraph::Vertex::incoming() const {
+  return KnowledgeGraph::InEdges(v, g);
 }
 
-std::ostream& operator<<(std::ostream& o, std::pair<Graph::vertex_descriptor, const Graph&> in){
-	return o << "(" << in.second[in.first].name << ": " << in.second[in.first].type << ")";
+std::ostream& operator<<(std::ostream& o, const KnowledgeGraph::Vertex &v){
+	return o << "(" << v->name << ": " << v->type << ")";
 }
 
-std::ostream& operator<<(std::ostream& o, std::pair<Graph::edge_descriptor, const Graph&> in){
-	return o << std::make_pair(source(in.first, in.second), in.second) << " -> " << std::make_pair(target(in.first, in.second), in.second);
+std::ostream& operator<<(std::ostream& o, const KnowledgeGraph::Edge& e){
+	return o << e.source() << " -> " << e.target();
 }
 
-std::ostream& operator<<(std::ostream& o, const Graph& g){
+std::ostream& operator<<(std::ostream& o, KnowledgeGraph& g){
 	o << "vertices:" <<  endl;
-	for(const auto& vertex : vertices(g))
-		o << "\t" << std::make_pair(vertex, g) << endl;
+	for(const auto& vertex : g.vertices())
+		o << "\t" << vertex << endl;
 	o << "edges:"  << endl;
-	for(const auto& edge : edges(g))
-		o << "\t" << std::make_pair(edge, g) << endl;
+	for(const auto& edge : g.edges())
+	o << "\t" << edge << endl;
 	return o;
 }
 
@@ -52,6 +168,8 @@ class  IncompleteCmdError : public std::exception {
 		IncompleteCmdError(const string& desc) : msg(desc.c_str()){}
 		virtual const char* what() const throw() { return msg; }
 };
+
+namespace po = boost::program_options;
 
 string parseOptions(int argc, char** argv){
 	po::options_description desc("commandline options");
@@ -71,19 +189,10 @@ string parseOptions(int argc, char** argv){
 		return vm["akg"].as<string>();
 }
 
-void readAKG(Graph& g, const string& fileName){
-	dynamic_properties props;
-	props.property("name", get(&NodeInfo::name, g));
-	props.property("type", get(&NodeInfo::type, g));
-	ifstream inGraph(fileName);
-	read_graphml(inGraph, g, props);
-}
-
 int main(int argc, char** argv){
-	Graph g;
+	KnowledgeGraph g;
 	try {
-		readAKG(g, parseOptions(argc, argv));
-		cout << g << endl;
+		g.import(parseOptions(argc, argv));
 	}
 	catch(const IncompleteCmdError& e){
 		cerr << argv[0] << " " << e.what() << endl;
@@ -97,5 +206,24 @@ int main(int argc, char** argv){
 		cerr << argv[0] << ": Unknown exception occured" << endl << e.what() << endl;
 		return -1;
 	}
-	return 0;
+
+	cout << g << endl;
+
+  cout << "Events:" << endl;
+  for(const auto& event : g.events()) {
+    cout << "\t" << event << endl;
+  }
+
+  cout << "Rules:" << endl;
+  for(const auto& rule : g.rules())
+    cout << "\t" << rule << endl;
+ 
+  auto posIter = g.findEvent("Position");
+
+  if(g.valid(posIter)) {
+    cout << "Interesting rules for Position:" << endl;
+    for(const auto& rule : (*posIter).incoming())
+      cout << "\t" << rule.source() << endl;
+	  return 0;
+  }
 }
