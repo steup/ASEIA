@@ -78,8 +78,7 @@ MetaFactoryImplementation::MetaFactoryImplementation() :
                 int32_t,
                 int64_t,
                 float,
-                double,
-                bool>::insert(*this);
+                double>::insert(*this);
 }
 
 MetaFactoryImplementation::~MetaFactoryImplementation() {
@@ -110,6 +109,20 @@ MetaValue MetaFactoryImplementation::convert(const ValueType& type, const MetaVa
     return MetaValue();
   MetaValueBaseImplementation& converted = converter->second(value.implementation());
  return MetaValue(converted);
+}
+
+MetaValue MetaFactoryImplementation::create(std::initializer_list<std::initializer_list<double>> l, id::type::ID id) const{
+  MetaValue temp = create(id, l.size() ,true);
+  uint8_t i=0;
+  for(const auto& elem : l){
+    double data[]={0,0};
+    uint8_t j=0;
+    for(const double& d : elem)
+      if(j<2)
+        data[j++]=d;
+    temp.implementation().set(i++, data[0], data[1]);
+   }
+   return temp;
 }
 
 template class Singleton<MetaFactoryImplementation>;

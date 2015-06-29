@@ -43,17 +43,6 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
   public:
     using DataType = T;
 
-    /*MetaValueImplementation(T value) : mData(value), mHasUncertainty(false){     
-    }
-
-    MetaValueImplementation(T value, T uncertainty)
-      : mData({value, uncertanity}), mHasUncertainty(true)
-      {
-    }*/
-
-    /*MetaValueImplementation(const std::initializer_list<T>& i) : mData(i), mHasUncertainty(false){     
-    }*/
-
     MetaValueImplementation(std::initializer_list<std::initializer_list<T>> values)
       : mHasUncertainty(true)
     {
@@ -95,6 +84,11 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
     virtual Type& operator=( const Type& b) = delete;
 
     virtual Base& operator+=(const Base& b);
+
+    virtual void set(uint8_t i, double value, double uncertainty){
+      mData[i].value(value);
+      mData[i].uncertainty(uncertainty);
+    }
    
     virtual id::type::ID typeId() const {
       return id::type::id(T());

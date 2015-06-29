@@ -34,7 +34,7 @@ namespace {
   inline T satSub(T& a, T b) {
     T diff = std::numeric_limits<T>::max() + b;
     if( diff > a ) {
-      a = std::numeric_limits<T>::min();
+      a = std::numeric_limits<T>::lowest();
       return diff-a;
     } else {
       a -= b;
@@ -42,46 +42,58 @@ namespace {
     }
   }
 
-  float modifyU(float u, double dummy){
+  template<typename T1, typename T2>
+  inline T1 modifyU(T1 u, T2 dummy){
     return u;
   }
-
-  double modifyU(double u, float dummy){
-    satAdd(u, (double)std::numeric_limits<float>::epsilon());
-    return u;
-  }
+  
 
   template<typename T>
-  float modifyU(float u, T dummy){
+  inline float modifyU(float u, T dummy){
     satAdd(u, 1.0f);
     return u;
   }
 
   template<typename T>
-  double modifyU(double u, T dummy){
+  inline double modifyU(double u, T dummy){
     satAdd(u, 1.0);
     return u;
   }
 
-  template<typename T1, typename T2>
-  T1 modifyU(T1 u, T2 dummy){
+  template<>
+  inline float modifyU(float u, double dummy){
     return u;
   }
 
+  template<>
+  inline double modifyU(double u, float dummy){
+    satAdd(u, (double)std::numeric_limits<float>::epsilon());
+    return u;
+  }
+
+
   template<typename T1, typename T2>
   inline T2 checkBounds(T1& v, T1 u, T2 dummy) {
-    if( v > std::numeric_limits<T2>::max() ) {
-      T1 temp = v - std::numeric_limits<T2>::max();
-      v = std::numeric_limits<T2>::max();
-      satAdd( u, temp );
+    T1 T1min = std::numeric_limits<T1>::lowest();
+    T2 T2min = std::numeric_limits<T2>::lowest();
+    T2 T2max = std::numeric_limits<T2>::max();
+    T1 temp=0;
+    if(T1min < (T1)0 && T2min == (T2)0 && v<(T1)0){
+        temp = -v;
+        v = (T1)0;
     }
-    if( v < std::numeric_limits<T2>::min() ) {
-      T1 temp = std::numeric_limits<T2>::min() - v;
-      v = std::numeric_limits<T2>::min();
-      satAdd( u, temp );
+    if(T1min < (T1)0 && T2min < (T2)0 && v<(T1)T2min) {
+      v = T2min;
+      temp = T2min - v;
     }
+    if(v>(T1)T2max){
+      v = T2max;
+      temp = T2max - v;
+    }
+    satAdd(u, temp);
+
     u=modifyU(u, dummy);
-    if(u<0 || u>std::numeric_limits<T2>::max())
+    if(u<(T1)0 || u>(T1)std::numeric_limits<T2>::max())
       return std::numeric_limits<T2>::max();
     return u;
   }
@@ -91,10 +103,12 @@ namespace {
     return 0;
   }
 
+  template<>
   float opError(float result){
     return std::numeric_limits<float>::epsilon()*result;
   }
 
+  template<>
   double opError(double result){
     return std::numeric_limits<double>::epsilon()*result;
   }
