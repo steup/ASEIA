@@ -72,12 +72,16 @@ namespace {
   inline T2 checkBounds(T1& v, T1 u, T2 dummy) {
     if( v > std::numeric_limits<T2>::max() ) {
       T1 temp = v - std::numeric_limits<T2>::max();
+#pragma GCC diagnostic ignored "-Woverflow"
       v = std::numeric_limits<T2>::max();
+#pragma GCC diagnostic pop
       satAdd( u, temp );
     }
     if( v < std::numeric_limits<T2>::min() ) {
       T1 temp = std::numeric_limits<T2>::min() - v;
+#pragma GCC diagnostic ignored "-Woverflow"
       v = std::numeric_limits<T2>::min();
+#pragma GCC diagnostic pop
       satAdd( u, temp );
     }
     u=modifyU(u, dummy);
