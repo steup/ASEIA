@@ -78,8 +78,7 @@ MetaFactoryImplementation::MetaFactoryImplementation() :
                 int32_t,
                 int64_t,
                 float,
-                double,
-                bool>::insert(*this);
+                double>::insert(*this);
 }
 
 MetaFactoryImplementation::~MetaFactoryImplementation() {
