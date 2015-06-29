@@ -33,6 +33,8 @@ class MetaValueBaseImplementation {
     virtual id::type::ID typeId() const { 
       return id::type::Base::value(); 
     }
+    
+    virtual void set(uint8_t i, double value, double uncertainty) { }
 
     virtual std::size_t n() const { 
       return 0; 

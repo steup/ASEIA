@@ -29,6 +29,7 @@ class MetaFactoryImplementation {
     ~MetaFactoryImplementation();
     MetaValue create(const ValueType& type) const;
     MetaValue create(id::type::ID id, std::size_t n, bool u) const;
+    MetaValue create(std::initializer_list<std::initializer_list<double>> l, id::type::ID id=id::type::Double::value()) const;
     MetaValue convert(const ValueType& type, const MetaValue& value) const;
     void insert(const Converter& c) {converters.insert(c);}
 };
