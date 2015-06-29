@@ -34,7 +34,7 @@ namespace {
   inline T satSub(T& a, T b) {
     T diff = std::numeric_limits<T>::max() + b;
     if( diff > a ) {
-      a = std::numeric_limits<T>::min();
+      a = std::numeric_limits<T>::lowest();
       return diff-a;
     } else {
       a -= b;
@@ -70,20 +70,25 @@ namespace {
 
   template<typename T1, typename T2>
   inline T2 checkBounds(T1& v, T1 u, T2 dummy) {
-    if( v > std::numeric_limits<T2>::max() ) {
-      T1 temp = v - std::numeric_limits<T2>::max();
-#pragma GCC diagnostic ignored "-Woverflow"
-      v = std::numeric_limits<T2>::max();
-#pragma GCC diagnostic pop
-      satAdd( u, temp );
+    T1 T1min = std::numeric_limits<T1>::lowest();
+    T1 T1max = std::numeric_limits<T1>::max();
+    T2 T2min = std::numeric_limits<T2>::lowest();
+    T2 T2max = std::numeric_limits<T2>::max();
+    T1 temp=0;
+    if(T1min < 0LL && T2min ==0ULL && v<0LL){
+        temp = -v;
+        v = 0ULL;
     }
-    if( v < std::numeric_limits<T2>::min() ) {
-      T1 temp = std::numeric_limits<T2>::min() - v;
-#pragma GCC diagnostic ignored "-Woverflow"
-      v = std::numeric_limits<T2>::min();
-#pragma GCC diagnostic pop
-      satAdd( u, temp );
+    if(T1min < 0LL && T2min < 0LL && v<T2min) {
+      v = T2min;
+      temp = T2min - v;
     }
+    if(v>T2max){
+      v = T2max;
+      temp = T2max - v;
+    }
+    satAdd(u, temp);
+
     u=modifyU(u, dummy);
     if(u<0 || u>std::numeric_limits<T2>::max())
       return std::numeric_limits<T2>::max();
