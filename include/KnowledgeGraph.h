@@ -5,17 +5,81 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphml.hpp>
 
-class KnowledgeGraph{
+class NodeInfo{
 public:
+	virtual bool isEventType() const = 0;
+	virtual bool isTransformation() const = 0;
+	virtual bool operator==(const NodeInfo& b) const = 0;
+};
 
-  struct NodeInfo{
-	  std::string name, type;
-  };
-
-  struct EdgeInfo { };
-
+class EventType2 : public NodeInfo{
+public:
+	enum Types{
+		Position,
+		Speed,
+		Accel,
+		Proximity,
+		Void
+	};
 private:
-  using Graph = boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, NodeInfo, EdgeInfo>;
+	const Types mType;
+	public:
+	EventType2() : NodeInfo(), mType(Void) {}
+	EventType2(Types t) : NodeInfo(), mType(t) {}
+	virtual bool isEventType() const { return true; }
+	virtual bool isTransformation() const { return false; }
+	Types type() const { return mType; }
+	virtual bool operator==(const NodeInfo& n) const { return n.isEventType() && mType == dynamic_cast<const EventType2&>(n).mType; }
+};
+
+class Transformation : public NodeInfo{
+	public:
+		Transformation() = default;
+		virtual bool isEventType() const { return false; }
+		virtual bool isTransformation() const { return true; }
+		virtual unsigned int arity() const =0;
+	  virtual bool operator==(const NodeInfo& n) const { return n.isTransformation(); }
+};
+
+class EdgeInfo{
+	private:
+		const unsigned int mCardinality;
+	public:
+		EdgeInfo() : mCardinality(0) {}
+		EdgeInfo(unsigned int cardinality) : mCardinality(cardinality) {}
+		unsigned int cardinality() const { return mCardinality; }
+};
+
+std::ostream& operator<<(std::ostream& o, const EdgeInfo& e){
+	return o << e.cardinality();
+}
+
+std::ostream& operator<<(std::ostream& o, const EventType2& e){
+	switch(e.type()){
+		case(EventType2::Position):  return o  << "Position";
+		case(EventType2::Speed):     return o  << "Speed";
+		case(EventType2::Accel):     return o  << "Accel";
+		case(EventType2::Proximity): return o  << "Proximity";
+		case(EventType2::Void):      return o  << "Void";
+		default:                    return o << "Unknown Event Type";
+	}
+}
+std::ostream& operator<<(std::ostream& o, const NodeInfo& n){
+	if(n.isEventType())
+		return o << dynamic_cast<const EventType2&>(n);
+	if(n.isTransformation())
+		return o << dynamic_cast<const Transformation&>(n);
+	return o << "Unknown Node Type";
+}
+
+std::ostream& operator<<(std::ostream& o, const Transformation& t){
+	return o << t.arity() << "-ary Transformation";
+}
+
+class KnowledgeGraph{
+private:
+	
+  using Graph = boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, std::unique_ptr<NodeInfo>, std::unique_ptr<EdgeInfo>>;
 
   template<class IterType, class ObjectType>
   class Iterator{
@@ -52,7 +116,7 @@ public:
     public:
       Edge(Graph::edge_descriptor e, const Graph& g) : e(e), g(g) {}
       operator Graph::edge_descriptor() const{ return e; }
-      const EdgeInfo* operator->() const { return &g[e]; }
+      const EdgeInfo* operator->() const { return g[e].get(); }
       Vertex source() const {return Vertex(boost::source(e, g), g); }
       Vertex target() const {return Vertex(boost::target(e, g), g); }
   };
@@ -71,7 +135,8 @@ public:
     public:
       Vertex(Graph::vertex_descriptor v, const Graph& g) : v(v), g(g) {}
       operator Graph::vertex_descriptor() const{ return v; }
-      const NodeInfo* operator->() const { return &g[v]; }
+			const NodeInfo& operator*() const { return *g[v];}
+      const NodeInfo* operator->() const { return g[v].get(); }
       InEdges incoming() const;
     friend class KnowledgeGraph;
   };
@@ -92,9 +157,12 @@ public:
   std::vector<Vertex> events() const;
   std::vector<Vertex> rules() const;
 
-  VIterator findEvent(const std::string& name);
+  VIterator findEvent(const EventType2& e);
 
   bool valid(VIterator i) { return i != vertices().end(); }
+
+	void insertEventType(const EventType2& e);
+	void insertTransformation(const Transformation& t);
 };
 
 std::ostream& operator<<(std::ostream& o, const KnowledgeGraph::Vertex &v);

@@ -12,18 +12,18 @@ KnowledgeGraph::Edges KnowledgeGraph::edges() const{
   return Edges(boost::edges(g).first, boost::edges(g).second, g);
 }
 
-void KnowledgeGraph::import(const string& fileName) {
+/*void KnowledgeGraph::import(const string& fileName) {
   dynamic_properties props;
   props.property("name", get(&NodeInfo::name, g));
   props.property("type", get(&NodeInfo::type, g));
   ifstream inGraph(fileName);
   read_graphml(inGraph, g, props);
-}
+}*/
 
 vector<KnowledgeGraph::Vertex> KnowledgeGraph::events() const {
   vector<Vertex> storage;
   for(auto vertex : vertices())
-    if( vertex->type == "event" )
+    if( vertex->isEventType() )
       storage.push_back(vertex);
   return storage;
 }
@@ -31,14 +31,14 @@ vector<KnowledgeGraph::Vertex> KnowledgeGraph::events() const {
 vector<KnowledgeGraph::Vertex> KnowledgeGraph::rules() const {
   vector<Vertex> storage;
   for(auto vertex : vertices())
-    if( vertex->type == "rule" )
+    if( vertex->isTransformation() )
       storage.push_back(vertex);
   return storage;
 }
 
-KnowledgeGraph::VIterator KnowledgeGraph::findEvent(const string& name) {
+KnowledgeGraph::VIterator KnowledgeGraph::findEvent(const EventType2& e) {
   for(auto i = vertices().begin(); i != vertices().end(); i++)
-    if( (*i)->type == "event" && (*i)->name == name)
+    if( e==**i )
       return i;
   return vertices().end();
 }
@@ -48,11 +48,11 @@ KnowledgeGraph::InEdges KnowledgeGraph::Vertex::incoming() const {
 }
 
 std::ostream& operator<<(std::ostream& o, const KnowledgeGraph::Vertex &v){
-	return o << "(" << v->name << ": " << v->type << ")";
+	return o << *v;
 }
 
 std::ostream& operator<<(std::ostream& o, const KnowledgeGraph::Edge& e){
-	return o << e.source() << " -> " << e.target();
+	return o << e.source() << "(" << e->cardinality() << ") -> " << e.target();
 }
 
 std::ostream& operator<<(std::ostream& o, KnowledgeGraph& g){
@@ -63,4 +63,9 @@ std::ostream& operator<<(std::ostream& o, KnowledgeGraph& g){
 	for(const auto& edge : g.edges())
 	o << "\t" << edge << endl;
 	return o;
+}
+
+void KnowledgeGraph::insertEventType(const EventType2& e){
+	auto v = add_vertex(g);
+	g[v]=std::unique_ptr<NodeInfo>(new EventType2(e));
 }

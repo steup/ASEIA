@@ -174,3 +174,14 @@ class AccelEvent : public Event{
 std::ostream& operator<<(std::ostream& o, const Event& e){
 	return e.print(o);
 }
+
+std::ostream& operator<<(std::ostream& o, EventType t){
+	switch(t){
+		case(EventType::Position):  return o << "Position";
+		case(EventType::Speed):     return o << "Speed";
+		case(EventType::Accel):     return o << "Accel";
+		case(EventType::Proximity): return o << "Proximity";
+		case(EventType::Void):      return o << "Void";
+		default:                    return o << "Unknown";
+	}
+}
