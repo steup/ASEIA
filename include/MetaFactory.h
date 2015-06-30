@@ -11,15 +11,16 @@
 class MetaFactoryImplementation {
   private:
     using Implementation = MetaValueBaseImplementation;
+    using Ptr            = Implementation::Ptr;
     
   public:
     // from id -> to id
     using ConverterKey   = std::pair<id::type::ID, id::type::ID>;
-    using ConverterValue = Implementation& (*)(const Implementation&);
+    using ConverterValue = void (*)(const Implementation&, Implementation&);
     using Converter      = std::pair<const ConverterKey, ConverterValue>;
 
     using CreatorKey     = id::type::ID;
-    using CreatorValue   = Implementation& (*)(std::size_t n, bool u);
+    using CreatorValue   = Ptr (*)(std::size_t n, bool u);
     using Creator        = std::pair<const CreatorKey, CreatorValue>;
     
     std::map<CreatorKey, CreatorValue>     creators;

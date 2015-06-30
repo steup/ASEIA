@@ -12,14 +12,14 @@ MetaValueBaseImplementation& MetaValueImplementation<T>::operator+=(const MetaVa
   return *this;
 }
 
-template<typename T>
+/*template<typename T>
 MetaValueBaseImplementation& MetaValueImplementation<T>::copy() const {
   try{
     return *new Type(*this);
   }catch(...){
     return Base::sInstance;
   }
-}
+}*/
 
 template<typename T>
 void MetaValueImplementation<T>::print(std::ostream& o) const {
@@ -39,7 +39,7 @@ void MetaValueImplementation<T>::print(std::ostream& o) const {
 }
 
 template<typename T>
-MetaValueBaseImplementation& MetaValueImplementation<T>::factoryCreate(std::size_t n, bool u) {
+MetaValueBaseImplementation::Ptr MetaValueImplementation<T>::factoryCreate(std::size_t n, bool u) {
   return MetaValueImplementation<T>(n, u).copy();
 }
 

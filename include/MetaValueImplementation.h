@@ -17,20 +17,23 @@ template<typename T>
 class MetaValueImplementation : public MetaValueBaseImplementation {
   private:
     using Base = MetaValueBaseImplementation;
+    using Ptr  = Base::Ptr;
     using Type = MetaValueImplementation;
 
     std::valarray<ValueElement<T>> mData;
     bool mHasUncertainty;
 
-    static Base& factoryCreate(std::size_t n, bool u);
+    static Ptr factoryCreate(std::size_t n, bool u);
 
-  protected:
+  public:
     
     MetaValueImplementation(const Type&) = default;
 
     MetaValueImplementation(std::size_t n, bool u);
 
-    virtual Base& copy() const;
+    virtual Ptr copy() const{
+      return Ptr(new MetaValueImplementation(*this), deleter);
+    }
 
     virtual void n( std::size_t n ) { 
       mData.resize(n);
@@ -116,12 +119,14 @@ template<typename T0, typename T1>
 struct Converter{
   using Base = MetaValueBaseImplementation;
 
-  static Base& convert(const Base& in){
-    MetaValueImplementation<T1> temp(in.n(), in.hasUncertainty());
-    std::size_t i=0;
-    for(const auto& elem : reinterpret_cast<const MetaValueImplementation<T0>&>(in).mData)
-      temp.mData[i++]=elem;
-    return temp.copy();
+  static void convert(const Base& in, Base& out){
+    auto i=std::begin(reinterpret_cast<MetaValueImplementation<T1>&>(out).mData);
+    auto end=std::end(reinterpret_cast<MetaValueImplementation<T1>&>(out).mData);
+    for(const auto& elem : reinterpret_cast<const MetaValueImplementation<T0>&>(in).mData){
+      if(i==end)
+        break;
+      *i++=elem;
+    }
   }
   
   operator MetaFactory::Converter(){

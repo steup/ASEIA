@@ -7,7 +7,7 @@
 #include <boost/mpl/if.hpp>
 #include <boost/mpl/for_each.hpp>
 #include <type_traits>
-
+#include <utility>
 
 template<typename... Types>
 class Conversions {
@@ -107,8 +107,9 @@ MetaValue MetaFactoryImplementation::convert(const ValueType& type, const MetaVa
   auto converter = converters.find(key);
   if(converter==converters.end())
     return MetaValue();
-  MetaValueBaseImplementation& converted = converter->second(value.implementation());
- return MetaValue(converted);
+  MetaValue temp = create(type);
+  converter->second(*value.implementation(), *temp.implementation());
+  return temp;
 }
 
 MetaValue MetaFactoryImplementation::create(std::initializer_list<std::initializer_list<double>> l, id::type::ID id) const{
@@ -120,7 +121,7 @@ MetaValue MetaFactoryImplementation::create(std::initializer_list<std::initializ
     for(const double& d : elem)
       if(j<2)
         data[j++]=d;
-    temp.implementation().set(i++, data[0], data[1]);
+    temp.implementation()->set(i++, data[0], data[1]);
    }
    return temp;
 }
