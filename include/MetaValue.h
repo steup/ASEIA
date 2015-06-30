@@ -2,22 +2,22 @@
 
 #include <MetaValueBaseImplementation.h>
 #include <ValueType.h>
+#include <memory>
 
 class MetaValue {
   private:
-    MetaValueBaseImplementation* mImpl = &MetaValueBaseImplementation::sInstance;
+    using Ptr = MetaValueBaseImplementation::Ptr;
+    Ptr mImpl;
 
   public:
-    MetaValue() = default;
-    ~MetaValue();
-    
-    MetaValue(const MetaValueBaseImplementation& ref) : mImpl(&ref.copy()) {}
+    MetaValue() : mImpl(MetaValueBaseImplementation::sInstance.copy()) {}
+    explicit MetaValue(Ptr&& ref) : mImpl(std::move(ref)) {}
 
-    MetaValue(const MetaValue& value) : mImpl(&value.mImpl->copy()){
+    MetaValue(const MetaValue& value) : MetaValue(value.mImpl->copy()){
     }
 
-    MetaValue& operator=(const MetaValue& b);
-    MetaValue& operator=(const MetaValueBaseImplementation& b);
+    MetaValue& operator=(const MetaValue& b) { mImpl=b.mImpl->copy(); return *this;}
+    MetaValue& operator=(Ptr&& b) { mImpl=std::move(b); return *this;}
 
     MetaValue operator+(const MetaValue& b) const;
 
@@ -43,8 +43,8 @@ class MetaValue {
 
     operator ValueType();
 
-    MetaValueBaseImplementation& implementation() { return *mImpl; }
-    const MetaValueBaseImplementation& implementation() const { return *mImpl; }
+    Ptr& implementation() { return mImpl; }
+    const Ptr& implementation() const { return mImpl; }
 
     friend std::ostream& operator<<(std::ostream&, const MetaValue&);
     friend class MetaFactoryImplementation;

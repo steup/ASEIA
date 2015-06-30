@@ -1,5 +1,5 @@
 PROFILING        ?= 0
-DEBUG            ?= 0
+DEBUG            ?= 1
 
 CWD              := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
@@ -18,7 +18,7 @@ else
 endif
 
 ifeq (${DEBUG},1)
-	CXXFLAGS :=${CXXFLAGS} -O0 -g
+	CXXFLAGS :=${CXXFLAGS} -O2 -ggdb
 else
 	CXXFLAGS :=${CXXFLAGS} -Os
 endif

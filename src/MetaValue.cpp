@@ -1,8 +1,10 @@
 #include <MetaValue.h>
 
-MetaValue::~MetaValue() { 
+#include <iostream>
+
+/*MetaValue::~MetaValue() { 
   if(mImpl != &MetaValueBaseImplementation::sInstance)
-    delete mImpl; 
+    delete mImpl;
 }
 
 MetaValue& MetaValue::operator=(const MetaValue& b) {
@@ -12,12 +14,12 @@ MetaValue& MetaValue::operator=(const MetaValue& b) {
   return *this;
 }
 
-MetaValue& MetaValue::operator=(const MetaValueBaseImplementation& b) {
+MetaValue& MetaValue::operator=(MetaValueBaseImplementation& b) {
   if(mImpl != &MetaValueBaseImplementation::sInstance)
     delete mImpl;
-  mImpl = &b.copy();
+  mImpl = &b;
   return *this;
-}
+}*/
 
 MetaValue MetaValue::operator+(const MetaValue& b) const {
   if(compatible(b)) {
