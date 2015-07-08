@@ -70,6 +70,7 @@ INCLUDES := $(addprefix -I, ${INCLUDES} ${INC})
 DEPS     := $(wildcard ${BUILD}/*.d)
 
 .PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% doc
+.PRECIOUS: ${BPROG}/%.o ${BLIB}/%.o
 
 all: ${DYNLIB} ${STATLIB} 
 	
