@@ -2,7 +2,12 @@
 
 #include <cstdint>
 
-union PODConverter{
+struct PODConverter{
+	PODConverter(){
+		for(uint8_t& byte : bytes)
+			byte=0;
+	}
+	union{
     std::uint8_t bytes[8];
     std::uint8_t uint8;
     std::uint16_t uint16;
@@ -14,4 +19,5 @@ union PODConverter{
     std::int64_t int64;
     float _float;
     double _double;
+	};
 };
