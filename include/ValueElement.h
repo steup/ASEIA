@@ -18,16 +18,33 @@ namespace {
       return a;
   }
   
+	inline float satAdd(float& a, float b){
+		a+=b;
+		//TODO: add epsilon estimation
+		return 0;
+	}
+
   template<typename T>
   inline T satAdd(T& a, T b) {
-    T diff = std::numeric_limits<T>::max() - a;
-    if( diff < b ) {
-      a = std::numeric_limits<T>::max();
-      return b-diff;
-    } else {
-      a += b;
-      return 0;
-    }
+		if( !a  || !b || (a<0 && b>0) || (a>0 && b<0))
+			return a+=b;
+
+		if( a<0) {
+			T diff = std::numeric_limits<T>::min() - a;
+				if( diff >  b){
+					a = std::numeric_limits<T>::min();
+					return diff-b;
+				}
+		}else{
+    	T diff = std::numeric_limits<T>::max() - a;
+    	if( diff < b ) {
+      	a = std::numeric_limits<T>::max();
+      	return b-diff;
+			}
+		}
+    
+		a += b;
+    return 0;
   }
 
   template<typename T>
