@@ -202,6 +202,35 @@ class ValueElement<T, false> {
       return *this;
     }
 
+    ValueElement operator+(const ValueElement& a) const{
+      return ValueElement(*this)+=a;
+    }
+
+    ValueElement operator-(const ValueElement& a) const{
+      return ValueElement(*this)-=a;
+    }
+
+    ValueElement operator*(const ValueElement& a) const{
+      return ValueElement(*this)*=a;    }
+
+    ValueElement operator/(const ValueElement& a) const{
+      return ValueElement(*this)/=a;
+    }
+
+    ValueElement operator+(const BaseType& a) const{
+      return ValueElement(*this)+=a;
+    }
+
+    ValueElement operator-(const BaseType& a) const{
+      return ValueElement(*this)-=a;
+    }
+
+    ValueElement operator*(const BaseType& a) const{
+      return ValueElement(*this)*=a;    }
+
+    ValueElement operator/(const BaseType& a) const{
+      return ValueElement(*this)/=a;
+    }
 
     const T value() const { return mValue; }
     void value(const T& v) { mValue=v; }
