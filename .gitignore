@@ -5,3 +5,4 @@ doc/html
 lib
 log
 pkgconfig
+*.sw?
