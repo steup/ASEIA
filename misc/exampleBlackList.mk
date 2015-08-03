@@ -1,0 +1,1 @@
+BAD_EXAMPLES=virtualArithmetic  readGraphML

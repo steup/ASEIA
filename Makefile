@@ -3,7 +3,7 @@ DEBUG            ?= 1
 
 CWD              := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
-INCLUDES         :=
+INCLUDES         := 
 LDPATHS          :=
 SYMBOLS          :=
 CXXFLAGS         := -std=gnu++11 -Wall
@@ -63,11 +63,13 @@ LIBS     += ${LIBNAME} boost_graph boost_program_options
 LDPATHS  += ${LIB}
 LDFLAGS  += -Wl,--rpath=$(abspath ${LIB})
 
-EXAMPLES := $(notdir $(basename $(wildcard ${EXAMPLE}/*.cpp)))
+-include misc/exampleBlackList.mk
+
+EXAMPLES := $(filter-out ${BAD_EXAMPLES}, $(notdir $(basename $(wildcard ${EXAMPLE}/*.cpp))))
 OBJECTS  := $(addprefix ${BLIB}/, $(addsuffix .o, $(notdir $(basename $(wildcard ${SRC}/*.cpp)))))
 LIBS     := $(addprefix -l, ${LIBS})
 LDPATHS  := $(addprefix -L, ${LDPATHS})
-INCLUDES := $(addprefix -I, ${INCLUDES} ${INC})
+INCLUDES := $(addprefix -I, ${INCLUDES} ${INC}) $(shell pkg-config eigen3 --cflags)
 DEPS     := $(wildcard ${BUILD}/*.d)
 
 .PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% doc akgs
