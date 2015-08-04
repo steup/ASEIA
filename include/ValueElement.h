@@ -411,12 +411,58 @@ class ValueElement<T, true>{
       return ValueElement(*this)/=a;
     }
 
-    explicit operator BaseType() { return mValue; }
-    explicit operator ValueElement<T, false>() { return ValueElement(mValue); }
+		bool operator<(const ValueElement& a) const{
+			return this->mValue+this->mUncertainty < a.mValue - a.mUncertainty;
+		}
+		
+		bool operator>(const ValueElement& a) const{
+			return this->mValue-this->mUncertainty > a.mValue + a.mUncertainty;
+		}
+		
+		bool operator<(const BaseType& a) const{
+			return this->mValue+this->mUncertainty < a;
+		}
+		
+		bool operator>(const BaseType& a) const{
+			return this->mValue-this->mUncertainty > a;
+		}
+
+    explicit operator BaseType() const { return mValue; }
+    explicit operator ValueElement<T, false>() const { return ValueElement(mValue); }
 
     constexpr static std::size_t size() noexcept {return sizeof(mUncertainty)+sizeof(mValue);}
     constexpr bool hasUncertainty()     noexcept {return true;}
 };
+
+template<typename T, bool U>
+bool operator<=(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
+	return !(a>b);
+}
+
+template<typename T, bool U>
+bool operator<=(const ValueElement<T, U>& a, const T& b){
+	return !(a>b);
+}
+
+template<typename T, bool U>
+bool operator>=(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
+	return !(a<b);
+}
+
+template<typename T, bool U>
+bool operator>=(const ValueElement<T, U>& a, const T& b){
+	return !(a<b);
+}
+
+template<typename T, bool U>
+bool operator==(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
+	return a<=b && a>=b;
+}
+
+template<typename T, bool U>
+bool operator==(const ValueElement<T, U>& a, const T& b){
+	return a<=b && a>=b;
+}
 
 template<typename T1, typename T2, bool U>
 ValueElement<T1, U> operator+(const T2& a, const ValueElement<T1,U>& b) {
