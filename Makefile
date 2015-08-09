@@ -70,13 +70,13 @@ OBJECTS  := $(addprefix ${BLIB}/, $(addsuffix .o, $(notdir $(basename $(wildcard
 LIBS     := $(addprefix -l, ${LIBS})
 LDPATHS  := $(addprefix -L, ${LDPATHS})
 INCLUDES := $(addprefix -I, ${INCLUDES} ${INC}) $(shell pkg-config eigen3 --cflags)
-DEPS     := $(wildcard ${BUILD}/*.d)
+DEPS     := $(wildcard ${BUILD}/*/*.d)
 
 .PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% doc akgs
 .PRECIOUS: ${BPROG}/%.o ${BLIB}/%.o
 
 all: ${DYNLIB} ${STATLIB} 
-	
+
 akgs:
 	${MAKE} -C misc all
 
