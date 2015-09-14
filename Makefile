@@ -66,8 +66,8 @@ EXAMPLES := $(notdir $(basename $(wildcard ${EXAMPLE}/*.cpp)))
 OBJECTS  := $(addprefix ${BLIB}/, $(addsuffix .o, $(notdir $(basename $(wildcard ${SRC}/*.cpp)))))
 LIBS     := $(addprefix -l, ${LIBS})
 LDPATHS  := $(addprefix -L, ${LDPATHS})
-INCLUDES := $(addprefix -I, ${INCLUDES} ${INC})
-DEPS     := $(wildcard ${BUILD}/*.d)
+INCLUDES := $(addprefix -I, ${INCLUDES} ${INC}) $(shell pkg-config eigen3 --cflags)
+DEPS     := $(wildcard ${BUILD}/*/*.d)
 
 .PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% doc
 .PRECIOUS: ${BPROG}/%.o ${BLIB}/%.o
