@@ -10,7 +10,7 @@ class ValueType{
   private:
     id::type::ID mTypeId         = id::type::Base::value();
     bool         mHasUncertainty = false;
-    uint32_t     mN              = 1;
+    int32_t      mN              = 1;
   public:
     union Converter{
       uint8_t data;
@@ -21,10 +21,11 @@ class ValueType{
     };
 
     ValueType() = default;
+    ValueType(const ValueType& copy) = default;
 
-    ValueType(id::type::ID id, std::size_t n, bool u) : mTypeId(id), mHasUncertainty(u), mN(n) { }
+    ValueType(id::type::ID id, int32_t n, bool u) : mTypeId(id), mHasUncertainty(u), mN(n) { }
     
-    template<typename T, std::size_t n, bool u>
+    template<typename T, int n, bool u>
     ValueType(Value<T, n, u>) : 
       mTypeId(id::type::id(T())),
       mHasUncertainty(u),

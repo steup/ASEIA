@@ -29,7 +29,7 @@ std::ostream& operator<<(std::ostream& o, const ValueElement<T, u>& e)
   return o;
 }
 
-template<typename T, std::size_t n, bool useUncertainty>
+/*template<typename T, std::size_t n, bool useUncertainty>
 std::ostream& operator<<(std::ostream& o, const Value<T,n,useUncertainty>& v)
 {
   o << "(";
@@ -42,7 +42,7 @@ std::ostream& operator<<(std::ostream& o, const Value<T,n,useUncertainty>& v)
     else
       o << ", " << e;
   return o << ")";
-}
+}*/
 
 namespace {
   struct UnitOutputHelper {
