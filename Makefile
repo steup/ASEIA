@@ -120,7 +120,7 @@ ${BPROG}/%.o: ${EXAMPLE}/%.cpp ${MAKEFILE} | ${BPROG}
 	@echo "Compiling prog $@ <- $<"
 	@${CXX} -MMD -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
 
-${BIN}/%: ${BPROG}/%.o ${MAKEFILE} ${DYNLIB} | ${BIN}
+${BIN}/%: ${BPROG}/%.o ${MAKEFILE} | ${DYNLIB} ${BIN}
 	@echo "Linking prog $@ <- $<"
 	@${CXX} $< ${LDFLAGS} ${LDPATHS} ${LIBS} -o $@
 
