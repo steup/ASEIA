@@ -99,8 +99,8 @@ ${STATLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
 
 ${CMAKEFILE}: ${MAKEFILE}  | ${CMAKE}
 	@echo 'set(aseia_BASE_DIR ${BASEDIR})' > $@
-	@echo 'set(aseia_DEFINITIONS  ${CXXFLAGS})' >> $@
-	@echo 'set(aseia_INCLUDE_DIRS $${aseia_BASE_DIR}/${INC})' >> $@
+	@echo 'set(aseia_DEFINITIONS  ${CXXFLAGS} ${PKG_CFLAGS})' >> $@
+	@echo 'set(aseia_INCLUDE_DIRS $${aseia_BASE_DIR}/${INC} $(subst -I,,${PKG_INCLUDE}))' >> $@
 	@echo 'set(aseia_LIBRARIES    $${aseia_BASE_DIR}/${DYNLIB})' >> $@
 	@echo 'include(FindPackageHandleStandardArgs)' >> $@
 	@echo 'find_package_handle_standard_args(aseia DEFAULT_MSG aseia_LIBRARIES aseia_INCLUDE_DIRS)' >> $@
