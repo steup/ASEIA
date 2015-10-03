@@ -12,7 +12,7 @@ using std::ostream;
 using std::endl;
 
 ostream& operator<<(ostream& o, const ValueType& t) {
-  return o << (t.hasUncertainty()?"uncertain ":"") << id::type::name(t.typeId()) << "[" << t.n() << "]";
+  return o << (t.hasUncertainty()?"uncertain ":"") << id::type::name(t.typeId()) << "[" << t.rows() << ", " << t.cols() << "]";
 }
 
 ostream& operator<<(ostream& o, const ScaleType& t) {

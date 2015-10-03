@@ -39,7 +39,7 @@ bool MetaValue::compatible(const MetaValue& b) const {
 }
 
 MetaValue::operator ValueType() {
-  return ValueType(typeId(), n(), hasUncertainty());
+  return ValueType(typeId(), n(), 1, hasUncertainty());
 }
 
 

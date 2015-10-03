@@ -36,18 +36,18 @@ ValueElement<T, U> ceil(const ValueElement<T, U>& x)  { return ValueElement<T, U
 template<typename T, bool U>
 ValueElement<T, U> log(const ValueElement<T, U>& x)  { return ValueElement<T, U>({{log(x.value()), log(x.uncertainty())}}); } 
 
-template<typename T, int32_t rows, bool useUncertainty=true>
-using Value = Eigen::Matrix<ValueElement<T, useUncertainty>, rows, 1>;
+template<typename T, int32_t rows, int32_t cols = 1, bool useUncertainty=true>
+using Value = Eigen::Matrix<ValueElement<T, useUncertainty>, rows, cols>;
 
-template<typename PB, typename T, int32_t n, bool u>
-Serializer<PB>& operator<<(Serializer<PB>& s, const Value<T,n,u>& value){
+template<typename PB, typename T, int32_t rows, int32_t cols, bool u>
+Serializer<PB>& operator<<(Serializer<PB>& s, const Value<T,rows,cols,u>& value){
   for(const auto& v : value)
 		s << v;
   return s;
 }
 
-template<typename PB, typename T, int32_t n, bool u>
-DeSerializer<PB>& operator>>(DeSerializer<PB>& s, Value<T,n,u>& value){
+template<typename PB, typename T, int32_t rows, int32_t cols, bool u>
+DeSerializer<PB>& operator>>(DeSerializer<PB>& s, Value<T,rows,cols,u>& value){
   for(auto& v : value)
     s >> v;
   return s;

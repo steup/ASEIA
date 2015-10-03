@@ -87,7 +87,7 @@ MetaFactoryImplementation::~MetaFactoryImplementation() {
 MetaValue MetaFactoryImplementation::create(const ValueType& type) const {
   auto iter = creators.find(type.typeId());
   if(iter!=creators.end())
-    return MetaValue(iter->second(type.n(), type.hasUncertainty()));
+    return MetaValue(iter->second(type.rows(), type.hasUncertainty()));
   else
     return MetaValue();
 }

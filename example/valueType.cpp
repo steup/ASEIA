@@ -11,7 +11,7 @@ using namespace std;
 int main(){
   array<uint8_t, ValueType::size()> buffer;
 
-  Value<float, 3, true> v3f;
+  Value<float, 3, 1, true> v3f;
   ValueType out(v3f);
 
   cout << "ValueType out: " << out << endl;
