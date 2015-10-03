@@ -9,6 +9,7 @@ SYMBOLS          :=
 CXXFLAGS         := -std=gnu++11 -Wall
 LDFLAGS          := -O1 
 LIBS             :=
+PACKAGES         := eigen3
 
 ifeq (${EMBEDDED},1)
 	CXXFLAGS :=${CXXFLAGS} -ffunction-sections -fno-threadsafe-statics
@@ -62,11 +63,20 @@ LIBS     += ${LIBNAME}
 LDPATHS  += ${LIB}
 LDFLAGS  += -Wl,--rpath=$(abspath ${LIB})
 
+PKG_INCLUDE := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --cflags-only-I))
+PKG_CFLAGS  := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --cflags-only-other))
+PKG_LIBS    := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --libs-only-l))
+PKG_LDPATHS := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --libs-only-L))
+PKG_LDFLAGS := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --libs-only-other))
+
+
 EXAMPLES := $(notdir $(basename $(wildcard ${EXAMPLE}/*.cpp)))
 OBJECTS  := $(addprefix ${BLIB}/, $(addsuffix .o, $(notdir $(basename $(wildcard ${SRC}/*.cpp)))))
-LIBS     := $(addprefix -l, ${LIBS})
-LDPATHS  := $(addprefix -L, ${LDPATHS})
-INCLUDES := $(addprefix -I, ${INCLUDES} ${INC}) $(shell pkg-config eigen3 --cflags)
+LIBS     := $(addprefix -l, ${LIBS}) ${PKG_LIBS}
+LDPATHS  := $(addprefix -L, ${LDPATHS}) ${PKG_LDPATHS}
+INCLUDES := $(addprefix -I, ${INCLUDES} ${INC}) ${PKG_INCLUDE}
+CXXFLAGS := ${CXXFLAGS} ${PKG_CFLAGS}
+LDFLAGS  := ${LDFLAGS} ${PKG_LDFLAGS}
 DEPS     := $(wildcard ${BUILD}/*/*.d)
 
 .PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% doc
