@@ -5,12 +5,13 @@
 #include <Serializer.h>
 #include <DeSerializer.h>
 #include <Foreach.h>
+#include <algorithm>
 
 #include <array>
 
 class UnitType{
-  private:
-    using StorageType = std::array<id::unit::ID, id::unit::NumDim::value>;
+  protected:
+    using StorageType = std::array<int8_t, id::unit::NumDim::value>;
 
     StorageType mStorage;
 
@@ -19,7 +20,7 @@ class UnitType{
         StorageType& mStorage;
         unsigned int i = 0;
       public:
-        DimensionConverter(StorageType& storage);
+        DimensionConverter(StorageType& storage) : mStorage(storage) {}
 
       template<typename Dim>
       void operator()(Dim d){
@@ -29,13 +30,17 @@ class UnitType{
 
     using iterator = StorageType::iterator;
 
-    iterator begin();
-    iterator end();
+    iterator begin() { return mStorage.begin(); }
+    iterator end() { return mStorage.end(); }
+
+    int8_t& operator[](id::unit::ID id) { return mStorage[id]; }
 
   public:
     using const_iterator = StorageType::const_iterator;
 
-    UnitType() = default;
+    UnitType() {
+      mStorage.fill(0);
+    }
 
     template<typename Dimensions>
     UnitType(const Unit<Dimensions>& u){
@@ -45,17 +50,24 @@ class UnitType{
       foreach<Dimensions>(c);
     }
 
-    int8_t operator[](uint8_t i) const;
+    int8_t operator[](id::unit::ID id) const {
+      if(id<id::unit::NumDim::value)
+        return mStorage[id];
+      else
+        return 0;
+    }
 
-    const_iterator begin() const;
+    const_iterator begin() const { return mStorage.cbegin(); }
 
-    const_iterator end() const;
+    const_iterator end() const { return mStorage.cend(); }
 
     constexpr static std::size_t length() noexcept { return id::unit::NumDim::value; }
 
     constexpr static std::size_t size() noexcept { return length() * sizeof(id::unit::ID); }
 
-    bool operator==(const UnitType& b) const;
+    bool operator==(const UnitType& b) const {
+      return std::equal(mStorage.cbegin(), mStorage.cend(), b.mStorage.cbegin());
+    }
   
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, UnitType&);
 
