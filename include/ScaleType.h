@@ -6,22 +6,21 @@
 #include <ratio>
 
 class ScaleType{
-  private:
-    int32_t mNum = 0;
-    uint32_t mDenom = 0;
-  public:
-    ScaleType() = default;
-    
+  protected:
+    int32_t mNum = 1;
+    uint32_t mDenom = 1;
+    public:
+      ScaleType() = default;
+
     template<std::intmax_t num, std::intmax_t denom>
     ScaleType(const std::ratio<num, denom> scale): mNum(num), mDenom(denom){}
 
-    int32_t num() const;
-    void num(int32_t num);
+    int32_t num() const { return mNum; }
+    uint32_t denom() const { return mDenom; }
 
-    uint32_t denom() const;
-    void denom(uint32_t denom);
-
-    bool operator==(const ScaleType& b) const;
+    bool operator==(const ScaleType& b) const {
+      return mNum == b.mNum && mDenom == b.mDenom;
+    }
 
     constexpr static std::size_t size() noexcept {return sizeof(mNum) + sizeof(mDenom);}
 
