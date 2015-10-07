@@ -17,6 +17,7 @@ class MetaValue {
     }
 
     MetaValue& operator=(const MetaValue& b) { mImpl=b.mImpl->copy(); return *this;}
+    MetaValue& operator=(MetaValue&& b) { mImpl=std::move(b.mImpl); return *this;}
     MetaValue& operator=(Ptr&& b) { mImpl=std::move(b); return *this;}
 
     MetaValue operator+(const MetaValue& b) const;
