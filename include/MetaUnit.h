@@ -10,7 +10,11 @@ class MetaUnit : public UnitType{
     MetaUnit(const UnitType& copy) : UnitType(copy) {}
 
     MetaUnit& operator=(const UnitType& copy) {
-      return *this = copy;
+      return *this = MetaUnit(copy);
+    }
+    template<typename Dimensions>
+    MetaUnit& operator=(const Unit<Dimensions>& copy) {
+      return *this = MetaUnit(copy);
     }
 
     MetaUnit operator*(const MetaUnit& b) const;
