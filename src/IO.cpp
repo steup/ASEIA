@@ -7,7 +7,7 @@
 #include <EventType.h>
 #include <FormatID.h>
 #include <MetaValueElement.h>
-#include <MetaUnit.h>
+#include <MetaAttribute.h>
 
 using std::ostream;
 using std::endl;
@@ -94,4 +94,8 @@ ostream& operator<<(ostream& o, const MetaValueElement& mve) {
                                      break;
   }
   return o;
+}
+
+ostream& operator<<(ostream& o, const MetaAttribute& ma) {
+  return o << id::attribute::name(ma.id()) << ": " << ma.value() << " " << ma.scale() << " " << ma.unit();
 }

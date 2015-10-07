@@ -18,6 +18,7 @@ class ScaleType;
 class EventType;
 class FormatID;
 class MetaValueElement;
+class MetaAttribute;
 
 template<typename T, bool u>
 std::ostream& operator<<(std::ostream& o, const ValueElement<T, u>& e)
@@ -150,3 +151,5 @@ std::ostream& operator<<(std::ostream& o, const EventType& t);
 std::ostream& operator<<(std::ostream& o, const FormatID& id);
 
 std::ostream& operator<<(std::ostream& o, const MetaValueElement& mve);
+
+std::ostream& operator<<(std::ostream& o, const MetaAttribute& ma);
