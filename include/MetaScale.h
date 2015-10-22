@@ -1,3 +1,5 @@
+#pragma once
+
 #include <ScaleType.h>
 
 class MetaScale : public ScaleType {
