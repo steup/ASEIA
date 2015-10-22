@@ -21,7 +21,6 @@ class MetaValue {
 
     MetaValue& operator=(const MetaValue& b);
     MetaValue& operator=(MetaValue&& b);
-    //MetaValue& operator=(Ptr&& b); { mImpl=std::move(b); return *this;}
 
     MetaValue operator+(const MetaValue& b) const;
 
