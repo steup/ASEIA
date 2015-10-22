@@ -88,6 +88,11 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
 
     virtual Base& operator+=(const Base& b);
 
+		virtual void scale(const MetaScale& b) {
+			for(auto& v : mData) 
+				v = v * (T)b.num() / (T)b.denom();
+		}
+
     virtual void set(uint8_t i, double value, double uncertainty){
       mData[i].value(value);
       mData[i].uncertainty(uncertainty);

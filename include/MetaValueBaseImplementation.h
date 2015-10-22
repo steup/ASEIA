@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MetaScale.h>
+
 #include <cstdint>
 #include <ID.h>
 #include <ostream>
@@ -38,6 +40,8 @@ class MetaValueBaseImplementation {
     virtual Type& operator+=( const Type& b ) {
       return *this; 
     }
+
+		virtual void scale(const MetaScale& b) { }
 
     virtual id::type::ID typeId() const { 
       return id::type::Base::value(); 
