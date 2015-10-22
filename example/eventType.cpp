@@ -33,7 +33,7 @@ int main(){
 
   cout << "out: " << out <<  endl;
 
-  Serializer<decltype(buffer.begin())> s(buffer.begin(), buffer.end());
+  Serializer<decltype(back_inserter(buffer))> s(back_inserter(buffer));
   s << out;
 
   cout << "Binarystream: " << hex << setfill('0') << setw(2);
