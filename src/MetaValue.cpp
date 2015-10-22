@@ -1,6 +1,8 @@
 #include <MetaValue.h>
 
-#include <iostream>
+#include <memory>
+
+using namespace std;
 
 /*MetaValue::~MetaValue() { 
   if(mImpl != &MetaValueBaseImplementation::sInstance)
@@ -20,6 +22,28 @@ MetaValue& MetaValue::operator=(MetaValueBaseImplementation& b) {
   mImpl = &b;
   return *this;
 }*/
+
+MetaValue::MetaValue(MetaValue::Ptr&& ptr){
+		mImpl = move(ptr);
+}
+
+MetaValue::MetaValue(const MetaValue& copy) : mImpl(MetaValueBaseImplementation::sInstance.copy()){
+	*this = copy;
+}
+
+MetaValue::MetaValue(MetaValue&& copy) {
+	*this = copy;
+}
+
+MetaValue& MetaValue::operator=(const MetaValue& copy) {
+	mImpl = copy.mImpl->copy();
+	return *this;
+}
+
+MetaValue& MetaValue::operator=(MetaValue&& copy) {
+  mImpl = move(copy.mImpl);
+	return *this;
+}
 
 MetaValue MetaValue::operator+(const MetaValue& b) const {
   if(compatible(b)) {

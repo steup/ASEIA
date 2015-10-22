@@ -1,26 +1,31 @@
 #pragma once
 
 #include <MetaValueBaseImplementation.h>
+#include <MetaScale.h>
 #include <ValueType.h>
-#include <memory>
 
 class MetaValue {
   private:
     using Ptr = MetaValueBaseImplementation::Ptr;
     Ptr mImpl;
 
+    explicit MetaValue(Ptr&& ref);
+    Ptr& implementation() { return mImpl; }
+    const Ptr& implementation() const { return mImpl; }
+
   public:
     MetaValue() : mImpl(MetaValueBaseImplementation::sInstance.copy()) {}
-    explicit MetaValue(Ptr&& ref) : mImpl(std::move(ref)) {}
 
-    MetaValue(const MetaValue& value) : MetaValue(value.mImpl->copy()){
-    }
+    MetaValue(const MetaValue& copy);
+    MetaValue(MetaValue&& copy);
 
-    MetaValue& operator=(const MetaValue& b) { mImpl=b.mImpl->copy(); return *this;}
-    MetaValue& operator=(MetaValue&& b) { mImpl=std::move(b.mImpl); return *this;}
-    MetaValue& operator=(Ptr&& b) { mImpl=std::move(b); return *this;}
+    MetaValue& operator=(const MetaValue& b);
+    MetaValue& operator=(MetaValue&& b);
+    //MetaValue& operator=(Ptr&& b); { mImpl=std::move(b); return *this;}
 
     MetaValue operator+(const MetaValue& b) const;
+
+		MetaValue& scale(const MetaScale& b) { mImpl->scale(b); return *this; }
 
     std::size_t size() const { 
       return sizeof(MetaValue) + mImpl->size();
@@ -43,9 +48,6 @@ class MetaValue {
     }
 
     operator ValueType();
-
-    Ptr& implementation() { return mImpl; }
-    const Ptr& implementation() const { return mImpl; }
 
     friend std::ostream& operator<<(std::ostream&, const MetaValue&);
     friend class MetaFactoryImplementation;
