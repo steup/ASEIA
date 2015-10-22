@@ -16,7 +16,7 @@ int main(){
 
   cout << "ValueType out: " << out << endl;
 
-  Serializer<decltype(buffer.begin())> s(buffer.begin(), buffer.end());
+  Serializer<decltype(buffer.data())> s(buffer.data());
   s << out;
 
   cout << "Binarystream: " << hex << setfill('0') << setw(2);
