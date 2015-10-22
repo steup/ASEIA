@@ -32,10 +32,12 @@ MAKEFILE := $(lastword ${MAKEFILE_LIST})
 
 BASEDIR  := $(dir $(abspath ${MAKEFILE}))
 
-SRC      := src
-EXAMPLE  := example
-INC      := include
-DOC      := doc
+SRC       := src
+EXAMPLE   := example
+INC       := include
+DOC       := doc
+TESTS     := tests
+RUN_TESTS := run_tests
 
 HTML     := ${DOC}/html
 BIN      := bin
@@ -58,6 +60,12 @@ DYNLIB   := ${LIB}/lib${LIBNAME}.so
 STATLIB  := ${LIB}/lib${LIBNAME}.a
 TARGETS  := ${DYNLIB} ${STATLIB}
 
+TEST_INCLUDES := -I${TESTS} $(shell gtest-config --cppflags) 
+TEST_FLAGS    := $(shell gtest-config --cxxflags)
+TEST_LDFLAGS  := $(shell gtest-config --ldflags)
+TEST_LDPATHS  :=
+TEST_LIBS     := $(shell gtest-config --libs)
+
 LIBS     += ${LIBNAME}
 LDPATHS  += ${LIB}
 LDFLAGS  += -Wl,--rpath=$(abspath ${LIB})
@@ -69,11 +77,24 @@ LDPATHS  := $(addprefix -L, ${LDPATHS})
 INCLUDES := $(addprefix -I, ${INCLUDES} ${INC}) $(shell pkg-config eigen3 --cflags)
 DEPS     := $(wildcard ${BUILD}/*/*.d)
 
-.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% doc
+.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% tests run_tests doc
 .PRECIOUS: ${BPROG}/%.o ${BLIB}/%.o
 
 all: ${DYNLIB} ${STATLIB} 
 	
+tests: ${BIN}/${RUN_TESTS}
+
+run_tests: ${BIN}/${RUN_TESTS}
+	@./$<
+
+${BPROG}/${RUN_TESTS}.o: ${TESTS}/${RUN_TESTS}.cpp ${MAKEFILE} | ${BPROG}
+	@echo "Building unit tests $@ <- $<"
+	@${CXX} -MMD -c ${CXXFLAGS} ${TEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES}
+
+${BIN}/${RUN_TESTS}: ${BPROG}/${RUN_TESTS}.o ${MAKEFILE} | ${DYNLIB}
+	@echo "Linking unit tests $@ <- $<"
+	@${CXX} ${LDFLAGS} ${TEST_LDFLAGS} $< -o $@ ${LDPATHS} ${LIBS} ${TEST_LDPATHS} ${TEST_LIBS}
+
 examples: ${EXAMPLES}
 
 ${EXAMPLES}: %: ${BIN}/%
