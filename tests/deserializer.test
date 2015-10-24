@@ -1,0 +1,119 @@
+#include <DeSerializer.h>
+
+#include <array>
+
+namespace deserialize {
+	using namespace std;
+	
+	using Iter = array<uint8_t,  8>::const_iterator;
+
+	class DeSerializeSuite : public ::testing::Test, public DeSerializer<Iter> {
+		private:
+			array<uint8_t, 8> mBuffer;
+		public:
+			template<typename T>
+			void data(T v) { *(T*)mBuffer.data()=v;}
+			size_t size() const { return (size_t)(iterator() - mBuffer.begin()); }
+			DeSerializeSuite() : DeSerializer<Iter>(mBuffer.begin(), mBuffer.end()){}
+			
+	};
+
+	namespace pod {
+		
+		TEST_F(DeSerializeSuite, uint8Test) {
+			uint8_t value;
+			data((uint8_t)13);
+			*this >> value;
+			EXPECT_EQ(value, (uint8_t)13) << "uint8_t was not correctly deserialized";
+			EXPECT_EQ(size(), 1) << "uint8_t was deserialized with wrong size";
+			EXPECT_FALSE(error()) << "Not enough data to deserialize uint8_t";
+		}
+	
+		TEST_F(DeSerializeSuite, uint16Test) {
+			uint16_t value;
+			data((uint16_t)1337);
+			*this >> value;
+			EXPECT_EQ(value, (uint16_t)1337) << "uint16_t was not correctly deserialized";
+			EXPECT_EQ(size(), 2) << "uint16 was deserialized with wrong size";
+			EXPECT_FALSE(error()) << "Not enough data to deserialize uint16";
+		}
+		
+		TEST_F(DeSerializeSuite, uint32Test) {
+			uint32_t value;
+			data((uint32_t)13371337);
+			*this >> value;
+			EXPECT_EQ(value, (uint32_t)13371337) << "uint32_t was not correctly deserialized";
+			EXPECT_EQ(size(), 4) << "uint32 was deserialized with wrong size";
+			EXPECT_FALSE(error()) << "Not enough data to deserialize uint32";
+		}
+		
+		TEST_F(DeSerializeSuite, uint64Test) {
+			uint64_t value;
+			data((uint64_t)1337133713371337);
+			*this >> value;
+			EXPECT_EQ(value, (uint64_t)1337133713371337) << "uint64_t was not correctly deserialized";
+			EXPECT_EQ(size(), 8) << "uint64 was deserialized with wrong size";
+			EXPECT_FALSE(error()) << "Not enough data to deserialize uint64";
+		}
+		
+		TEST_F(DeSerializeSuite, int8Test) {
+			int8_t value;
+			data((int8_t)-13);
+			*this >> value;
+			EXPECT_EQ(value, (int8_t)-13) << "int8_t was not correctly deserialized";
+			EXPECT_EQ(size(), 1) << "int8 was deserialized with wrong size";
+			EXPECT_FALSE(error()) << "Not enough data to deserialize int8";
+		}
+	
+		TEST_F(DeSerializeSuite, int16Test) {
+			int16_t value;
+			data((int16_t)-1337);
+			*this >> value;
+			EXPECT_EQ(value, (int16_t)-1337) << "int16_t was not correctly deserialized";
+			EXPECT_EQ(size(), 2) << "int16 was deserialized with wrong size";
+			EXPECT_FALSE(error()) << "Not enough data to deserialize int16";
+		}
+		
+		TEST_F(DeSerializeSuite, int32Test) {
+			int32_t value;
+			data((int32_t)-13371337);
+			*this >> value;
+			EXPECT_EQ(value, (int32_t)-13371337) << "int32_t was not correctly deserialized";
+			EXPECT_EQ(size(), 4) << "int32 was deserialized with wrong size";
+			EXPECT_FALSE(error()) << "Not enough data to deserialize int32";
+		}
+		
+		TEST_F(DeSerializeSuite, int64Test) {
+			int64_t value;
+			data((int64_t)-1337133713371337);
+			*this >> value;
+			EXPECT_EQ(value, (int64_t)-1337133713371337) << "int64_t was not correctly deserialized";
+			EXPECT_EQ(size(), 8) << "int64 was deserialized with wrong size";
+			EXPECT_FALSE(error()) << "Not enough data to deserialize int64";
+		}
+
+		TEST_F(DeSerializeSuite, floatTest) {
+			float value;
+			data((float)-1337.1337);
+			*this >> value;
+			EXPECT_EQ(value, (float)-1337.1337) << "float was not correctly deserialized";
+			EXPECT_EQ(size(), 4) << "float was deserialized with wrong size";
+			EXPECT_FALSE(error()) << "Not enough data to deserialize float";
+		}
+		
+		TEST_F(DeSerializeSuite, doubleTest) {
+			double value;
+			data((double)-13371337.13371337);
+			*this >> value;
+			EXPECT_EQ(value, (double)-13371337.13371337) << "double was not correctly deserialized";
+			EXPECT_EQ(size(), 8) << "double was deserialized with wrong size";
+			EXPECT_FALSE(error()) << "Not enough data to deserialize double";
+		}
+		
+		TEST_F(DeSerializeSuite, shortInputTest) {
+			double value;
+			*this >> value >> value;
+			EXPECT_TRUE(error()) << "Incomplete input not correctly detected";
+		}
+	}
+}
