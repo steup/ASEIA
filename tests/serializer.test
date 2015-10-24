@@ -12,7 +12,8 @@ namespace serialize {
 		private:
 			vector<uint8_t> mBuffer;
 		public:
-			const uint8_t* data() const { return mBuffer.data(); }
+			template<typename T>
+			const T data(T dummy) const { return *(const T*)mBuffer.data(); }
 			size_t size() const { return mBuffer.size(); }
 			SerializeSuite() : Serializer<Iter>(back_inserter(mBuffer)){}
 			
@@ -23,7 +24,7 @@ namespace serialize {
 		TEST_F(SerializeSuite, uint8Test) {
 			uint8_t value = 13;
 			*this << value;
-			EXPECT_EQ(value, *(const uint8_t*)data()) << "uint8_t was not correctly serialized";
+			EXPECT_EQ(value, 13) << "uint8_t was not correctly serialized";
 			EXPECT_EQ(size(), 1) << "serialized uint8_t had wrong size";
 
 		}
@@ -31,28 +32,28 @@ namespace serialize {
 		TEST_F(SerializeSuite, uint16Test) {
 			uint16_t value = 1337;
 			*this << value;
-			EXPECT_EQ(value, *(const uint16_t*)data()) << "uint16_t was not correctly serialized";
+			EXPECT_EQ(value, data(uint16_t())) << "uint16_t was not correctly serialized";
 			EXPECT_EQ(size(), 2) << "serialized uint16_t had wrong size";
 		}
 		
 		TEST_F(SerializeSuite, uint32Test) {
 			uint32_t value = 13371337;
 			*this << value;
-			EXPECT_EQ(value, *(const uint32_t*)data()) << "uint32_t was not correctly serialized";
+			EXPECT_EQ(value, data(uint32_t())) << "uint32_t was not correctly serialized";
 			EXPECT_EQ(size(), 4) << "serialized uint32_t had wrong size";
 		}
 		
 		TEST_F(SerializeSuite, uint64Test) {
 			uint64_t value = 1337133713371337;
 			*this << value;
-			EXPECT_EQ(value, *(const uint64_t*)data()) << "uint64_t was not correctly serialized";
+			EXPECT_EQ(value, data(uint64_t())) << "uint64_t was not correctly serialized";
 			EXPECT_EQ(size(), 8) << "serialized uint64_t had wrong size";
 		}
 		
 		TEST_F(SerializeSuite, int8Test) {
 			int8_t value = -13;
 			*this << value;
-			EXPECT_EQ(value, *(const int8_t*)data()) << "int8_t was not correctly serialized";
+			EXPECT_EQ(value, data(int8_t())) << "int8_t was not correctly serialized";
 			EXPECT_EQ(size(), 1) << "serialized int8_t had wrong size";
 
 		}
@@ -60,35 +61,35 @@ namespace serialize {
 		TEST_F(SerializeSuite, int16Test) {
 			int16_t value = -1337;
 			*this << value;
-			EXPECT_EQ(value, *(const int16_t*)data()) << "int16_t was not correctly serialized";
+			EXPECT_EQ(value, data(int16_t())) << "int16_t was not correctly serialized";
 			EXPECT_EQ(size(), 2) << "serialized int16_t had wrong size";
 		}
 		
 		TEST_F(SerializeSuite, int32Test) {
 			int32_t value = -13371337;
 			*this << value;
-			EXPECT_EQ(value, *(const int32_t*)data()) << "int32_t was not correctly serialized";
+			EXPECT_EQ(value, data(int32_t())) << "int32_t was not correctly serialized";
 			EXPECT_EQ(size(), 4) << "serialized int32_t had wrong size";
 		}
 		
 		TEST_F(SerializeSuite, int64Test) {
 			int64_t value = -1337133713371337;
 			*this << value;
-			EXPECT_EQ(value, *(const int64_t*)data()) << "int64_t was not correctly serialized";
+			EXPECT_EQ(value, data(int64_t())) << "int64_t was not correctly serialized";
 			EXPECT_EQ(size(), 8) << "serialized int64_t had wrong size";
 		}
 
 		TEST_F(SerializeSuite, floatTest) {
 			float value = -1337.1337;
 			*this << value;
-			EXPECT_EQ(value, *(const float*)data()) << "float was not correctly serialized";
+			EXPECT_EQ(value, data(float())) << "float was not correctly serialized";
 			EXPECT_EQ(size(), 4) << "serialized float had wrong size";
 		}
 		
 		TEST_F(SerializeSuite, doubleTest) {
 			double value = -13371337.13371337;
 			*this << value;
-			EXPECT_EQ(value, *(const double*)data()) << "double was not correctly serialized";
+			EXPECT_EQ(value, data(double())) << "double was not correctly serialized";
 			EXPECT_EQ(size(), 8) << "serialized double had wrong size";
 		}
 	}
