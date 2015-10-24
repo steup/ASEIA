@@ -101,7 +101,7 @@ ${BPROG}/${RUN_TESTS}.o: ${TESTS}/${RUN_TESTS}.cpp ${MAKEFILE} | ${BPROG}
 	@echo "Building unit tests $@ <- $<"
 	@${CXX} -MMD -c ${CXXFLAGS} ${TEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES}
 
-${BIN}/${RUN_TESTS}: ${BPROG}/${RUN_TESTS}.o ${MAKEFILE} | ${DYNLIB}
+${BIN}/${RUN_TESTS}: ${BPROG}/${RUN_TESTS}.o ${MAKEFILE} | ${BIN} ${DYNLIB}
 	@echo "Linking unit tests $@ <- $<"
 	@${CXX} ${LDFLAGS} ${TEST_LDFLAGS} $< -o $@ ${LDPATHS} ${LIBS} ${TEST_LDPATHS} ${TEST_LIBS}
 

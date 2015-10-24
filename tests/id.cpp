@@ -1,9 +1,32 @@
 #include <ID.h>
 
-namespace attr {
-	using namespace id::attribute;
+/** \namespace id
+ * 	\test ID Test Suites \see tests::id
+ **/
 
-	TEST(idAttributeSuite, valueTest) {
+/** \namespace id::attribute
+ *  \test %Attribute ID Test Suite \see tests::id::attr
+ **/
+
+/** \namespace id::type
+ *  \test Type ID Test Suite \see tests::id::type
+ **/
+
+/** \namespace id::unit
+ *  \test %Unit ID Test Suite \see tests::id::unit
+ **/
+namespace tests {
+
+/** \brief ID Test Suites **/
+namespace id {
+
+/** \brief %Attribute ID Test Suite **/
+namespace attr {
+	using namespace ::id::attribute;
+	/** \brief %Attribute ID assignment test case
+	 *	\test %Unit test checking the correct assignment of integers to %Attribute IDs
+	 **/
+	TEST(IdAttributeSuite, valueTest) {
 		EXPECT_EQ(Base::value()       , 0) << "ID of attribute \"Base\" does not match ";
 		EXPECT_EQ(Position::value()   , 1) << "ID of attribute \"Position\" does not match ";
 		EXPECT_EQ(Time::value()       , 2) << "ID of attribute \"Time\" does not match ";
@@ -15,7 +38,10 @@ namespace attr {
 		EXPECT_EQ(Reference::value()  , 8) << "ID of attribute \"Reference\" does not match ";
 	}
 
-	TEST(idAttributeSuite, lookUpTest) {
+	/** \brief %Attribute ID lookup test case
+	 *	\test %Unit test checking the correct lookup of %Attribute IDs from integers
+	 **/
+	TEST(IdAttributeSuite, lookUpTest) {
 		EXPECT_EQ(attribute<1>::type::value(), 1) << "ID of attribute \"Position\" does not match ";
 		EXPECT_EQ(attribute<2>::type::value(), 2) << "ID of attribute \"Time\" does not match ";
 		EXPECT_EQ(attribute<3>::type::value(), 3) << "ID of attribute \"PublisherID\" does not match ";
@@ -27,10 +53,14 @@ namespace attr {
 	}
 }
 
+/** \brief Type ID Test Suites **/
 namespace type {
-	using namespace id::type;
+	using namespace ::id::type;
 
-	TEST(idTypeSuite, valueTest) {
+	/** \brief Type ID assignment test case
+	 *	\test %Unit test checking the correct assignment of integers to Type IDs
+	 **/
+	TEST(IdTypeSuite, valueTest) {
 		EXPECT_EQ(Base::value()  ,  0) << "ID of type \"Base\" does not match ";
 		EXPECT_EQ(UInt8::value() ,  1) << "ID of type \"UInt8\" does not match ";
 		EXPECT_EQ(UInt16::value(),  2) << "ID of type \"UInt16\" does not match ";
@@ -44,7 +74,10 @@ namespace type {
 		EXPECT_EQ(Double::value(), 10) << "ID of type \"Double\" does not match ";
 	}
 
-	TEST(idTypeSuite, lookUpTest) {
+	/** \brief Type ID lookup from integer test case
+	 *	\test %Unit test checking the correct lookup of Type IDs from integers
+	 **/
+	TEST(IdTypeSuite, lookUpTest) {
 		EXPECT_EQ(id2Type< 1>::type::value(),  1) << "ID of type \"UInt8\" does not match ";
 		EXPECT_EQ(id2Type< 2>::type::value(),  2) << "ID of type \"UInt16\" does not match ";
 		EXPECT_EQ(id2Type< 3>::type::value(),  3) << "ID of type \"UInt32\" does not match ";
@@ -57,7 +90,10 @@ namespace type {
 		EXPECT_EQ(id2Type<10>::type::value(), 10) << "ID of type \"Double\" does not match ";
 	}
 	
-	TEST(idTypeSuite, getIdTest) {
+	/** \brief Type integer lookup from type test case
+	 *	\test %Unit test checking the correct lookup of Type integers from types
+	 **/
+	TEST(IdTypeSuite, getIdTest) {
 		EXPECT_EQ(id::type::id(uint8_t()) ,  1) << "ID of type \"UInt8\" does not match ";
 		EXPECT_EQ(id::type::id(uint16_t()),  2) << "ID of type \"UInt16\" does not match ";
 		EXPECT_EQ(id::type::id(uint32_t()),  3) << "ID of type \"UInt32\" does not match ";
@@ -70,11 +106,14 @@ namespace type {
 		EXPECT_EQ(id::type::id(double())  , 10) << "ID of type \"Double\" does not match ";
 	}
 }
-
+/** \brief %Unit ID Test Suites **/
 namespace unit {
-	using namespace id::unit;
+	using namespace ::id::unit;
 
-	TEST(idUnitSuite, valueTest) {
+	/** \brief %Unit ID assignment test case
+	 *	\test %Unit test checking the correct assignment of integers to %Attribute IDs
+	 **/
+	TEST(IdUnitSuite, valueTest) {
 		EXPECT_EQ(Steradian::value , 0) << "ID of unit \"Steradian\" does not match ";
 		EXPECT_EQ(Radian::value    , 1) << "ID of unit \"Radian\" does not match ";
 		EXPECT_EQ(Candela::value   , 2) << "ID of unit \"Candela\" does not match ";
@@ -86,7 +125,10 @@ namespace unit {
 		EXPECT_EQ(Meter::value     , 8) << "ID of unit \"Meter\" does not match ";
 	}
 	
-	TEST(idUnitSuite, lookUpTest) {
+	/** \brief %Unit ID lookup test case
+	 *	\test %Unit test checking the correct lookup of %Unit IDs from integers
+	 **/
+	TEST(IdUnitSuite, lookUpTest) {
 		EXPECT_EQ(id2Type<0>::type::value, 0) << "ID of unit \"Steradian\" does not match ";
 		EXPECT_EQ(id2Type<1>::type::value, 1) << "ID of unit \"Radian\" does not match ";
 		EXPECT_EQ(id2Type<2>::type::value, 2) << "ID of unit \"Candela\" does not match ";
@@ -97,4 +139,4 @@ namespace unit {
 		EXPECT_EQ(id2Type<7>::type::value, 7) << "ID of unit \"Kilogram\" does not match ";
 		EXPECT_EQ(id2Type<8>::type::value, 8) << "ID of unit \"Meter\" does not match ";
 	}
-}
+}}}
