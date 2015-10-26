@@ -17,7 +17,7 @@ class UnitType;
 class ScaleType;
 class EventType;
 class FormatID;
-class MetaValueElement;
+class MetaValueBaseImplementation;
 class MetaAttribute;
 
 template<typename T, bool u>
@@ -29,21 +29,6 @@ std::ostream& operator<<(std::ostream& o, const ValueElement<T, u>& e)
     o << e.value();
   return o;
 }
-
-/*template<typename T, std::size_t n, bool useUncertainty>
-std::ostream& operator<<(std::ostream& o, const Value<T,n,useUncertainty>& v)
-{
-  o << "(";
-  bool isFirst=true;
-  for(auto e : v)
-    if(isFirst){
-      isFirst=false;
-      o << e;
-    }
-    else
-      o << ", " << e;
-  return o << ")";
-}*/
 
 namespace {
   struct UnitOutputHelper {
@@ -150,6 +135,4 @@ std::ostream& operator<<(std::ostream& o, const EventType& t);
 
 std::ostream& operator<<(std::ostream& o, const FormatID& id);
 
-std::ostream& operator<<(std::ostream& o, const MetaValueElement& mve);
 
-std::ostream& operator<<(std::ostream& o, const MetaAttribute& ma);

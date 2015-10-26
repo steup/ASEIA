@@ -14,14 +14,16 @@
 class MetaValue;
 
 template<typename T>
-class MetaValueImplementation : public MetaValueBaseImplementation {
+class MetaValueImplementation : public MetaValueBaseImplementation, public Value<T, true, Eigen::Dynamic, Eigen::Dynamic> {
   private:
-    using Base = MetaValueBaseImplementation;
-    using Ptr  = Base::Ptr;
-    using Type = MetaValueImplementation;
+    //using Base = MetaValueBaseImplementation;
+    //using Ptr  = Base::Ptr;
+    using Impl = MetaValueImplementation;
+		using Base = Value<T, true, Eigen::Dynamic, Eigen::Dynamic>;
+		using Elem = ValueElement<T, true>;
 
-    std::valarray<ValueElement<T>> mData;
-    bool mHasUncertainty;
+    //std::valarray<ValueElement<T>> mData;
+    //bool mHasUncertainty;
 
     static Ptr factoryCreate(std::size_t n, bool u);
 
@@ -35,37 +37,24 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
       return Ptr(new MetaValueImplementation(*this), deleter);
     }
 
-    virtual void n( std::size_t n ) { 
-      mData.resize(n);
+    virtual void rows( std::size_t rows ) { 
+      Base::rows(rows);
+    }
+    
+		virtual void cols( std::size_t cols ) { 
+      Base::rows(cols);
     }
 
-    virtual void hasUncertainty( bool u) { 
-      mHasUncertainty = u;
+    virtual void uncertainty( bool u) { 
+      //mHasUncertainty = u;
     }
 
   public:
     using DataType = T;
 
-    MetaValueImplementation(std::initializer_list<std::initializer_list<T>> values)
-      : mHasUncertainty(true)
-    {
-      {
-        auto temp = values.begin();
-        std::size_t n=0;
-        while(temp!=values.end()){n++;temp=std::next(temp);}
-        mData.resize(n);
-        n=0;
-      }
-      std::size_t i=0;
-      for(const std::initializer_list<T>& elem : values){
-        auto uI = std::next(elem.begin());
-        T v = *elem.begin();
-        if(uI!=elem.end()) {
-          T u = *uI;
-          mData[i++]=ValueElement<T>(v,u);
-        }else
-          mData[i++]=ValueElement<T>(v);
-      }
+    MetaValueImplementation(std::initializer_list<std::initializer_list<T>> values){
+      for(const auto& elem : values) {
+        values = ValueElement
     }
 
     MetaValueImplementation(std::initializer_list<T> i)

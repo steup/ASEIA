@@ -32,3 +32,5 @@ class MetaAttribute {
         MetaValue& value()       { return mValue; }
   const MetaValue& value() const { return mValue; }
 };
+
+std::ostream& operator<<(std::ostream& o, const MetaAttribute& ma);

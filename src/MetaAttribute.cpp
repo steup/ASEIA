@@ -35,3 +35,7 @@ MetaAttribute& MetaAttribute::operator+=(const MetaAttribute& b) {
 		mValue = mValue + b.value();
 	return *this;
 }
+
+ostream& operator<<(ostream& o, const MetaAttribute& ma) {
+  return o << id::attribute::name(ma.id()) << ": " << ma.value() << " " << ma.scale() << " " << ma.unit();
+}

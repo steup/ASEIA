@@ -72,30 +72,3 @@ ostream& operator<<(ostream& o, const FormatID& id) {
   return o << id.node() << (id.direction()==FormatID::Direction::publisher?"P":"S") << id.nr();
 }
 
-ostream& operator<<(ostream& o, const MetaValueElement& mve) {
-  o << "(" << id::type::name(mve.id()) << ")";
-  switch(mve.id()){
-    case(id::type::UInt8::value()):  
-    case(id::type::UInt16::value()): 
-    case(id::type::UInt32::value()): 
-    case(id::type::UInt64::value()): o << mve._uint;
-                                     break;
-
-    case(id::type::Int8::value())  : 
-    case(id::type::Int16::value()) : 
-    case(id::type::Int32::value()) : 
-    case(id::type::Int64::value()) : o << mve._int;
-                                     break;
-
-    case(id::type::Float::value()) : o << mve._float;
-                                     break;
-
-    case(id::type::Double::value()): o << mve._double;
-                                     break;
-  }
-  return o;
-}
-
-ostream& operator<<(ostream& o, const MetaAttribute& ma) {
-  return o << id::attribute::name(ma.id()) << ": " << ma.value() << " " << ma.scale() << " " << ma.unit();
-}

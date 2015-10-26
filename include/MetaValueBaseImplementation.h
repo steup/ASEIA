@@ -9,9 +9,9 @@
 
 class MetaValueBaseImplementation {
   private:
-    using Type = MetaValueBaseImplementation;
+    using Interface = MetaValueBaseImplementation;
   protected:
-    static  Type sInstance;
+    static Interface sInstance;
 
     struct Deleter{
       void operator()(Type* ptr){
@@ -20,8 +20,9 @@ class MetaValueBaseImplementation {
       }
     } deleter;
 
-    virtual void n( std::size_t n) { }
-    virtual void hasUncetrainty( bool u ) { }
+    virtual void rows( std::size_t rows) { }
+    virtual void cols( std::size_t rows) { }
+    virtual void uncertain( bool u ) { }
 
     MetaValueBaseImplementation() = default;
 
@@ -29,7 +30,7 @@ class MetaValueBaseImplementation {
     using Ptr = std::unique_ptr<Type, Deleter>;
     virtual ~MetaValueBaseImplementation() = default;
 
-    virtual Type& operator=( const Type& b) { 
+    virtual Interface& operator=( const Type& b) { 
       return *this; 
     }
 
@@ -37,28 +38,32 @@ class MetaValueBaseImplementation {
       return Ptr(&sInstance, sInstance.deleter);
     }
 
-    virtual Type& operator+=( const Type& b ) {
+    virtual Interface& operator+=( const Type& b ) {
       return *this; 
     }
 
-		virtual void scale(const MetaScale& b) { }
+		virtual Interface& scale(const MetaScale& b) { }
 
     virtual id::type::ID typeId() const { 
       return id::type::Base::value(); 
     }
     
-    virtual void set(uint8_t i, double value, double uncertainty) { }
+    virtual void set(std::size_t rows, std::size_t cols, double value, double uncertainty) { }
 
-    virtual std::size_t n() const { 
-      return 0; 
+    virtual std::size_t cols() const { 
+      return 0;
     }
 
-    virtual bool hasUncertainty() const { 
-      return false; 
+    virtual std::size_t rows() const { 
+      return 0;
+    }
+
+    virtual bool uncertain() const { 
+      return true; 
     }
 
     virtual std::size_t size() const { 
-      return sizeof(Type); 
+      return 0; 
     }
 
     virtual void print( std::ostream& o ) const { 
@@ -68,3 +73,5 @@ class MetaValueBaseImplementation {
     friend class MetaFactoryImplementation;
     friend class MetaValue;
 };
+
+std::ostream& operator<<(std::ostream& o, const MetaValueBaseImplementation& mvbi);
