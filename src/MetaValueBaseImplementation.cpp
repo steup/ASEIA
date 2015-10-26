@@ -1,8 +1,12 @@
 #include <MetaValueBaseImplementation.h>
+#include <ostream>
 
 MetaValueBaseImplementation MetaValueBaseImplementation::sInstance;
 
-std::ostream& operator<<(std::ostream& o, const MetaValueBaseImplementation& mvbi){
-	mvbi.print(o);
-	return o;
+std::ostream& MetaValueBaseImplementation::print( std::ostream& o ) const { 
+      return o << "void"; 
+}
+
+std::ostream& operator<<(std::ostream& o, const MetaValueBaseImplementation& mvbi) {
+  return mvbi.print(o);
 }

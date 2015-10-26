@@ -1,109 +1,81 @@
 #pragma once
 
 #include <MetaValueBaseImplementation.h>
-#include <MetaValue.h>
 #include <MetaFactory.h>
-#include <ValueElement.h>
+#include <MetaScale.h>
 #include <Value.h>
-#include <ID.h>
 #include <IO.h>
 
-#include <valarray>
-#include <ostream>
-
-class MetaValue;
-
 template<typename T>
-class MetaValueImplementation : public MetaValueBaseImplementation, public Value<T, true, Eigen::Dynamic, Eigen::Dynamic> {
+class MetaValueImplementation : public MetaValueBaseImplementation {
   private:
-    //using Base = MetaValueBaseImplementation;
-    //using Ptr  = Base::Ptr;
     using Impl = MetaValueImplementation;
-		using Base = Value<T, true, Eigen::Dynamic, Eigen::Dynamic>;
-		using Elem = ValueElement<T, true>;
+		using Base = Value<T, Eigen::Dynamic, Eigen::Dynamic>;
+		using Elem = typename Base::BaseType;
 
-    //std::valarray<ValueElement<T>> mData;
-    //bool mHasUncertainty;
+    Base mData;
 
-    static Ptr factoryCreate(std::size_t n, bool u);
+    static Ptr factoryCreate(std::size_t rows, std::size_t cols, bool u) {
+      return Ptr(new MetaValueImplementation(rows, cols, u));
+    }
 
   public:
     
-    MetaValueImplementation(const Type&) = default;
-
-    MetaValueImplementation(std::size_t n, bool u);
+    MetaValueImplementation(const MetaValueImplementation& copy) = default;
 
     virtual Ptr copy() const{
       return Ptr(new MetaValueImplementation(*this), deleter);
     }
 
-    virtual void rows( std::size_t rows ) { 
-      Base::rows(rows);
+    virtual void resize( std::size_t rows, std::size_t cols ) { 
+      mData.resize(rows, cols);
     }
     
-		virtual void cols( std::size_t cols ) { 
-      Base::rows(cols);
-    }
-
-    virtual void uncertainty( bool u) { 
-      //mHasUncertainty = u;
-    }
-
   public:
     using DataType = T;
 
-    MetaValueImplementation(std::initializer_list<std::initializer_list<T>> values){
-      for(const auto& elem : values) {
-        values = ValueElement
-    }
+    MetaValueImplementation(std::size_t rows, std::size_t cols, bool u=true) : mData(rows, cols) { }
 
-    MetaValueImplementation(std::initializer_list<T> i)
-      : mHasUncertainty(false)
-    {
-      {
-        auto temp = i.begin();
-        std::size_t n=0;
-        while(temp!=i.end()){n++;temp=std::next(temp);}
-        mData.resize(n);
-      }
-      std::size_t n=0;
-      for(const auto& elem : i)
-          mData[n++]=ValueElement<T>(elem);
-    }
+    MetaValueImplementation(std::initializer_list<Elem> values) : mData(values) { }
 
     virtual ~MetaValueImplementation() = default;
 
-    virtual Type& operator=( const Type& b) = delete;
+    virtual MetaValueImplementation& operator=( const MetaValueImplementation& b) = delete;
 
-    virtual Base& operator+=(const Base& b);
+    Interface& operator+=(const Interface& b) {
+      mData += reinterpret_cast<const MetaValueImplementation&>(b).mData;
+      return *this;
+    }
 
-		virtual void scale(const MetaScale& b) {
-			for(auto& v : mData) 
-				v = v * (T)b.num() / (T)b.denom();
+		virtual Interface& operator*=(const MetaScale& b) {
+			mData  *= b.num();
+      mData  /= b.denom();
+      return *this;
 		}
 
-    virtual void set(uint8_t i, double value, double uncertainty){
-      mData[i].value(value);
-      mData[i].uncertainty(uncertainty);
+    virtual void set(std::size_t row, std::size_t col, ValueElement<double> value) {
+      mData(row, col)=value;
     }
    
     virtual id::type::ID typeId() const {
       return id::type::id(T());
     }
 
-    virtual std::size_t n() const { 
-      return mData.size();
+    virtual std::size_t cols() const { 
+      return mData.cols();
     }
-
-    virtual bool hasUncertainty() const { 
-      return mHasUncertainty;
+    
+    virtual std::size_t rows() const { 
+      return mData.rows();
     }
 
     virtual std::size_t size() const { 
-      return sizeof(Type) + sizeof(ValueElement<T>)*n();
+      return Elem::size()*cols()*rows();
     }
 
-    virtual void print(std::ostream& o) const;
+    virtual std::ostream& print(std::ostream& o) const {
+      return o << mData;
+    }
 
     friend class MetaFactoryImplementation;
     template<typename T1, typename T2> friend class Converter;
@@ -112,15 +84,13 @@ class MetaValueImplementation : public MetaValueBaseImplementation, public Value
 template<typename T0, typename T1>
 struct Converter{
   using Base = MetaValueBaseImplementation;
+  using T0Impl = MetaValueImplementation<T0>;
+  using T1Impl = MetaValueImplementation<T1>;
 
   static void convert(const Base& in, Base& out){
-    auto i=std::begin(reinterpret_cast<MetaValueImplementation<T1>&>(out).mData);
-    auto end=std::end(reinterpret_cast<MetaValueImplementation<T1>&>(out).mData);
-    for(const auto& elem : reinterpret_cast<const MetaValueImplementation<T0>&>(in).mData){
-      if(i==end)
-        break;
-      *i++=elem;
-    }
+    const T0Impl& inC = reinterpret_cast<const T0Impl&>(in);
+    T1Impl& outC = reinterpret_cast<T1Impl&>(out);
+    outC.mData = inC.mData.template cast< typename T1Impl::Base::BaseType >();
   }
   
   operator MetaFactory::Converter(){

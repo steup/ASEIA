@@ -1,4 +1,5 @@
 #include <MetaValue.h>
+#include <ValueType.h>
 
 #include <memory>
 
@@ -28,12 +29,10 @@ MetaValue::MetaValue(MetaValue::Ptr&& ptr){
 }
 
 MetaValue::MetaValue(const MetaValue& copy) : mImpl(MetaValueBaseImplementation::sInstance.copy()){
-	*this = copy;
+	mImpl = copy.mImpl->copy();
 }
 
-MetaValue::MetaValue(MetaValue&& copy) {
-	*this = copy;
-}
+MetaValue::MetaValue(MetaValue&& copy) : mImpl(move(copy.mImpl)) { }
 
 MetaValue& MetaValue::operator=(const MetaValue& copy) {
 	mImpl = copy.mImpl->copy();
@@ -59,11 +58,11 @@ bool MetaValue::valid() const {
 }
 
 bool MetaValue::compatible(const MetaValue& b) const {
-  return valid() && mImpl->typeId() == b.mImpl->typeId() && mImpl->n() == b.mImpl->n();
+  return valid() && mImpl->typeId() == b.mImpl->typeId() && mImpl->cols() == b.mImpl->cols() && mImpl->rows() == mImpl->rows();
 }
 
 MetaValue::operator ValueType() {
-  return ValueType(typeId(), n(), 1, hasUncertainty());
+  return ValueType(typeId(), rows(), cols(), hasUncertainty());
 }
 
 

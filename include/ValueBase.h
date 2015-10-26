@@ -33,15 +33,10 @@
 		using InitType = std::initializer_list<Scalar>;
 		using BaseType = Scalar;
 
-		Matrix(InitType l){
- 			if(!l.size())
-					return;
-			
-			auto i = std::begin(l);
-      auto temp = *this << *i;
-			i=std::next(i);
-			for(;i!=std::end(l);i=std::next(i))
-					temp, *i;
+		Matrix(InitType l) : Matrix(l.size(), 1){
+      unsigned int i=0;
+      for(const auto& elem : l)
+        this->operator()(i++, 0)=elem;
     }
 
    constexpr static std::size_t size() noexcept {return RowsAtCompileTime*ColsAtCompileTime*sizeof(Scalar);}

@@ -6,7 +6,6 @@
 #include <AttributeType.h>
 #include <EventType.h>
 #include <FormatID.h>
-#include <MetaValueElement.h>
 #include <MetaAttribute.h>
 
 using std::ostream;

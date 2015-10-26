@@ -20,7 +20,7 @@ class MetaFactoryImplementation {
     using Converter      = std::pair<const ConverterKey, ConverterValue>;
 
     using CreatorKey     = id::type::ID;
-    using CreatorValue   = Ptr (*)(std::size_t n, bool u);
+    using CreatorValue   = Ptr (*)(std::size_t rows, std::size_t cols, bool u);
     using Creator        = std::pair<const CreatorKey, CreatorValue>;
     
     std::map<CreatorKey, CreatorValue>     creators;
@@ -29,8 +29,8 @@ class MetaFactoryImplementation {
     MetaFactoryImplementation();
     ~MetaFactoryImplementation();
     MetaValue create(const ValueType& type) const;
-    MetaValue create(id::type::ID id, std::size_t n, bool u) const;
-    MetaValue create(std::initializer_list<std::initializer_list<double>> l, id::type::ID id=id::type::Double::value()) const;
+    MetaValue create(id::type::ID id, std::size_t rows, std::size_t cols, bool u) const;
+    MetaValue create(std::initializer_list<ValueElement<double>> l, id::type::ID id=id::type::Double::value()) const;
     MetaValue convert(const ValueType& type, const MetaValue& value) const;
     void insert(const Converter& c) {converters.insert(c);}
 };
