@@ -24,11 +24,11 @@
 
 		Iterator begin() { return Iterator(this->data()); }
 
-		Iterator end()   { return Iterator(this->data()+RowsAtCompileTime*ColsAtCompileTime); }
+		Iterator end()   { return Iterator(this->data()+this->cols()*this->rows()); }
 
 		ConstIterator begin() const { return ConstIterator(this->data()); }
 
-		ConstIterator end() const { return ConstIterator(this->data()+RowsAtCompileTime*ColsAtCompileTime); }
+		ConstIterator end() const { return ConstIterator(this->data()+this->cols()*this->rows()); }
 	
 		using InitType = std::initializer_list<Scalar>;
 		using BaseType = Scalar;
@@ -39,4 +39,5 @@
         this->operator()(i++, 0)=elem;
     }
 
-   constexpr static std::size_t size() noexcept {return RowsAtCompileTime*ColsAtCompileTime*sizeof(Scalar);}
+    constexpr static std::size_t staticSize() { return RowsAtCompileTime * ColsAtCompileTime * BaseType::size(); }
+    std::size_t dynamicSize() const { return this->rows() * this->cols() * BaseType::size(); }

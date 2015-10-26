@@ -39,7 +39,7 @@ void valueElementOut(){
 
 void valueOut(){
   using Val=Value<float, 3, true>;
-  V v(Val::size());
+  V v(Val::staticSize());
   S s(back_inserter(v));
   Val value = {{1.1, 0.2}, {0,0.2}, {4.2,1.1}};
   s << value;

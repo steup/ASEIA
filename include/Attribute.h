@@ -30,7 +30,7 @@ class Attribute
     constexpr IDType id() noexcept {return IDType();}
     constexpr ScaleType scale() noexcept {return ScaleType();}
     constexpr UnitType unit() noexcept {return UnitType();}
-    constexpr static std::size_t size() noexcept {return Value::size();}
+    constexpr static std::size_t size() noexcept {return Value::staticSize();}
 };
 
 template<typename PB, typename ID, typename V, typename U, typename S>
