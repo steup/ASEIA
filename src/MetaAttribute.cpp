@@ -1,6 +1,11 @@
 #include <MetaAttribute.h>
+#include <IDIO.h>
+#include <IO.h>
 
 #include <memory>
+#include <ostream>
+
+using namespace std;
 
 using std::move;
 
