@@ -4,6 +4,8 @@
 #include <MetaUnit.h>
 #include <MetaScale.h>
 
+#include <iosfwd>
+
 class MetaAttribute { 
   private:
 
