@@ -46,17 +46,32 @@ namespace id{
       static constexpr ID value(){return 8;}
     };
 
+    struct ObjectID : public Base{
+      static constexpr ID value(){return 9;}
+    };
+
+    struct ObjectType : public Base{
+      static constexpr ID value(){return 10;}
+    };
+
+    struct OccupancyGrid : public Base{
+      static constexpr ID value(){return 11;}
+    };
+
     template<ID id>
     struct attribute;
 
-    template<> struct attribute<Position::value()>    { using type = Position;    };
-    template<> struct attribute<Time::value()>        { using type = Time;        };
-    template<> struct attribute<PublisherID::value()> { using type = PublisherID; };
-    template<> struct attribute<Validity::value()>    { using type = Validity;    };
-    template<> struct attribute<Distance::value()>    { using type = Distance;    };
-    template<> struct attribute<Orientation::value()> { using type = Orientation; };
-    template<> struct attribute<Angle::value()>       { using type = Angle;       };
-    template<> struct attribute<Reference::value()>   { using type = Reference;   };
+    template<> struct attribute<Position::value()>      { using type = Position;      };
+    template<> struct attribute<Time::value()>          { using type = Time;          };
+    template<> struct attribute<PublisherID::value()>   { using type = PublisherID;   };
+    template<> struct attribute<Validity::value()>      { using type = Validity;      };
+    template<> struct attribute<Distance::value()>      { using type = Distance;      };
+    template<> struct attribute<Orientation::value()>   { using type = Orientation;   };
+    template<> struct attribute<Angle::value()>         { using type = Angle;         };
+    template<> struct attribute<Reference::value()>     { using type = Reference;     };
+    template<> struct attribute<ObjectID::value()>      { using type = ObjectID;      };
+    template<> struct attribute<ObjectType::value()>    { using type = ObjectType;    };
+    template<> struct attribute<OccupancyGrid::value()> { using type = OccupancyGrid; };
   }
 
   namespace type{

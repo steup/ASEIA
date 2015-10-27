@@ -4,15 +4,18 @@ namespace id {
   namespace attribute {
     const char* name(ID id) {
       switch(id){
-        case(Position::value())    : return "Position      ";
-        case(Time::value())        : return "Time          ";
-        case(PublisherID::value()) : return "Publisher ID  ";;
-        case(Validity::value())    : return "Validity      ";
-        case(Distance::value())    : return "Distance      ";
-        case(Orientation::value()) : return "Orientation   ";
-        case(Angle::value())       : return "Angle         ";
-        case(Reference::value())   : return "Reference     ";
-        default                    : return "Unspecified   ";
+        case(Position::value())      : return "Position      ";
+        case(Time::value())          : return "Time          ";
+        case(PublisherID::value())   : return "Publisher ID  ";
+        case(Validity::value())      : return "Validity      ";
+        case(Distance::value())      : return "Distance      ";
+        case(Orientation::value())   : return "Orientation   ";
+        case(Angle::value())         : return "Angle         ";
+        case(Reference::value())     : return "Reference     ";
+        case(ObjectID::value())      : return "ObjectID      ";
+        case(ObjectType::value())    : return "ObjectType    ";
+        case(OccupancyGrid::value()) : return "OccupancyGrid ";
+        default                      : return "Unspecified   ";
       }
     }
   }
