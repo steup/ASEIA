@@ -3,6 +3,9 @@
 #include <id.cpp>
 #include <serializer.cpp>
 #include <deserializer.cpp>
+#include <valueElement.cpp>
+#include <value.cpp>
+#include <metaValueImpl.cpp>
 
 /** \namespace tests
  *  \brief %Unit Test Suites
