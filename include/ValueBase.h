@@ -30,14 +30,24 @@
 
 		ConstIterator end() const { return ConstIterator(this->data()+this->cols()*this->rows()); }
 	
-		using InitType = std::initializer_list<Scalar>;
-		using BaseType = Scalar;
+		using RowInitType = std::initializer_list<Scalar>;
+		using InitType    = std::initializer_list<RowInitType>;
+		using BaseType    = Scalar;
 
-		Matrix(InitType l) : Matrix(l.size(), 1){
+		Matrix(InitType l) : Matrix(l.size(), l.begin()->size()){
+      unsigned int i=0;
+      for(const auto& row : l) {
+				unsigned int j=0;
+      	for(const auto& elem : row)
+        	this->operator()(i, j++)=elem;
+				i++;
+			}
+    }
+		/*Matrix(RowInitType l) : Matrix(l.size(), 1){
       unsigned int i=0;
       for(const auto& elem : l)
         this->operator()(i++, 0)=elem;
-    }
+    }*/
 
     constexpr static std::size_t staticSize() { return RowsAtCompileTime * ColsAtCompileTime * BaseType::size(); }
     std::size_t dynamicSize() const { return this->rows() * this->cols() * BaseType::size(); }
