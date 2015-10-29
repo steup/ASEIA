@@ -36,15 +36,23 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
 
     MetaValueImplementation(std::size_t rows, std::size_t cols, bool u=true) : mData(rows, cols) { }
 
-    MetaValueImplementation(std::initializer_list<Elem> values) : mData(values) { }
+    MetaValueImplementation(typename Base::InitType values) : mData(values) { }
 
     virtual ~MetaValueImplementation() = default;
 
     virtual MetaValueImplementation& operator=( const MetaValueImplementation& b) = delete;
 
-    Interface& operator+=(const Interface& b) {
+    virtual Interface& operator+=(const Interface& b) {
       mData += reinterpret_cast<const MetaValueImplementation&>(b).mData;
       return *this;
+    }
+    
+		virtual bool operator==(const Interface& b) const {
+      return mData == reinterpret_cast<const MetaValueImplementation&>(b).mData;
+    }
+		
+		virtual bool operator!=(const Interface& b) const {
+      return !(mData == reinterpret_cast<const MetaValueImplementation&>(b).mData);
     }
 
 		virtual Interface& operator*=(const MetaScale& b) {

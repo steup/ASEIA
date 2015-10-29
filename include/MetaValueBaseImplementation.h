@@ -41,6 +41,14 @@ class MetaValueBaseImplementation {
     virtual Interface& operator+=( const Interface& b ) {
       return *this; 
     }
+    
+		virtual bool operator==( const Interface& b ) const {
+      return false; 
+    }
+		
+		virtual bool operator!=( const Interface& b ) const {
+      return !(*this==b); 
+    }
 
 		virtual Interface& operator*=(const MetaScale& b) { return *this; }
 
