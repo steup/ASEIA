@@ -262,8 +262,17 @@ class ValueElement<T, true>{
     ValueElement(const ValueElement& data) : mValue(data.mValue), mUncertainty(data.mUncertainty){}
     ValueElement(InitType i) : ValueElement() {
       auto iter = i.begin();
-      mValue = *iter;
-      mUncertainty = *std::next(iter);
+
+			if(i.size()<1)
+				mValue = 0;
+			else
+      	mValue = *iter;
+
+			if(i.size()<2)
+				mUncertainty = 0;
+			else
+      	mUncertainty = *std::next(iter);
+
       if (mUncertainty < 0)
         mUncertainty = std::numeric_limits<T>::max();
     }
@@ -461,6 +470,16 @@ bool operator==(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
 template<typename T, bool U>
 bool operator==(const ValueElement<T, U>& a, const T& b){
 	return a<=b && a>=b;
+}
+
+template<typename T, bool U>
+bool operator!=(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
+	return a<b || a>b;
+}
+
+template<typename T, bool U>
+bool operator!=(const ValueElement<T, U>& a, const T& b){
+	return a<b || a>b;
 }
 
 template<typename T1, typename T2, bool U>
