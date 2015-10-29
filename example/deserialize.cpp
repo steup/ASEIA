@@ -1,5 +1,8 @@
 #include <DeSerializer.h>
 #include <ValueElement.h>
+#include <AttributeType.h>
+#include <EventType.h>
+#include <ValueType.h>
 #include <BaseEvent.h>
 #include <ID.h>
 #include <IO.h>
@@ -14,16 +17,23 @@ using V=vector<uint8_t>;
 using I=vector<uint8_t>::const_iterator;
 using D=DeSerializer<I>;
 
+void printV(const V& v){
+	cout << "Binary: ";
+	auto formatFlags = cout.flags();
+  for(auto byte : v)
+      cout << hex << setw(2) << setfill('0') << byte << " ";
+	cout.flags(formatFlags);
+	cout << endl;
+}
+
 template<typename T>
 void podIn(){
   V v({8, 0, 0, 0, 0, 0, 0, 0});
   D d(v.cbegin(), v.end());
   T value;
   d >> value;
-  for(auto byte : v)
-      cout << hex << setw(2) << setfill('0') << byte << " ";
-  cout << dec;
-  cout << id::type::name(id::type::id(T())) << " " << value << ": " << endl;
+  printV(v);
+  cout << id::type::name(id::type::id(T())) << ": " << value  << endl;
 }
 
 template<>
@@ -32,10 +42,8 @@ void podIn<float>(){
   D d(v.cbegin(),v.end());
   float value;
   d >> value;
-  for(auto byte : v)
-      cout << hex << setw(2) << setfill('0') << byte << " ";
-  cout << dec;
-  cout << id::type::name(id::type::id(float())) << " " << value << ": " << endl;
+	printV(v);
+  cout << id::type::name(id::type::id(float())) << ": " << value << endl;
 }
 
 template<>
@@ -44,10 +52,8 @@ void podIn<double>(){
   D d(v.cbegin(),v.end());
   double value;
   d >> value;
-  for(auto byte : v)
-      cout << hex << setw(2) << setfill('0') << byte << " ";
-  cout << dec;
-  cout << id::type::name(id::type::id(double())) << " " << value << ": " << endl;
+	printV(v);
+  cout << id::type::name(id::type::id(double())) << ": " << value << endl;
 }
 
 void valueElementIn(){
@@ -55,9 +61,8 @@ void valueElementIn(){
   D d(v.cbegin(),v.end());
   ValueElement<float, true> value;
   d >> value;
-  for(auto byte : v)
-      cout << hex << setw(2) << setfill('0') << byte << " ";
-  cout << dec << "float " << value << ": " << endl;
+	printV(v);
+  cout << "uncertain float: " << value << endl;
 }
 
 void valueIn(){
@@ -65,9 +70,8 @@ void valueIn(){
   D d(v.cbegin(),v.end());
   Value<double, 3, true> value;;
   d >> value;
-  for(auto byte : v)
-      cout << hex << setw(2) << setfill('0') << byte << " ";
-  cout << dec << "float " << value << ": " << endl;
+	printV(v);
+  cout << ValueType(value) << ":" << endl << value << endl;
 }
 
 void attributeIn(){
@@ -76,9 +80,8 @@ void attributeIn(){
   D d(v.cbegin(),v.end());
   Attribute<id::attribute::Position, Val, Meter, std::ratio<1,1000>> value;
   d >> value;
-  for(auto byte : v)
-      cout << hex << setw(2) << setfill('0') << byte << " ";
-  cout << dec << "double " << value << ": " << endl;
+	printV(v);
+  cout << AttributeType(value) << ":" << endl << value << endl;
 }
 
 void baseEventIn(){
@@ -86,9 +89,8 @@ void baseEventIn(){
   D d(v.cbegin(),v.end());
   BaseEvent<> e;
   d >> e;
-  for(auto byte : v)
-      cout << hex << setw(2) << setfill('0') << byte << " ";
-  cout << endl << dec << e;
+	printV(v);
+  cout << EventType(e) << endl << e  << endl;
 }
 
 int main(){

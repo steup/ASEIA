@@ -1,4 +1,7 @@
 #include <Serializer.h>
+#include <ValueType.h>
+#include <AttributeType.h>
+#include <EventType.h>
 #include <Value.h>
 #include <BaseEvent.h>
 #include <ID.h>
@@ -14,63 +17,70 @@ using namespace std;
 using V=vector<uint8_t>;
 using S=Serializer<back_insert_iterator<V>>;
 
+void printV(const V& v){
+	cout << "Binary: ";
+	auto formatFlags = cout.flags();
+  for(auto byte : v)
+      cout << hex << setw(2) << setfill('0') << byte << " ";
+	cout.flags(formatFlags);
+	cout << endl;
+}
+
 template<typename T>
 void podOut(){
-  V v(sizeof(T));
+  V v;
   S s(back_inserter(v));
   T value = sizeof(T);
   s << value;
-  cout << id::type::name(id::type::id(T())) << " " << value << ": ";
-  for(auto byte : v)
-      cout << hex << setw(2) << setfill('0') << byte << " ";
+  cout << id::type::name(id::type::id(T())) << " " << value << endl;
+  printV(v);
 }
 
 template<typename T, bool uncertainty>
 void valueElementOut(){
   using VE=ValueElement<T, uncertainty>;
-  V v(VE::size());
+  V v;
   S s(back_inserter(v));
   VE value = {sizeof(T), 1};
   s << value;
-  cout << id::type::name(id::type::id(T())) << " " << value << ": ";
-  for(auto byte : v)
-      cout << hex << setw(2) << setfill('0') << byte << " ";
+  cout << id::type::name(id::type::id(T())) << " " << value << endl;
+  printV(v);
 }
 
 void valueOut(){
   using Val=Value<float, 3, true>;
-  V v(Val::staticSize());
+  V v;
   S s(back_inserter(v));
-  Val value = {{1.1, 0.2}, {0,0.2}, {4.2,1.1}};
+  Val value = {{{1.1, 0.2}},
+							 {{0.0, 0.2}},
+							 {{4.2, 1.1}}};
   s << value;
-  cout << "float " << value << ": ";
-  for(auto byte : v)
-      cout << hex << setw(2) << setfill('0') << byte << " ";
+  cout << ValueType(value) << endl << value << endl;
+  printV(v);
 }
 
 void attributeOut(){
   using Val=Value<double, 3, true>;
   using Attr=Attribute<id::attribute::Position, Val, Meter, std::ratio<1,1000>>;
-  V v(Attr::size()-10);
+  V v;
   S s(back_inserter(v));
-  Attr value = {{1.1, 0.2}, {0,0.2}, {4.2,1.1}};
+  Attr value = {{{1.1, 0.2}},
+								{{0.0, 0.2}},
+								{{4.2, 1.1}}};
   s << value;
-  cout << "double " << value << ": ";
-  for(auto byte : v)
-      cout << hex << setw(2) << setfill('0') << byte << " ";
+  cout << AttributeType(value) << endl << value << endl;
+  printV(v);
 }
 
 void baseEventOut(){
-  V v(BaseEvent<>::size());
+  V v;
   S s(back_inserter(v));
   BaseEvent<> e;
-  e.attribute(id::attribute::PublisherID()).value() = {{1337}};
-  e.attribute(id::attribute::Validity()).value() = {{0.9}};
+  e.attribute(id::attribute::PublisherID()).value() = {{{1337}}};
+  e.attribute(id::attribute::Validity()).value() = {{{0.9}}};
   s << e;
-  cout << e << ": ";
-  for(auto byte : v)
-      cout << hex << setw(2) << setfill('0') << byte << " ";
-  cout << "size: " << BaseEvent<>::size() << " - " << v.size() << endl;
+  cout << EventType(e) << endl << e << endl;
+  printV(v);
 }
 
 int main(){

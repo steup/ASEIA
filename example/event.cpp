@@ -22,11 +22,12 @@ int main()
 {
   DistanceEvent e;
 
-  e.attribute(Position()).value()    = {{1500, 100}, {3200,200}};
-  e.attribute(Time()).value()        = {{(unsigned long)std::time(nullptr),1}};
-  e.attribute(PublisherID()).value() = {{1337}};
-  e.attribute(Validity()).value()    = {{90}};
-  e.attribute(Distance()).value()    = {{1000,300}};
+  e.attribute(Position()).value()    = {{{1500, 100}},
+																				{{3200, 200}}};
+  e.attribute(Time()).value()        = {{{(unsigned long)std::time(nullptr),1}}};
+  e.attribute(PublisherID()).value() = {{{1337}}};
+  e.attribute(Validity()).value()    = {{{90}}};
+  e.attribute(Distance()).value()    = {{{1000, 300}}};
 
   std::cout << e;
   std::cout << "Size: " << DistanceEvent::size() << std::endl;
