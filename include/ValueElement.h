@@ -15,18 +15,29 @@ namespace {
   inline T abs(T a){
     return a<0?-a:a;
   }
-
-  inline void satAdd(float& a, float b){
+  
+  inline bool satAdd(double& a, double b){
     a+=b;
+    return false;
+  }
+
+  inline bool satAdd(float& a, float b){
+    a+=b;
+    return false;
   }
   
   template<typename T>
-  inline void satAdd(T& a, T b) {
-		if( a> 0 && b > 0 && std::numeric_limits<T>::max() - a < b )
+  inline bool satAdd(T& a, T b) {
+		if( a> 0 && b > 0 && std::numeric_limits<T>::max() - a < b ) {
       	a=std::numeric_limits<T>::max();
-		if( a< 0 && b < 0 && std::numeric_limits<T>::min() - a > b )
+        return true;
+    }
+		if( a< 0 && b < 0 && std::numeric_limits<T>::min() - a > b ) {
       	a=std::numeric_limits<T>::min();
+        return true;
+    }
     a+=b;
+    return false;
   }
 
   template<typename T>
@@ -294,9 +305,12 @@ class ValueElement<T, true>{
     void uncertainty(const T& u){ mUncertainty = u; }
 
     ValueElement& operator+=(const ValueElement& a){
-      mValue+=a.mValue;
-      satAdd(mUncertainty, a.mUncertainty);
-      satAdd(mUncertainty, opError(mValue));
+      if(satAdd(mValue, a.mValue))
+        mUncertainty = std::numeric_limits<T>::max();
+      else {
+        satAdd(mUncertainty, a.mUncertainty);
+        satAdd(mUncertainty, opError(mValue));
+      }
       return *this;
     }
 
