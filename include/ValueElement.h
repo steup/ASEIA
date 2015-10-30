@@ -145,6 +145,21 @@ namespace {
   };
 
   template<>
+  struct multType<int8_t>{
+    using type  = int16_t;
+  };
+  
+	template<>
+  struct multType<int16_t>{
+    using type  = int32_t;
+  };
+  
+	template<>
+  struct multType<int32_t>{
+    using type  = int64_t;
+  };
+
+  template<>
   struct multType<uint8_t>{
     using type  = int16_t;
   };
@@ -333,26 +348,41 @@ class ValueElement<T, true>{
     }
 
     ValueElement operator*=(const ValueElement& a){
-      typename multType<BaseType>::type p1, m1, p2, m2, temp[4], min, max;
-      min = std::numeric_limits<T>::max();
-      max = std::numeric_limits<T>::min();
-      p1 =   mValue +   mUncertainty;
-      p2 = a.mValue + a.mUncertainty;
-      m1 =   mValue -   mUncertainty;
-      m2 = a.mValue - a.mUncertainty;
-      temp[0] = p1 * p2;
-      temp[1] = p1 * m2;
-      temp[2] = m1 * p2;
-      temp[3] = m1 * m2;
+      using T2 = typename multType<BaseType>::type;
+
+			T2 min = std::numeric_limits<T>::max();
+      T2 max = std::numeric_limits<T>::min();
+      const T2 p1 =   mValue +   mUncertainty;
+      const T2 p2 = a.mValue + a.mUncertainty;
+      const T2 m1 =   mValue -   mUncertainty;
+      const T2 m2 = a.mValue - a.mUncertainty;
+      const T2 temp[4] = {(T2)(p1 * p2), (T2)(p1 * m2), (T2)(m1 * p2), (T2)(m1 * m2)};
+
       for(unsigned int i = 0; i < 4; i++) {
         if(temp[i] < min)
           min = temp[i];
         if(temp[i] > max)
           max = temp[i];
       }
+
       mUncertainty = (max - min) / 2;
-      mValue       = min + mUncertainty;
+      mValue       = (min + max) / 2;
+
+			if(mUncertainty > std::numeric_limits<T>::max())
+				mUncertainty =  std::numeric_limits<T>::max();
+
+			if(mValue > std::numeric_limits<T>::max()) {
+				mValue       =  std::numeric_limits<T>::max();
+				mUncertainty =  std::numeric_limits<T>::max();
+			}
+
+			if(mValue < std::numeric_limits<T>::min()) {
+				mValue       =  std::numeric_limits<T>::min();
+				mUncertainty =  std::numeric_limits<T>::max();
+			}
+
       satAdd(mUncertainty, opError(mValue));
+			
       return *this;
     }
 
@@ -449,8 +479,8 @@ class ValueElement<T, true>{
 		}
 
     explicit operator BaseType() const { return mValue; }
-    explicit operator int() const { return (int)mValue; }
-    explicit operator ValueElement<T, false>() const { return ValueElement(mValue); }
+    //explicit operator int() const { return (int)mValue; }
+    explicit operator ValueElement<T, false>() const { return ValueElement<T, false>(mValue); }
 
     constexpr static std::size_t size() noexcept {return sizeof(mUncertainty)+sizeof(mValue);}
     constexpr bool hasUncertainty()     noexcept {return true;}
