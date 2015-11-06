@@ -40,6 +40,10 @@ TEST(ValueElementSuite, UInt8Test) {
 	testComp(a, b, false, true , true , false, true , false);
 	testComp(a, c, true , false, true , true , false, false);
 	testComp(b, c, false, true , false, true , false, true );
+	testOp(a, e0, a, a, V({0, 0}), V({0, 255}));
+	testOp(a, e1, V({13, 255}) , V({13, 255}), V({0, 255})  , V({0, 255}));
+	testOp(a, e2, V({255, 255}), V({0, 255}) , V({255, 255}), V({0, 1})  );
+	testOp(a, e3, V({255, 255}), V({0, 255}) , V({255, 255}), V({0, 255}));
 	testOp(a, b, V({86, 38}), V({0, 255}), V({255, 255}), V({0, 1}));
 	testOp(a, c, V({16, 39}), V({10, 39}), V({65, 185}), V({13, 37}));
 }
