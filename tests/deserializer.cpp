@@ -50,7 +50,7 @@ namespace deserialize {
 		data((uint8_t)13);
 		*this >> value;
 		EXPECT_EQ(value, (uint8_t)13) << "uint8_t was not correctly deserialized";
-		EXPECT_EQ(size(), 1) << "uint8_t was deserialized with wrong size";
+		EXPECT_EQ(size(), 1U) << "uint8_t was deserialized with wrong size";
 		EXPECT_FALSE(error()) << "Not enough data to deserialize uint8_t";
 	}
 
@@ -63,7 +63,7 @@ namespace deserialize {
 		data((uint16_t)1337);
 		*this >> value;
 		EXPECT_EQ(value, (uint16_t)1337) << "uint16_t was not correctly deserialized";
-		EXPECT_EQ(size(), 2) << "uint16 was deserialized with wrong size";
+		EXPECT_EQ(size(), 2U) << "uint16 was deserialized with wrong size";
 		EXPECT_FALSE(error()) << "Not enough data to deserialize uint16";
 	}
 	
@@ -76,7 +76,7 @@ namespace deserialize {
 		data((uint32_t)13371337);
 		*this >> value;
 		EXPECT_EQ(value, (uint32_t)13371337) << "uint32_t was not correctly deserialized";
-		EXPECT_EQ(size(), 4) << "uint32 was deserialized with wrong size";
+		EXPECT_EQ(size(), 4U) << "uint32 was deserialized with wrong size";
 		EXPECT_FALSE(error()) << "Not enough data to deserialize uint32";
 	}
 	
@@ -89,7 +89,7 @@ namespace deserialize {
 		data((uint64_t)1337133713371337);
 		*this >> value;
 		EXPECT_EQ(value, (uint64_t)1337133713371337) << "uint64_t was not correctly deserialized";
-		EXPECT_EQ(size(), 8) << "uint64 was deserialized with wrong size";
+		EXPECT_EQ(size(), 8U) << "uint64 was deserialized with wrong size";
 		EXPECT_FALSE(error()) << "Not enough data to deserialize uint64";
 	}
 	
@@ -102,7 +102,7 @@ namespace deserialize {
 		data((int8_t)-13);
 		*this >> value;
 		EXPECT_EQ(value, (int8_t)-13) << "int8_t was not correctly deserialized";
-		EXPECT_EQ(size(), 1) << "int8 was deserialized with wrong size";
+		EXPECT_EQ(size(), 1U) << "int8 was deserialized with wrong size";
 		EXPECT_FALSE(error()) << "Not enough data to deserialize int8";
 	}
 
@@ -115,7 +115,7 @@ namespace deserialize {
 		data((int16_t)-1337);
 		*this >> value;
 		EXPECT_EQ(value, (int16_t)-1337) << "int16_t was not correctly deserialized";
-		EXPECT_EQ(size(), 2) << "int16 was deserialized with wrong size";
+		EXPECT_EQ(size(), 2U) << "int16 was deserialized with wrong size";
 		EXPECT_FALSE(error()) << "Not enough data to deserialize int16";
 	}
 	
@@ -128,7 +128,7 @@ namespace deserialize {
 		data((int32_t)-13371337);
 		*this >> value;
 		EXPECT_EQ(value, (int32_t)-13371337) << "int32_t was not correctly deserialized";
-		EXPECT_EQ(size(), 4) << "int32 was deserialized with wrong size";
+		EXPECT_EQ(size(), 4U) << "int32 was deserialized with wrong size";
 		EXPECT_FALSE(error()) << "Not enough data to deserialize int32";
 	}
 	
@@ -141,7 +141,7 @@ namespace deserialize {
 		data((int64_t)-1337133713371337);
 		*this >> value;
 		EXPECT_EQ(value, (int64_t)-1337133713371337) << "int64_t was not correctly deserialized";
-		EXPECT_EQ(size(), 8) << "int64 was deserialized with wrong size";
+		EXPECT_EQ(size(), 8U) << "int64 was deserialized with wrong size";
 		EXPECT_FALSE(error()) << "Not enough data to deserialize int64";
 	}
 
@@ -154,7 +154,7 @@ namespace deserialize {
 		data((float)-1337.1337);
 		*this >> value;
 		EXPECT_EQ(value, (float)-1337.1337) << "float was not correctly deserialized";
-		EXPECT_EQ(size(), 4) << "float was deserialized with wrong size";
+		EXPECT_EQ(size(), 4U) << "float was deserialized with wrong size";
 		EXPECT_FALSE(error()) << "Not enough data to deserialize float";
 	}
 	
@@ -167,7 +167,7 @@ namespace deserialize {
 		data((double)-13371337.13371337);
 		*this >> value;
 		EXPECT_EQ(value, (double)-13371337.13371337) << "double was not correctly deserialized";
-		EXPECT_EQ(size(), 8) << "double was deserialized with wrong size";
+		EXPECT_EQ(size(), 8U) << "double was deserialized with wrong size";
 		EXPECT_FALSE(error()) << "Not enough data to deserialize double";
 	}
 	

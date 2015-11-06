@@ -49,7 +49,7 @@ namespace serialize {
 		uint8_t value = 13;
 		*this << value;
 		EXPECT_EQ(value, 13) << "uint8_t was not correctly serialized";
-		EXPECT_EQ(size(), 1) << "serialized uint8_t had wrong size";
+		EXPECT_EQ(size(), 1U) << "serialized uint8_t had wrong size";
 	}
 
 	/** \brief uint16_t serialization test
@@ -60,7 +60,7 @@ namespace serialize {
 		uint16_t value = 1337;
 		*this << value;
 		EXPECT_EQ(value, data(uint16_t())) << "uint16_t was not correctly serialized";
-		EXPECT_EQ(size(), 2) << "serialized uint16_t had wrong size";
+		EXPECT_EQ(size(), 2U) << "serialized uint16_t had wrong size";
 	}
 	
 	/** \brief uint32_t serialization test
@@ -71,7 +71,7 @@ namespace serialize {
 		uint32_t value = 13371337;
 		*this << value;
 		EXPECT_EQ(value, data(uint32_t())) << "uint32_t was not correctly serialized";
-		EXPECT_EQ(size(), 4) << "serialized uint32_t had wrong size";
+		EXPECT_EQ(size(), 4U) << "serialized uint32_t had wrong size";
 	}
 	
 	/** \brief uint64_t serialization test
@@ -82,7 +82,7 @@ namespace serialize {
 		uint64_t value = 1337133713371337;
 		*this << value;
 		EXPECT_EQ(value, data(uint64_t())) << "uint64_t was not correctly serialized";
-		EXPECT_EQ(size(), 8) << "serialized uint64_t had wrong size";
+		EXPECT_EQ(size(), 8U) << "serialized uint64_t had wrong size";
 	}
 	
 	/** \brief int8_t serialization test
@@ -93,7 +93,7 @@ namespace serialize {
 		int8_t value = -13;
 		*this << value;
 		EXPECT_EQ(value, data(int8_t())) << "int8_t was not correctly serialized";
-		EXPECT_EQ(size(), 1) << "serialized int8_t had wrong size";
+		EXPECT_EQ(size(), 1U) << "serialized int8_t had wrong size";
 
 	}
 
@@ -105,7 +105,7 @@ namespace serialize {
 		int16_t value = -1337;
 		*this << value;
 		EXPECT_EQ(value, data(int16_t())) << "int16_t was not correctly serialized";
-		EXPECT_EQ(size(), 2) << "serialized int16_t had wrong size";
+		EXPECT_EQ(size(), 2U) << "serialized int16_t had wrong size";
 	}
 	
 	/** \brief int32_t serialization test
@@ -116,7 +116,7 @@ namespace serialize {
 		int32_t value = -13371337;
 		*this << value;
 		EXPECT_EQ(value, data(int32_t())) << "int32_t was not correctly serialized";
-		EXPECT_EQ(size(), 4) << "serialized int32_t had wrong size";
+		EXPECT_EQ(size(), 4U) << "serialized int32_t had wrong size";
 	}
 	
 	/** \brief int64_t serialization test
@@ -127,7 +127,7 @@ namespace serialize {
 		int64_t value = -1337133713371337;
 		*this << value;
 		EXPECT_EQ(value, data(int64_t())) << "int64_t was not correctly serialized";
-		EXPECT_EQ(size(), 8) << "serialized int64_t had wrong size";
+		EXPECT_EQ(size(), 8U) << "serialized int64_t had wrong size";
 	}
 
 	/** \brief float serialization test
@@ -138,7 +138,7 @@ namespace serialize {
 		float value = -1337.1337;
 		*this << value;
 		EXPECT_EQ(value, data(float())) << "float was not correctly serialized";
-		EXPECT_EQ(size(), 4) << "serialized float had wrong size";
+		EXPECT_EQ(size(), 4U) << "serialized float had wrong size";
 	}
 	
 	/** \brief double serialization test
@@ -149,6 +149,6 @@ namespace serialize {
 		double value = -13371337.13371337;
 		*this << value;
 		EXPECT_EQ(value, data(double())) << "double was not correctly serialized";
-		EXPECT_EQ(size(), 8) << "serialized double had wrong size";
+		EXPECT_EQ(size(), 8U) << "serialized double had wrong size";
 	}
 }}
