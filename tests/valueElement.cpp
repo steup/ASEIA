@@ -30,13 +30,18 @@ void testOp(V a, V b, V add, V sub, V mul, V div) {
 
 TEST(ValueElementSuite, UInt8Test) {
   using V=ValueElement<uint8_t, true>;
+	V e0 = {0, 0};
+	V e1 = {0, 255};
+	V e2 = {255, 0};
+	V e3 = {255, 255};
 	V a={13, 37};
-	V b={13, 37};
-	V c={73, 1};
-	V d={3, 2};
-	testComp(a, b, true, false, true, true, false, false);
-	testComp(a, c, false, true, true, false, true, false);
-	testOp(a, d, V({16, 39}), V({10, 39}), V({65, 185}), V({13, 37}));
+	V b={73, 1};
+	V c={3, 2};
+	testComp(a, b, false, true , true , false, true , false);
+	testComp(a, c, true , false, true , true , false, false);
+	testComp(b, c, false, true , false, true , false, true );
+	testOp(a, b, V({86, 38}), V({0, 255}), V({255, 255}), V({0, 1}));
+	testOp(a, c, V({16, 39}), V({10, 39}), V({65, 185}), V({13, 37}));
 }
 
 TEST(ValueElementSuite, Int8Test) {

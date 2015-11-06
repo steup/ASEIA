@@ -334,16 +334,19 @@ class ValueElement<T, true>{
       if(std::is_signed<T>::value)
         temp.mValue=-mValue;
       else{
-        satAdd(temp.mUncertainty, mValue);
+        temp.mUncertainty=std::numeric_limits<T>::max();
         temp.mValue=(T)0;
       }
       return temp;
     }
 
     ValueElement operator-=(const ValueElement& a){
-      mValue-=a.mValue;
-      satAdd(mUncertainty, a.mUncertainty);
-      satAdd(mUncertainty, opError(mValue));
+			if(satAdd(mValue, (T)(-a.mValue)))
+        mUncertainty = std::numeric_limits<T>::max();
+      else {
+        satAdd(mUncertainty, a.mUncertainty);
+        satAdd(mUncertainty, opError(mValue));
+      }
       return *this;
     }
 
