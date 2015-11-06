@@ -33,20 +33,13 @@ MAKEFILE := $(lastword ${MAKEFILE_LIST})
 
 BASEDIR  := $(dir $(abspath ${MAKEFILE}))
 
-<<<<<<< HEAD
-SRC      := src
-EXAMPLE  := example
-EXPERIMENTS  := experiments
-INC      := include
-DOC      := doc
-=======
 SRC       := src
 EXAMPLE   := example
+EXPERIMENTS  := experiments
 INC       := include
 DOC       := doc
 TESTS     := tests
 RUN_TESTS := run_tests
->>>>>>> master
 
 HTML     := ${DOC}/html
 BIN      := bin

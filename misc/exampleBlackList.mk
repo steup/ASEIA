@@ -1,1 +1,1 @@
-BAD_EXAMPLES=virtualArithmetic  readGraphML
+BAD_EXAMPLES=virtualArithmetic  readGraphML eigen
