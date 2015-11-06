@@ -26,6 +26,16 @@ namespace {
     return false;
   }
   
+  inline bool satSub(double& a, double b){
+    a-=b;
+    return false;
+  }
+
+  inline bool satSub(float& a, float b){
+    a-=b;
+    return false;
+  }
+
   template<typename T>
   inline bool satAdd(T& a, T b) {
 		if( a> 0 && b > 0 && std::numeric_limits<T>::max() - a < b ) {
@@ -41,8 +51,21 @@ namespace {
   }
 
   template<typename T>
-  inline void satSub(T& a, T b){
-    satAdd(a, -b);
+  inline bool satSub(T& a, T b){
+		if(!std::is_signed<T>::value && a < b) {
+			a =std::numeric_limits<T>::min();
+			return true;
+		}
+    if( a> 0 && b < 0 && std::numeric_limits<T>::max() - a < -b ) {
+      	a=std::numeric_limits<T>::max();
+        return true;
+    }
+		if( a< 0 && b > 0 && std::numeric_limits<T>::min() - a > -b ) {
+      	a=std::numeric_limits<T>::min();
+        return true;
+    }
+    a-=b;
+    return false;
   }
 
   template<typename T1, typename T2>
@@ -341,7 +364,7 @@ class ValueElement<T, true>{
     }
 
     ValueElement operator-=(const ValueElement& a){
-			if(satAdd(mValue, (T)(-a.mValue)))
+			if(satSub(mValue, a.mValue))
         mUncertainty = std::numeric_limits<T>::max();
       else {
         satAdd(mUncertainty, a.mUncertainty);
@@ -396,25 +419,39 @@ class ValueElement<T, true>{
         return *this;
       }
 
-      typename multType<BaseType>::type p1, m1, p2, m2, temp[4], min, max;
-      min = std::numeric_limits<T>::max();
-      max = std::numeric_limits<T>::min();
-      p1 =   mValue +   mUncertainty;
-      p2 = a.mValue + a.mUncertainty;
-      m1 =   mValue -   mUncertainty;
-      m2 = a.mValue - a.mUncertainty;
-      temp[0] = p1 / p2;
-      temp[1] = p1 / m2;
-      temp[2] = m1 / p2;
-      temp[3] = m1 / m2;
+      using T2 = typename multType<BaseType>::type;
+			
+			uint8_t min = 0;
+			uint8_t max = 0;
+
+      const T2 p1 =   mValue +   mUncertainty;
+      const T2 p2 = a.mValue + a.mUncertainty;
+      const T2 m1 =   mValue -   mUncertainty;
+      const T2 m2 = a.mValue - a.mUncertainty;
+			const T2 temp[4] = { (T2)(p1 / p2), (T2)(p1 / m2),  (T2)(m1 / p2), (T2)(m1 / m2)};
+			const T2 mod[4]  = { (T2)(p1 % p2), (T2)(p1 % m2),  (T2)(m1 % p2), (T2)(m1 % m2)};
+
       for(unsigned int i = 0; i < 4; i++) {
-        if(temp[i] < min)
-          min = temp[i];
-        if(temp[i] > max)
-          max = temp[i];
+        if(temp[i] < temp[min])
+          min = i;
+        if(temp[i] > temp[max])
+          max = i;
       }
-      mUncertainty = (max - min) / 2;
-      mValue       = min + mUncertainty;
+      mUncertainty = (temp[max] - temp[min]) / 2 + ((mod[min]||mod[max])?1:0);
+      mValue       = (temp[min] + temp[max]) / 2;
+			
+			if(mUncertainty > std::numeric_limits<T>::max())
+				mUncertainty =  std::numeric_limits<T>::max();
+
+			if(mValue > std::numeric_limits<T>::max()) {
+				mValue       =  std::numeric_limits<T>::max();
+				mUncertainty =  std::numeric_limits<T>::max();
+			}
+
+			if(mValue < std::numeric_limits<T>::min()) {
+				mValue       =  std::numeric_limits<T>::min();
+				mUncertainty =  std::numeric_limits<T>::max();
+			}
       satAdd(mUncertainty, opError(mValue));
       return *this;
     }
