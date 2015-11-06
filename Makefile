@@ -44,12 +44,13 @@ BIN      := bin
 BUILD    := build
 BLIB     := ${BUILD}/lib
 BPROG    := ${BUILD}/prog
+BTEST    := ${BUILD}/test
 LIB      := lib
 CMAKE    := cmake
 PKG      := pkgconfig
 LOG      := log
 
-DIRS     := ${BIN} ${BLIB} ${BPROG} ${BUILD} ${LIB} ${CMAKE} ${PKG} ${LOG}
+DIRS     := ${BIN} ${BLIB} ${BPROG} ${BTEST} ${BUILD} ${LIB} ${CMAKE} ${PKG} ${LOG}
 GARBAGE  := ${HTML} ${DIRS}
 
 CMAKEFILE:= ${CMAKE}/aseiaConfig.cmake
@@ -59,12 +60,6 @@ LIBNAME  := ASEIA
 DYNLIB   := ${LIB}/lib${LIBNAME}.so
 STATLIB  := ${LIB}/lib${LIBNAME}.a
 TARGETS  := ${DYNLIB} ${STATLIB}
-
-TEST_INCLUDES := -I${TESTS} $(shell gtest-config --cppflags) 
-TEST_FLAGS    := $(shell gtest-config --cxxflags)
-TEST_LDFLAGS  := $(shell gtest-config --ldflags)
-TEST_LDPATHS  :=
-TEST_LIBS     := $(shell gtest-config --libs)
 
 LIBS     += ${LIBNAME}
 LDPATHS  += ${LIB}
@@ -77,23 +72,26 @@ LDPATHS  := $(addprefix -L, ${LDPATHS})
 INCLUDES := $(addprefix -I, ${INCLUDES} ${INC}) $(shell pkg-config eigen3 --cflags)
 DEPS     := $(wildcard ${BUILD}/*/*.d)
 
+
 .PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% tests run_tests doc
 .PRECIOUS: ${BPROG}/%.o ${BLIB}/%.o
 
 all: ${DYNLIB} ${STATLIB} 
 	
+include gtest.mk
+
 tests: ${BIN}/${RUN_TESTS}
 
 run_tests: ${BIN}/${RUN_TESTS}
 	@./$<
 
-${BPROG}/${RUN_TESTS}.o: ${TESTS}/${RUN_TESTS}.cpp ${MAKEFILE} | ${BPROG}
+${BTEST}/${RUN_TESTS}.o: ${TESTS}/${RUN_TESTS}.cpp ${MAKEFILE} | ${BTEST} ${GTEST}
 	@echo "Building unit tests $@ <- $<"
-	@${CXX} -MMD -c ${CXXFLAGS} ${TEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES}
+	@${CXX} -MMD -c ${CXXFLAGS} -I${TESTS} ${GTEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES} ${GTEST_INCLUDES}
 
-${BIN}/${RUN_TESTS}: ${BPROG}/${RUN_TESTS}.o ${MAKEFILE} | ${BIN} ${DYNLIB}
+${BIN}/${RUN_TESTS}: ${BTEST}/${RUN_TESTS}.o ${MAKEFILE} ${GTEST_LIBS} | ${BIN} ${DYNLIB}
 	@echo "Linking unit tests $@ <- $<"
-	@${CXX} ${LDFLAGS} ${TEST_LDFLAGS} $< -o $@ ${LDPATHS} ${LIBS} ${TEST_LDPATHS} ${TEST_LIBS}
+	@${CXX} ${LDFLAGS} ${GTEST_LDFLAGS} $< -o $@ ${LDPATHS} ${LIBS} ${GTEST_LDPATHS} ${GTEST_LIBS}
 
 examples: ${EXAMPLES}
 
