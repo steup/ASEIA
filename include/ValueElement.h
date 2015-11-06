@@ -67,6 +67,24 @@ namespace {
     a-=b;
     return false;
   }
+  
+  template<typename T>
+  inline T opErrDiv(T aMin, T aMax, T bMin, T bMax) {
+      if( aMin%bMin || aMax%bMax )
+        return 1;
+      else
+        return 0;
+  }
+  
+  template<>
+  inline float opErrDiv(float aMin, float aMax, float bMin, float bMax) {
+    return 0;
+  }
+  
+  template<>
+  inline double opErrDiv(double aMin, double aMax, double bMin, double bMax) {
+    return 0;
+  }
 
   template<typename T1, typename T2>
   inline T1 modifyU(T1 u, T2 dummy){
@@ -391,21 +409,24 @@ class ValueElement<T, true>{
           max = temp[i];
       }
 
-      mUncertainty = (max - min) / 2;
-      mValue       = (min + max) / 2;
+      T2 u = (max - min) / 2;
+      T2 v = (min + max) / 2;
 
-			if(mUncertainty > std::numeric_limits<T>::max())
-				mUncertainty =  std::numeric_limits<T>::max();
+			if(std::is_integral<T>::value && u > (T2)std::numeric_limits<T>::max())
+				u =  std::numeric_limits<T>::max();
 
-			if(mValue > std::numeric_limits<T>::max()) {
-				mValue       =  std::numeric_limits<T>::max();
-				mUncertainty =  std::numeric_limits<T>::max();
+			if(std::is_integral<T>::value && v > (T2)std::numeric_limits<T>::max()) {
+				v =  std::numeric_limits<T>::max();
+				u =  std::numeric_limits<T>::max();
 			}
 
-			if(mValue < std::numeric_limits<T>::min()) {
-				mValue       =  std::numeric_limits<T>::min();
-				mUncertainty =  std::numeric_limits<T>::max();
+			if(std::is_integral<T>::value && v < (T2)std::numeric_limits<T>::min()) {
+				v =  std::numeric_limits<T>::min();
+				u =  std::numeric_limits<T>::max();
 			}
+
+      mUncertainty = u;
+      mValue       = v;
 
       satAdd(mUncertainty, opError(mValue));
 			
@@ -424,12 +445,10 @@ class ValueElement<T, true>{
 			uint8_t min = 0;
 			uint8_t max = 0;
 
-      const T2 p1 =   mValue +   mUncertainty;
-      const T2 p2 = a.mValue + a.mUncertainty;
-      const T2 m1 =   mValue -   mUncertainty;
-      const T2 m2 = a.mValue - a.mUncertainty;
-			const T2 temp[4] = { (T2)(p1 / p2), (T2)(p1 / m2),  (T2)(m1 / p2), (T2)(m1 / m2)};
-			const T2 mod[4]  = { (T2)(p1 % p2), (T2)(p1 % m2),  (T2)(m1 % p2), (T2)(m1 % m2)};
+      const T2 _1[2] = { (T2)(mValue + mUncertainty), (T2)(mValue - mUncertainty) };
+      const T2 _2[2] = { (T2)(a.mValue + a.mUncertainty), (T2)(a.mValue - a.mUncertainty) };
+
+			const T2 temp[4] = { (T2)(_1[0] / _2[0]), (T2)(_1[0] / _2[1]),  (T2)(_1[1] / _2[0]), (T2)(_1[1] / _2[1]) };
 
       for(unsigned int i = 0; i < 4; i++) {
         if(temp[i] < temp[min])
@@ -437,21 +456,28 @@ class ValueElement<T, true>{
         if(temp[i] > temp[max])
           max = i;
       }
-      mUncertainty = (temp[max] - temp[min]) / 2 + ((mod[min]||mod[max])?1:0);
-      mValue       = (temp[min] + temp[max]) / 2;
+      
+      T2 u = (temp[max] - temp[min]) / 2 ;
+      T2 v = (temp[min] + temp[max]) / 2;
+
+      u += opErrDiv(_1[min/2], _1[max/2], _2[min%2], _2[max%2]);
 			
-			if(mUncertainty > std::numeric_limits<T>::max())
-				mUncertainty =  std::numeric_limits<T>::max();
+			if(std::is_integral<T>::value && u > (T2)std::numeric_limits<T>::max())
+				u =  std::numeric_limits<T>::max();
 
-			if(mValue > std::numeric_limits<T>::max()) {
-				mValue       =  std::numeric_limits<T>::max();
-				mUncertainty =  std::numeric_limits<T>::max();
+			if(std::is_integral<T>::value && v > (T2)std::numeric_limits<T>::max()) {
+				v =  std::numeric_limits<T>::max();
+				u =  std::numeric_limits<T>::max();
 			}
 
-			if(mValue < std::numeric_limits<T>::min()) {
-				mValue       =  std::numeric_limits<T>::min();
-				mUncertainty =  std::numeric_limits<T>::max();
+			if(std::is_integral<T>::value && v < (T2)std::numeric_limits<T>::min()) {
+				v =  std::numeric_limits<T>::min();
+				u =  std::numeric_limits<T>::max();
 			}
+
+      mUncertainty = u;
+      mValue       = v;
+
       satAdd(mUncertainty, opError(mValue));
       return *this;
     }
