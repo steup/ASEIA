@@ -9,6 +9,7 @@ SYMBOLS          :=
 CXXFLAGS         := -std=gnu++11 -Wall
 LDFLAGS          := -O1 
 LIBS             :=
+PACKAGES         := eigen3
 
 ifeq (${EMBEDDED},1)
 	CXXFLAGS :=${CXXFLAGS} -ffunction-sections -fno-threadsafe-statics
@@ -32,23 +33,33 @@ MAKEFILE := $(lastword ${MAKEFILE_LIST})
 
 BASEDIR  := $(dir $(abspath ${MAKEFILE}))
 
+<<<<<<< HEAD
 SRC      := src
 EXAMPLE  := example
 EXPERIMENTS  := experiments
 INC      := include
 DOC      := doc
+=======
+SRC       := src
+EXAMPLE   := example
+INC       := include
+DOC       := doc
+TESTS     := tests
+RUN_TESTS := run_tests
+>>>>>>> master
 
 HTML     := ${DOC}/html
 BIN      := bin
 BUILD    := build
 BLIB     := ${BUILD}/lib
 BPROG    := ${BUILD}/prog
+BTEST    := ${BUILD}/test
 LIB      := lib
 CMAKE    := cmake
 PKG      := pkgconfig
 LOG      := log
 
-DIRS     := ${BIN} ${BLIB} ${BPROG} ${BUILD} ${LIB} ${CMAKE} ${PKG} ${LOG}
+DIRS     := ${BIN} ${BLIB} ${BPROG} ${BTEST} ${BUILD} ${LIB} ${CMAKE} ${PKG} ${LOG}
 GARBAGE  := ${HTML} ${DIRS}
 
 CMAKEFILE:= ${CMAKE}/aseiaConfig.cmake
@@ -63,24 +74,48 @@ LIBS     += ${LIBNAME} boost_graph boost_program_options
 LDPATHS  += ${LIB}
 LDFLAGS  += -Wl,--rpath=$(abspath ${LIB})
 
+PKG_INCLUDE := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --cflags-only-I))
+PKG_CFLAGS  := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --cflags-only-other))
+PKG_LIBS    := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --libs-only-l))
+PKG_LDPATHS := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --libs-only-L))
+PKG_LDFLAGS := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --libs-only-other))
+
 -include misc/exampleBlackList.mk
 
 EXAMPLES := $(filter-out ${BAD_EXAMPLES}, $(notdir $(basename $(wildcard ${EXAMPLE}/*.cpp))))
 OBJECTS  := $(addprefix ${BLIB}/, $(addsuffix .o, $(notdir $(basename $(wildcard ${SRC}/*.cpp)))))
-LIBS     := $(addprefix -l, ${LIBS})
-LDPATHS  := $(addprefix -L, ${LDPATHS})
-INCLUDES := $(addprefix -I, ${INCLUDES} ${INC}) $(shell pkg-config eigen3 --cflags)
+LIBS     := $(addprefix -l, ${LIBS}) ${PKG_LIBS}
+LDPATHS  := $(addprefix -L, ${LDPATHS}) ${PKG_LDPATHS}
+INCLUDES := $(addprefix -I, ${INCLUDES} ${INC}) ${PKG_INCLUDE}
+CXXFLAGS := ${CXXFLAGS} ${PKG_CFLAGS}
+LDFLAGS  := ${LDFLAGS} ${PKG_LDFLAGS}
 DEPS     := $(wildcard ${BUILD}/*/*.d)
 
-.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% doc akgs
+
+.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% tests run_tests doc akgs
 .PRECIOUS: ${BPROG}/%.o ${BLIB}/%.o
 
 all: ${DYNLIB} ${STATLIB} 
-
+	
 akgs:
 	${MAKE} -C misc all
 
-examples: ${EXAMPLES} | akgs
+include gtest.mk
+
+tests: ${BIN}/${RUN_TESTS}
+
+run_tests: ${BIN}/${RUN_TESTS}
+	@./$<
+
+${BTEST}/${RUN_TESTS}.o: ${TESTS}/${RUN_TESTS}.cpp ${MAKEFILE} | ${BTEST} ${GTEST}
+	@echo "Building unit tests $@ <- $<"
+	@${CXX} -MMD -c ${CXXFLAGS} -I${TESTS} ${GTEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES} ${GTEST_INCLUDES}
+
+${BIN}/${RUN_TESTS}: ${BTEST}/${RUN_TESTS}.o ${MAKEFILE} ${GTEST_LIBS} | ${BIN} ${DYNLIB}
+	@echo "Linking unit tests $@ <- $<"
+	@${CXX} ${LDFLAGS} ${GTEST_LDFLAGS} $< -o $@ ${LDPATHS} ${LIBS} ${GTEST_LDPATHS} ${GTEST_LIBS}
+
+examples: ${EXAMPLES}
 
 ${EXAMPLES}: %: ${BIN}/%
 
@@ -95,8 +130,8 @@ ${STATLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
 
 ${CMAKEFILE}: ${MAKEFILE}  | ${CMAKE}
 	@echo 'set(aseia_BASE_DIR ${BASEDIR})' > $@
-	@echo 'set(aseia_DEFINITIONS  ${CXXFLAGS})' >> $@
-	@echo 'set(aseia_INCLUDE_DIRS $${aseia_BASE_DIR}/${INC})' >> $@
+	@echo 'set(aseia_DEFINITIONS  ${CXXFLAGS} ${PKG_CFLAGS})' >> $@
+	@echo 'set(aseia_INCLUDE_DIRS $${aseia_BASE_DIR}/${INC} $(subst -I,,${PKG_INCLUDE}))' >> $@
 	@echo 'set(aseia_LIBRARIES    $${aseia_BASE_DIR}/${DYNLIB})' >> $@
 	@echo 'include(FindPackageHandleStandardArgs)' >> $@
 	@echo 'find_package_handle_standard_args(aseia DEFAULT_MSG aseia_LIBRARIES aseia_INCLUDE_DIRS)' >> $@
@@ -126,7 +161,7 @@ ${BPROG}/%.o: ${EXAMPLE}/%.cpp ${MAKEFILE} | ${BPROG}
 	@echo "Compiling prog $@ <- $<"
 	@${CXX} -MMD -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
 
-${BIN}/%: ${BPROG}/%.o ${MAKEFILE} ${DYNLIB} | ${BIN}
+${BIN}/%: ${BPROG}/%.o ${MAKEFILE} | ${DYNLIB} ${BIN}
 	@echo "Linking prog $@ <- $<"
 	@${CXX} $< ${LDFLAGS} ${LDPATHS} ${LIBS} -o $@
 

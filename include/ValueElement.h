@@ -15,23 +15,75 @@ namespace {
   inline T abs(T a){
     return a<0?-a:a;
   }
-
-  inline void satAdd(float& a, float b){
+  
+  inline bool satAdd(double& a, double b){
     a+=b;
+    return false;
+  }
+
+  inline bool satAdd(float& a, float b){
+    a+=b;
+    return false;
+  }
+  
+  inline bool satSub(double& a, double b){
+    a-=b;
+    return false;
+  }
+
+  inline bool satSub(float& a, float b){
+    a-=b;
+    return false;
+  }
+
+  template<typename T>
+  inline bool satAdd(T& a, T b) {
+		if( a> 0 && b > 0 && std::numeric_limits<T>::max() - a < b ) {
+      	a=std::numeric_limits<T>::max();
+        return true;
+    }
+		if( a< 0 && b < 0 && std::numeric_limits<T>::min() - a > b ) {
+      	a=std::numeric_limits<T>::min();
+        return true;
+    }
+    a+=b;
+    return false;
+  }
+
+  template<typename T>
+  inline bool satSub(T& a, T b){
+		if(!std::is_signed<T>::value && a < b) {
+			a =std::numeric_limits<T>::min();
+			return true;
+		}
+    if( a> 0 && b < 0 && std::numeric_limits<T>::max() - a < -b ) {
+      	a=std::numeric_limits<T>::max();
+        return true;
+    }
+		if( a< 0 && b > 0 && std::numeric_limits<T>::min() - a > -b ) {
+      	a=std::numeric_limits<T>::min();
+        return true;
+    }
+    a-=b;
+    return false;
   }
   
   template<typename T>
-  inline void satAdd(T& a, T b) {
-		if( a> 0 && b > 0 && std::numeric_limits<T>::max() - a < b )
-      	a=std::numeric_limits<T>::max();
-		if( a< 0 && b < 0 && std::numeric_limits<T>::min() - a > b )
-      	a=std::numeric_limits<T>::min();
-    a+=b;
+  inline T opErrDiv(T aMin, T aMax, T bMin, T bMax) {
+      if( aMin%bMin || aMax%bMax )
+        return 1;
+      else
+        return 0;
   }
-
-  template<typename T>
-  inline void satSub(T& a, T b){
-    satAdd(a, -b);
+  
+  template<>
+  inline float opErrDiv(float aMin, float aMax, float bMin, float bMax) {
+    return 0;
+  }
+  
+  template<>
+  inline double opErrDiv(double aMin, double aMax, double bMin, double bMax) {
+    return 0;
   }
 
   template<typename T1, typename T2>
@@ -131,6 +183,21 @@ namespace {
   template<typename T>
   struct multType{
     using type  = T;
+  };
+
+  template<>
+  struct multType<int8_t>{
+    using type  = int16_t;
+  };
+  
+	template<>
+  struct multType<int16_t>{
+    using type  = int32_t;
+  };
+  
+	template<>
+  struct multType<int32_t>{
+    using type  = int64_t;
   };
 
   template<>
@@ -262,8 +329,17 @@ class ValueElement<T, true>{
     ValueElement(const ValueElement& data) : mValue(data.mValue), mUncertainty(data.mUncertainty){}
     ValueElement(InitType i) : ValueElement() {
       auto iter = i.begin();
-      mValue = *iter;
-      mUncertainty = *std::next(iter);
+
+			if(i.size()<1)
+				mValue = 0;
+			else
+      	mValue = *iter;
+
+			if(i.size()<2)
+				mUncertainty = 0;
+			else
+      	mUncertainty = *std::next(iter);
+
       if (mUncertainty < 0)
         mUncertainty = std::numeric_limits<T>::max();
     }
@@ -285,9 +361,12 @@ class ValueElement<T, true>{
     void uncertainty(const T& u){ mUncertainty = u; }
 
     ValueElement& operator+=(const ValueElement& a){
-      mValue+=a.mValue;
-      satAdd(mUncertainty, a.mUncertainty);
-      satAdd(mUncertainty, opError(mValue));
+      if(satAdd(mValue, a.mValue))
+        mUncertainty = std::numeric_limits<T>::max();
+      else {
+        satAdd(mUncertainty, a.mUncertainty);
+        satAdd(mUncertainty, opError(mValue));
+      }
       return *this;
     }
 
@@ -296,40 +375,61 @@ class ValueElement<T, true>{
       if(std::is_signed<T>::value)
         temp.mValue=-mValue;
       else{
-        satAdd(temp.mUncertainty, mValue);
+        temp.mUncertainty=std::numeric_limits<T>::max();
         temp.mValue=(T)0;
       }
       return temp;
     }
 
     ValueElement operator-=(const ValueElement& a){
-      mValue-=a.mValue;
-      satAdd(mUncertainty, a.mUncertainty);
-      satAdd(mUncertainty, opError(mValue));
+			if(satSub(mValue, a.mValue))
+        mUncertainty = std::numeric_limits<T>::max();
+      else {
+        satAdd(mUncertainty, a.mUncertainty);
+        satAdd(mUncertainty, opError(mValue));
+      }
       return *this;
     }
 
     ValueElement operator*=(const ValueElement& a){
-      typename multType<BaseType>::type p1, m1, p2, m2, temp[4], min, max;
-      min = std::numeric_limits<T>::max();
-      max = std::numeric_limits<T>::min();
-      p1 =   mValue +   mUncertainty;
-      p2 = a.mValue + a.mUncertainty;
-      m1 =   mValue -   mUncertainty;
-      m2 = a.mValue - a.mUncertainty;
-      temp[0] = p1 * p2;
-      temp[1] = p1 * m2;
-      temp[2] = m1 * p2;
-      temp[3] = m1 * m2;
+      using T2 = typename multType<BaseType>::type;
+
+			T2 min = std::numeric_limits<T>::max();
+      T2 max = std::numeric_limits<T>::min();
+      const T2 p1 =   mValue +   mUncertainty;
+      const T2 p2 = a.mValue + a.mUncertainty;
+      const T2 m1 =   mValue -   mUncertainty;
+      const T2 m2 = a.mValue - a.mUncertainty;
+      const T2 temp[4] = {(T2)(p1 * p2), (T2)(p1 * m2), (T2)(m1 * p2), (T2)(m1 * m2)};
+
       for(unsigned int i = 0; i < 4; i++) {
         if(temp[i] < min)
           min = temp[i];
         if(temp[i] > max)
           max = temp[i];
       }
-      mUncertainty = (max - min) / 2;
-      mValue       = min + mUncertainty;
+
+      T2 u = (max - min) / 2;
+      T2 v = (min + max) / 2;
+
+			if(std::is_integral<T>::value && u > (T2)std::numeric_limits<T>::max())
+				u =  std::numeric_limits<T>::max();
+
+			if(std::is_integral<T>::value && v > (T2)std::numeric_limits<T>::max()) {
+				v =  std::numeric_limits<T>::max();
+				u =  std::numeric_limits<T>::max();
+			}
+
+			if(std::is_integral<T>::value && v < (T2)std::numeric_limits<T>::min()) {
+				v =  std::numeric_limits<T>::min();
+				u =  std::numeric_limits<T>::max();
+			}
+
+      mUncertainty = u;
+      mValue       = v;
+
       satAdd(mUncertainty, opError(mValue));
+			
       return *this;
     }
 
@@ -340,25 +440,44 @@ class ValueElement<T, true>{
         return *this;
       }
 
-      typename multType<BaseType>::type p1, m1, p2, m2, temp[4], min, max;
-      min = std::numeric_limits<T>::max();
-      max = std::numeric_limits<T>::min();
-      p1 =   mValue +   mUncertainty;
-      p2 = a.mValue + a.mUncertainty;
-      m1 =   mValue -   mUncertainty;
-      m2 = a.mValue - a.mUncertainty;
-      temp[0] = p1 / p2;
-      temp[1] = p1 / m2;
-      temp[2] = m1 / p2;
-      temp[3] = m1 / m2;
+      using T2 = typename multType<BaseType>::type;
+			
+			uint8_t min = 0;
+			uint8_t max = 0;
+
+      const T2 _1[2] = { (T2)(mValue + mUncertainty), (T2)(mValue - mUncertainty) };
+      const T2 _2[2] = { (T2)(a.mValue + a.mUncertainty), (T2)(a.mValue - a.mUncertainty) };
+
+			const T2 temp[4] = { (T2)(_1[0] / _2[0]), (T2)(_1[0] / _2[1]),  (T2)(_1[1] / _2[0]), (T2)(_1[1] / _2[1]) };
+
       for(unsigned int i = 0; i < 4; i++) {
-        if(temp[i] < min)
-          min = temp[i];
-        if(temp[i] > max)
-          max = temp[i];
+        if(temp[i] < temp[min])
+          min = i;
+        if(temp[i] > temp[max])
+          max = i;
       }
-      mUncertainty = (max - min) / 2;
-      mValue       = min + mUncertainty;
+      
+      T2 u = (temp[max] - temp[min]) / 2 ;
+      T2 v = (temp[min] + temp[max]) / 2;
+
+      u += opErrDiv(_1[min/2], _1[max/2], _2[min%2], _2[max%2]);
+			
+			if(std::is_integral<T>::value && u > (T2)std::numeric_limits<T>::max())
+				u =  std::numeric_limits<T>::max();
+
+			if(std::is_integral<T>::value && v > (T2)std::numeric_limits<T>::max()) {
+				v =  std::numeric_limits<T>::max();
+				u =  std::numeric_limits<T>::max();
+			}
+
+			if(std::is_integral<T>::value && v < (T2)std::numeric_limits<T>::min()) {
+				v =  std::numeric_limits<T>::min();
+				u =  std::numeric_limits<T>::max();
+			}
+
+      mUncertainty = u;
+      mValue       = v;
+
       satAdd(mUncertainty, opError(mValue));
       return *this;
     }
@@ -426,8 +545,8 @@ class ValueElement<T, true>{
 		}
 
     explicit operator BaseType() const { return mValue; }
-    explicit operator int() const { return (int)mValue; }
-    explicit operator ValueElement<T, false>() const { return ValueElement(mValue); }
+    //explicit operator int() const { return (int)mValue; }
+    explicit operator ValueElement<T, false>() const { return ValueElement<T, false>(mValue); }
 
     constexpr static std::size_t size() noexcept {return sizeof(mUncertainty)+sizeof(mValue);}
     constexpr bool hasUncertainty()     noexcept {return true;}
@@ -461,6 +580,16 @@ bool operator==(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
 template<typename T, bool U>
 bool operator==(const ValueElement<T, U>& a, const T& b){
 	return a<=b && a>=b;
+}
+
+template<typename T, bool U>
+bool operator!=(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
+	return a<b || a>b;
+}
+
+template<typename T, bool U>
+bool operator!=(const ValueElement<T, U>& a, const T& b){
+	return a<b || a>b;
 }
 
 template<typename T1, typename T2, bool U>

@@ -3,6 +3,7 @@
 #include <Unit.h>
 #include <Serializer.h>
 #include <DeSerializer.h>
+#include <Value.h>
 
 #include <ratio>
 
@@ -14,7 +15,7 @@ class Attribute
     using IDType    = AttributeID;
     using ScaleType = Scale;
     using UnitType  = Unit;
-    using InitType  = typename ValueType::InitType;
+    using InitType  = typename Value::InitType;
 
   private:
     ValueType v;
@@ -29,8 +30,7 @@ class Attribute
     constexpr IDType id() noexcept {return IDType();}
     constexpr ScaleType scale() noexcept {return ScaleType();}
     constexpr UnitType unit() noexcept {return UnitType();}
-    constexpr bool hasUncertainty() noexcept {return v.hasUncertainty();};
-    constexpr static std::size_t size() noexcept {return ValueType::size();}
+    constexpr static std::size_t size() noexcept {return Value::staticSize();}
 };
 
 template<typename PB, typename ID, typename V, typename U, typename S>

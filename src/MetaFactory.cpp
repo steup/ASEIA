@@ -87,15 +87,15 @@ MetaFactoryImplementation::~MetaFactoryImplementation() {
 MetaValue MetaFactoryImplementation::create(const ValueType& type) const {
   auto iter = creators.find(type.typeId());
   if(iter!=creators.end())
-    return MetaValue(iter->second(type.n(), type.hasUncertainty()));
+    return MetaValue(iter->second(type.rows(), type.cols(), type.hasUncertainty()));
   else
     return MetaValue();
 }
 
-MetaValue MetaFactoryImplementation::create(id::type::ID id, std::size_t n, bool u) const {
+MetaValue MetaFactoryImplementation::create(id::type::ID id, std::size_t rows, std::size_t cols, bool u) const {
   auto iter = creators.find(id);
   if(iter!=creators.end())
-    return MetaValue(iter->second(n, u));
+    return MetaValue(iter->second(rows, cols, u));
   else
     return MetaValue();
 }
@@ -112,17 +112,14 @@ MetaValue MetaFactoryImplementation::convert(const ValueType& type, const MetaVa
   return temp;
 }
 
-MetaValue MetaFactoryImplementation::create(std::initializer_list<std::initializer_list<double>> l, id::type::ID id) const{
-  MetaValue temp = create(id, l.size() ,true);
-  uint8_t i=0;
-  for(const auto& elem : l){
-    double data[]={0,0};
-    uint8_t j=0;
-    for(const double& d : elem)
-      if(j<2)
-        data[j++]=d;
-    temp.implementation()->set(i++, data[0], data[1]);
-   }
+MetaValue MetaFactoryImplementation::create(std::initializer_list<ValueElement<double>> l, id::type::ID id) const{
+  MetaValue temp = create(id, l.size(), 1, true);
+  if(temp.cols()!=1 || temp.rows()!=l.size())
+    return temp;
+    
+  unsigned int i=0;
+  for(const auto& elem : l)
+    temp.set(i++, 0, elem);
    return temp;
 }
 

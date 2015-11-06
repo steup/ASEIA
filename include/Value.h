@@ -1,113 +1,53 @@
 #pragma once
 
+#define EIGEN_MATRIX_PLUGIN <ValueBase.h>
+
 #include <ValueElement.h>
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#include <Eigen/Core>
+#pragma GCC diagnostic pop
 
-#include <initializer_list>
-#include <array>
 
-template<typename T, std::size_t n, bool useUncertainty=true>
-struct Value : public std::array<ValueElement<T, useUncertainty>,n>{
-  public:
-    using BaseType    = ValueElement<T, useUncertainty>;
-    using DataType    = std::array<BaseType, n>;
-    using InitType    = std::initializer_list<typename BaseType::InitType>;
+#include <cmath>
 
-    Value(){}
+namespace Eigen {
+	template<typename T, bool U>
+	struct NumTraits<ValueElement<T, U>> : public NumTraits<T> {
+		enum {
+			ReadCost = U?2:1 * NumTraits<T>::ReadCost,
+			AddCost  = U?3:1 * NumTraits<T>::AddCost,
+		  MulCost = U?5:1 * NumTraits<T>::MulCost
+		};
+	};
+}
 
-    Value(InitType l){
-      std::size_t i=0;
-      for(const auto& value : l){
-        (*this)[i++]=ValueElement<T, useUncertainty>(value);
-      }
-    }
+template<typename T, bool U>
+const ValueElement<T, U>& conj(const ValueElement<T, U>& x)  { return x; }
+template<typename T, bool U>
+const ValueElement<T, U>& real(const ValueElement<T, U>& x)  { return x; }
+template<typename T, bool U>
+ValueElement<T, U> imag(const ValueElement<T, U>&)    { return 0.; }
+template<typename T, bool U>
+ValueElement<T, U> abs(const ValueElement<T, U>&  x)  { return ValueElement<T, U>({{std::abs(x.value()), x.uncertainty()}}); }
+template<typename T, bool U>
+ValueElement<T, U> abs2(const ValueElement<T, U>& x)  { return x*x; } 
+template<typename T, bool U>
+ValueElement<T, U> ceil(const ValueElement<T, U>& x)  { return ValueElement<T, U>({{ceil(x.value()), x.uncertainty()}}); } 
+template<typename T, bool U>
+ValueElement<T, U> log(const ValueElement<T, U>& x)  { return ValueElement<T, U>({{log(x.value()), log(x.uncertainty())}}); } 
 
-    Value operator+(const Value& a) const{
-      return Value(*this)+=a;
-    }
-    Value operator-(const Value& a) const{
-      return Value(*this)-=a;
-    }
-    Value operator*(const Value& a) const{
-      return Value(*this)*=a;
-    }
-    Value operator/(const Value& a) const{
-      return Value(*this)/=a;
-    }
+template<typename T, int32_t rows, int32_t cols = 1, bool useUncertainty=true>
+using Value = Eigen::Matrix<ValueElement<T, useUncertainty>, rows, cols>;
 
-    Value& operator+=(const Value& a){
-      std::size_t i=0;
-      for(auto& value : *this)
-        value+=a[i++];
-      return *this;
-    }
-    Value operator-=(const Value& a){
-      std::size_t i=0;
-      for(auto& value : *this)
-        value-=a[i++];
-      return *this;
-    }
-    Value operator*=(const Value& a){
-      Value temp(*this);
-      std::size_t i=0;
-      for(auto& value : *this)
-        value*=a[i++];
-      return *this;
-    }
-    Value operator/=(const Value& a){
-      Value temp(*this);
-      std::size_t i=0;
-      for(auto& value : *this)
-        value/=a[i++];
-      return *this;
-    }
-
-    Value operator+(T a) const{
-      return Value(*this)+=a;
-    }
-    Value operator-(T a) const{
-      return Value(*this)-=a;
-    }
-    Value operator*(T a) const{
-      return Value(*this)*=a;
-    }
-    Value operator/(T a) const{
-      return Value(*this)/=a;
-    }
-
-    Value& operator+=(T a){
-      for(auto& value : *this)
-        value+=a;
-      return *this;
-    }
-    Value operator-=(T a){
-      for(auto& value : *this)
-        value-=a;
-      return *this;
-    }
-    Value operator*=(T a){
-      for(auto& value : *this)
-        value*=a;
-      return *this;
-    }
-    Value operator/=(T a){
-      for(auto& value : *this)
-        value/=a;
-      return *this;
-    }
-
-    constexpr static std::size_t size() noexcept{return n*BaseType::size();}
-    constexpr bool hasUncertainty() noexcept {return (*this)[0].hasUncertainty();}
-};
-
-template<typename PB, typename T, std::size_t n, bool u>
-Serializer<PB>& operator<<(Serializer<PB>& s, const Value<T,n,u>& value){
+template<typename PB, typename T, int32_t rows, int32_t cols, bool u>
+Serializer<PB>& operator<<(Serializer<PB>& s, const Value<T,rows,cols,u>& value){
   for(const auto& v : value)
-    s << v;
+		s << v;
   return s;
 }
 
-template<typename PB, typename T, std::size_t n, bool u>
-DeSerializer<PB>& operator>>(DeSerializer<PB>& s, Value<T,n,u>& value){
+template<typename PB, typename T, int32_t rows, int32_t cols, bool u>
+DeSerializer<PB>& operator>>(DeSerializer<PB>& s, Value<T,rows,cols,u>& value){
   for(auto& v : value)
     s >> v;
   return s;

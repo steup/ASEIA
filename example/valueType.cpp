@@ -11,12 +11,12 @@ using namespace std;
 int main(){
   array<uint8_t, ValueType::size()> buffer;
 
-  Value<float, 3, true> v3f;
+  Value<float, 3, 1, true> v3f;
   ValueType out(v3f);
 
   cout << "ValueType out: " << out << endl;
 
-  Serializer<decltype(buffer.begin())> s(buffer.begin(), buffer.end());
+  Serializer<decltype(buffer.data())> s(buffer.data());
   s << out;
 
   cout << "Binarystream: " << hex << setfill('0') << setw(2);

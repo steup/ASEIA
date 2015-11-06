@@ -7,23 +7,14 @@ class Serializer{
   private:
     using Iterator = PacketBufferIterator;
     Iterator mI;
-    Iterator mEnd;
-    bool mError;
-    bool copyBytes(const uint8_t* bytes, std::size_t n){
-      while(n--){
-        if(mI==mEnd){
-          mError=true;
-          return false;
-        }
+    /*Iterator mEnd;*/
+    /*bool mError;*/
+    void copyBytes(const uint8_t* bytes, std::size_t n){
+      while(n--)
         *mI++=*bytes++;
-      }
-      return true;
-    }
+		}
   public:
-    Serializer(Iterator start, Iterator end) : mI(start), mEnd(end), mError(false){}
-
-    const Iterator& iterator() const{return mI;}
-    bool error() const{return mError;}
+    Serializer(Iterator start) : mI(start){}
 
     template<typename PB> friend Serializer<PB>& operator<<(Serializer<PB>&, std::uint8_t value);
     template<typename PB> friend Serializer<PB>& operator<<(Serializer<PB>&, std::uint16_t value);

@@ -8,7 +8,7 @@
 
 using namespace std;
 
-using Vector3iu=Value<float,3,true>;
+using Vector3iu=Value<float,3,1,true>;
 
 using Position=Attribute<id::attribute::Position, Vector3iu, Meter, std::ratio<1,10>>;
 
@@ -20,7 +20,7 @@ int main(){
 
   cout << "AttributeType out: " << out <<  endl;
 
-  Serializer<decltype(buffer.begin())> s(buffer.begin(), buffer.end());
+  Serializer<decltype(buffer.data())> s(buffer.data());
   s << out;
 
   cout << "Binarystream: " << hex << setfill('0') << setw(2);

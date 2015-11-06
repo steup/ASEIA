@@ -8,7 +8,7 @@ using V = ValueElement<int, true>;
 int main(){
   V a={1,1};
   V b={2,3};
-  V c={5,0};
+  V c={5,2};
   std::cout << "a  : " << a << std::endl;
   std::cout << "b  : " << b << std::endl;
   std::cout << "a+1: " << (a+1) << std::endl;

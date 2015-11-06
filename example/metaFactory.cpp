@@ -1,5 +1,6 @@
-#include <MetaValueImplementation.h>
-
+#include <MetaFactory.h>
+#include <MetaValue.h>
+#include <IO.h>
 #include <iostream>
 
 using namespace std;
@@ -12,16 +13,21 @@ using VF3 = Value<float, 3, true>;
 int main() {
   {
     MetaFactory& instance = MetaFactory::instance();
-    MetaValue test = instance.create({{-5.1},  {2.2}, {3.3}});
-    cout << "test : " << ValueType(test) << test << endl;
+
+    MetaValue test = instance.create({{-5.1, 0.0},  {2.2, 0.0}, {3.3, 0.0}});
+    cout << "test : " << ValueType(test) << ":" << endl << test << endl;
+
     MetaValue test2(instance.convert(VU3(), test));
-    cout << "test2: " << ValueType(test2) << test2 << endl;
+    cout << "test2: " << ValueType(test2) << ":" << endl << test2 << endl;
+
     MetaValue test3 = instance.convert(VLI3(), test);
-    cout << "test2: " << ValueType(test3) << test3 << endl;
+    cout << "test2: " << ValueType(test3) << ":" << endl << test3 << endl;
+
     MetaValue test4 = instance.convert(VF3(), test);
-    cout << "test2: " << ValueType(test4) << test4 << endl;
+    cout << "test2: " << ValueType(test4) << ":" << endl << test4 << endl;
+
     MetaValue test5 = instance.convert(VLU3(), test2);
-    cout << "test5: " << ValueType(test5) << test5 << endl;
+    cout << "test5: " << ValueType(test5) << ":" << endl << test5 << endl;
   }
   return 0;
 }
