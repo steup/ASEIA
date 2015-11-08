@@ -9,9 +9,7 @@ bool exactlyEqual(const ValueElement<T, true>& a, const ValueElement<T, true>& b
   return a.value() == b.value() && a.uncertainty() == b.uncertainty();
 }
 
-
-template<typename V>
-void testComp(V a, V b, bool eq, bool ne, bool le, bool ge, bool lt, bool gt) {
+#define testComp(a, V b, bool eq, bool ne, bool le, bool ge, bool lt, bool gt) {
     EXPECT_EQ(a==b, eq) << a << " == " << b << " = " << (a==b) << " != " << eq;
     EXPECT_EQ(a!=b, ne) << a << " != " << b << " = " << (a!=b) << " != " << ne;
     EXPECT_EQ(a<=b, le) << a << " <= " << b << " = " << (a<=b) << " != " << le;
@@ -50,13 +48,24 @@ TEST(ValueElementSuite, UInt8Test) {
 
 TEST(ValueElementSuite, Int8Test) {
   using V=ValueElement<int8_t, true>;
-	V a={-13, 13};
-	V b={-13, 13};
-	V c={73, 1};
-	V d={3, 2};
-	testComp(a, b, true, false, true, true, false, false);
-	testComp(a, c, false, true, true, false, true, false);
-	testOp(a, d, V({-10, 15}), V({-16, 15}), V({-65, 65}), V({-13, 13}));
+	V e0 = {0, 0};
+	V e1 = {0, 127};
+	V e2 = {127, 0};
+	V e3 = {127, 127};
+	V e4 = {-128, 0};
+	V e5 = {-128, 127};
+	V a={13, 37};
+	V b={-73, 1};
+	V c={3, 2};
+	testComp(a, b, false, true , false , true, false, true);
+	testComp(a, c, true , false, true , true , false, false);
+	testComp(b, c, false, true , false, true , false, true );
+	testOp(a, e0, a, a, V({0, 0}), V({0, 127}));
+	testOp(a, e1, V({13, 127}) , V({13, 127}), V({0, 127})  , V({0, 127}));
+	testOp(a, e2, V({127, 127}), V({0, 127}) , V({127, 127}), V({0, 1})  );
+	testOp(a, e3, V({127, 127}), V({0, 127}) , V({127, 127}), V({0, 127}));
+	testOp(a, b, V({-60, 38}), V({86, 38}), V({-128, 127}), V({0, 1}));
+	testOp(a, c, V({16, 39}), V({10, 39}), V({65, 185}), V({13, 37}));
 }
 
 }}
