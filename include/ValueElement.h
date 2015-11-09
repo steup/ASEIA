@@ -275,6 +275,9 @@ class ValueElementBase {
 
 		constexpr static std::size_t size() noexcept { return sizeof(VType);}
     constexpr bool hasUncertainty()     noexcept {return false;}
+		operator T() const {
+			return mValue;
+		}
 };
 
 template<typename T, bool U =true>
@@ -339,6 +342,17 @@ class ValueElement<T, true> : public ValueElementBase<T>{
 
     UType uncertainty() const{ return mUncertainty; }
     void uncertainty(UType u){ mUncertainty = u; }
+    
+		ValueElement operator-() const{
+      ValueElement temp(*this);
+      if(std::is_signed<T>::value)
+        temp.mValue=-temp.mValue;
+      else{
+        temp.uncertainty(std::numeric_limits<UType>::max());
+        temp.mValue=0;
+      }
+      return temp;
+    }
 
     ValueElement& operator+=(const ValueElement& a){
       if(satAdd(this->mValue, a.mValue))
@@ -350,16 +364,6 @@ class ValueElement<T, true> : public ValueElementBase<T>{
       return *this;
     }
 
-    ValueElement operator-() const{
-      ValueElement temp(*this);
-      if(std::is_signed<T>::value)
-        temp.mValue=-temp.mValue;
-      else{
-        temp.uncertainty(std::numeric_limits<UType>::max());
-        temp.mValue=0;
-      }
-      return temp;
-    }
 
     ValueElement operator-=(const ValueElement& a){
 			if(satSub(this->mValue, a.mValue))
