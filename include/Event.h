@@ -22,7 +22,6 @@ class Event : public Attributes...
     static const Endianess endianess = e;
     using AttributeList=boost::mpl::vector<Attributes...>;
 
-  private:
     template<typename ID>
     struct findAttribute{
       struct compare{
@@ -35,6 +34,7 @@ class Event : public Attributes...
       using type = typename boost::mpl::deref<TargetIterator>::type;
     };
 
+	private:
     struct toConstInt{
       template<typename Attr>
       struct apply{

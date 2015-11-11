@@ -4,8 +4,8 @@ namespace tests {
 
 namespace valueElementSuite {
 
-template<typename T>
-bool exactlyEqual(const ValueElement<T, true>& a, const ValueElement<T, true>& b) {
+template<typename T, bool U>
+bool exactlyEqual(const ValueElement<T, U>& a, const ValueElement<T, U>& b) {
   return a.value() == b.value() && a.uncertainty() == b.uncertainty();
 }
 
@@ -25,7 +25,43 @@ bool exactlyEqual(const ValueElement<T, true>& a, const ValueElement<T, true>& b
     EXPECT_TRUE(exactlyEqual(a/b, div)) << a << " / " << b << " = " << (a/b) << " != " << div; \
 }
 
-TEST(ValueElementSuite, UInt8Test) {
+TEST(ValueElementSuite, CertainUInt8Test) {
+  using V=ValueElement<uint8_t, false>;
+	V e0 = {  0};
+	V e1 = {255};
+	V  a = { 13};
+	V  b = { 73};
+	V  c = {  3};
+	testComp(a, b, false, true , true , false, true , false);
+	testComp(a, c, false, true , false, true , false, true );
+	testComp(b, c, false, true , false, true , false, true );
+	testOp(a, e0,        a,       a, V({  0}), V({ 0}));
+	testOp(a, e1, V({255}), V({ 0}), V({255}), V({ 0}));
+	testOp(a,  b, V({ 86}), V({ 0}), V({255}), V({ 0}));
+	testOp(a,  c, V({ 16}), V({10}), V({ 39}), V({ 4}));
+}
+
+TEST(ValueElementSuite, CertainInt8Test) {
+  using V=ValueElement<int8_t, false>;
+	V e0 = {   0};
+	V e1 = { 127};
+	V e2 = {-128};
+	V a  = {  13};
+	V b  = {- 73};
+	V c  = {   3};
+
+	testComp(a, b, false, true , false, true , false, true );
+	testComp(a, c, false, true , false, true , false, true );
+	testComp(b, c, false, true , true , false, true , false);
+
+	testOp(a, e0,         a,         a, V({   0}), V({ 0}));
+	testOp(a, e1, V({ 127}), V({-114}), V({ 127}), V({ 0}));
+	testOp(a, e2, V({-115}), V({ 127}), V({-128}), V({ 0}));
+	testOp(a,  b, V({- 60}), V({  86}), V({-128}), V({ 0}));
+	testOp(a,  c, V({  16}), V({  10}), V({  39}), V({ 4}));
+}
+
+TEST(ValueElementSuite, UncertainUInt8Test) {
   using V=ValueElement<uint8_t, true>;
 	V e0 = {0, 0};
 	V e1 = {0, 255};
@@ -43,6 +79,32 @@ TEST(ValueElementSuite, UInt8Test) {
 	testOp(a, e3, V({255, 255}), V({0, 255}) , V({255, 255}), V({0, 255}));
 	testOp(a, b, V({86, 38}), V({0, 255}), V({255, 255}), V({0, 1}));
 	testOp(a, c, V({16, 39}), V({10, 39}), V({65, 185}), V({13, 37}));
+}
+
+TEST(ValueElementSuite, UncertainInt8Test) {
+  using V=ValueElement<int8_t, true>;
+	V e0 = {0, 0};
+	V e1 = {0, 255};
+	V e2 = {127, 0};
+	V e3 = {127, 255};
+	V e4 = {-128, 0};
+	V e5 = {-128, 255};
+	V a={13, 37};
+	V b={-73, 1};
+	V c={3, 2};
+
+	testComp(a, b, false, true , false, true , false, true );
+	testComp(a, c, true , false, true , true , false, false);
+	testComp(b, c, false, true , true , false, true , false);
+
+	testOp(a, e0,              a,              a, V({   0,   0}), V({ 0, 255}));
+	testOp(a, e1, V({  13, 255}), V({  13, 255}), V({   0, 255}), V({ 0, 255}));
+	testOp(a, e2, V({ 127, 255}), V({-114,  37}), V({ 127, 255}), V({ 0,   1}));
+	testOp(a, e3, V({ 127, 255}), V({-114, 255}), V({ 127, 255}), V({ 0, 255}));
+	testOp(a, e4, V({-115,  37}), V({ 127, 255}), V({-128, 255}), V({ 0,   1}));
+	testOp(a, e5, V({-115, 255}), V({ 127, 255}), V({-128, 255}), V({ 0, 255}));
+	testOp(a,  b, V({- 60,  38}), V({  86,  38}), V({-128, 255}), V({ 0,   1}));
+	testOp(a,  c, V({  16,  39}), V({  10,  39}), V({  65, 185}), V({13,  37}));
 }
 
 }}
