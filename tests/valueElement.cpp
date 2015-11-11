@@ -41,6 +41,26 @@ TEST(ValueElementSuite, CertainUInt8Test) {
 	testOp(a,  c, V({ 16}), V({10}), V({ 39}), V({ 4}));
 }
 
+TEST(ValueElementSuite, CertainInt8Test) {
+  using V=ValueElement<int8_t, false>;
+	V e0 = {   0};
+	V e1 = { 127};
+	V e2 = {-128};
+	V a  = {  13};
+	V b  = {- 73};
+	V c  = {   3};
+
+	testComp(a, b, false, true , false, true , false, true );
+	testComp(a, c, false, true , false, true , false, true );
+	testComp(b, c, false, true , true , false, true , false);
+
+	testOp(a, e0,         a,         a, V({   0}), V({ 0}));
+	testOp(a, e1, V({ 127}), V({-114}), V({ 127}), V({ 0}));
+	testOp(a, e2, V({-115}), V({ 127}), V({-128}), V({ 0}));
+	testOp(a,  b, V({- 60}), V({  86}), V({-128}), V({ 0}));
+	testOp(a,  c, V({  16}), V({  10}), V({  39}), V({ 4}));
+}
+
 TEST(ValueElementSuite, UncertainUInt8Test) {
   using V=ValueElement<uint8_t, true>;
 	V e0 = {0, 0};
