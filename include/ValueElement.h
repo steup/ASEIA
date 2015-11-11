@@ -272,6 +272,44 @@ class ValueElementBase {
 		void value( VType v) { mValue = v; }
 		UType uncertainty() const { return std::numeric_limits<UType>::max(); }
     void uncertainty ( T u ) {}
+		
+		ValueElementBase& operator+=(T a){
+			satAdd(mValue, a);
+			return *this;
+		}
+
+		ValueElementBase& operator-=(T a){
+			satSub(mValue, a);
+			return *this;
+		}
+
+		ValueElementBase& operator*=(T a){
+			PType res = (PType)this->mValue * (PType)a;
+			if( res > (PType)std::numeric_limits<VType>::max())
+				res = (PType)std::numeric_limits<VType>::max();
+			if( res < (PType)std::numeric_limits<VType>::min())
+				res = (PType)std::numeric_limits<VType>::min();
+			this->mValue = (VType)res;
+			return *this;
+		}
+
+		ValueElementBase& operator/=(T a){
+			if(!a) {
+				mValue = 0;
+				if(mValue>0)
+					mValue=std::numeric_limits<VType>::max();
+				if(mValue<0)
+					mValue=std::numeric_limits<VType>::min();
+				return *this;
+			}
+			PType res = (PType)this->mValue / (PType)a;
+			if( res > (PType)std::numeric_limits<VType>::max())
+				res = (PType)std::numeric_limits<VType>::max();
+			if( res < (PType)std::numeric_limits<VType>::min())
+				res = (PType)std::numeric_limits<VType>::min();
+			this->mValue = (VType)res;
+			return *this;
+		}
 
 		constexpr static std::size_t size() noexcept { return sizeof(VType);}
     constexpr bool hasUncertainty()     noexcept {return false;}
@@ -288,6 +326,10 @@ class ValueElement<T, false> : public ValueElementBase<T>{
   public:
 		using Base = ValueElementBase<T>;
 		using typename Base::InitType;
+		using typename Base::VType;
+    using typename Base::TypeID;
+    using typename Base::BaseType;
+		using typename Base::PType;
 
 		constexpr ValueElement() = default;
 		ValueElement(const T v) : Base(v) {}
@@ -299,6 +341,40 @@ class ValueElement<T, false> : public ValueElementBase<T>{
       checkBounds(v, 0, T());
       value(v);
     }
+
+		bool operator>(const ValueElement& a) const { 
+			return this->mValue > a.mValue; 
+		}
+		bool operator<(const ValueElement& a) const { 
+			return this->mValue < a.mValue; 
+		}
+		
+		ValueElement operator-() const {
+			if(!std::is_signed<VType>::value)
+				return ValueElement(std::numeric_limits<VType>::min());
+			else
+				return ValueElement(-this->mValue);
+		}
+		ValueElement& operator+=(const ValueElement& a) {
+			Base::operator+=(a.mValue);
+			return *this;
+		}
+		
+		ValueElement& operator-=(const ValueElement& a) {
+			Base::operator-=(a.mValue);
+			return *this;
+		}
+		
+		ValueElement& operator*=(const ValueElement& a) {
+			Base::operator*=(a.mValue);
+			return *this;
+		}
+
+		ValueElement& operator/=(const ValueElement& a) {
+			Base::operator/=(a.mValue);
+			return *this;
+		}
+		
 };
 
 template<typename T>
@@ -343,6 +419,14 @@ class ValueElement<T, true> : public ValueElementBase<T>{
     UType uncertainty() const{ return mUncertainty; }
     void uncertainty(UType u){ mUncertainty = u; }
     
+		bool operator<(const ValueElement& a) const{
+			return this->mValue+this->mUncertainty < a.mValue - a.mUncertainty;
+		}
+		
+		bool operator>(const ValueElement& a) const{
+			return this->mValue-this->mUncertainty > a.mValue + a.mUncertainty;
+		}
+		
 		ValueElement operator-() const{
       ValueElement temp(*this);
       if(std::is_signed<T>::value)
@@ -466,68 +550,6 @@ class ValueElement<T, true> : public ValueElementBase<T>{
       return *this;
     }
 
-    ValueElement operator+=(const BaseType& a){
-      return *this+=ValueElement(a, 0);
-    }
-
-    ValueElement operator-=(const BaseType& a){
-      return *this-=ValueElement(a, 0);
-    }
-
-    ValueElement operator*=(const BaseType& a){
-      return *this*=ValueElement(a, 0);
-    }
-
-    ValueElement operator/=(const BaseType& a){
-      return *this/=ValueElement(a, 0);
-    }
-
-    ValueElement operator+(const ValueElement& a) const{
-      return ValueElement(*this)+=a;
-    }
-
-    ValueElement operator-(const ValueElement& a) const{
-      return ValueElement(*this)-=a;
-    }
-
-    ValueElement operator*(const ValueElement& a) const{
-      return ValueElement(*this)*=a;    }
-
-    ValueElement operator/(const ValueElement& a) const{
-      return ValueElement(*this)/=a;
-    }
-
-    ValueElement operator+(const BaseType& a) const{
-      return ValueElement(*this)+=a;
-    }
-
-    ValueElement operator-(const BaseType& a) const{
-      return ValueElement(*this)-=a;
-    }
-
-    ValueElement operator*(const BaseType& a) const{
-      return ValueElement(*this)*=a;    }
-
-    ValueElement operator/(const BaseType& a) const{
-      return ValueElement(*this)/=a;
-    }
-
-		bool operator<(const ValueElement& a) const{
-			return this->mValue+this->mUncertainty < a.mValue - a.mUncertainty;
-		}
-		
-		bool operator>(const ValueElement& a) const{
-			return this->mValue-this->mUncertainty > a.mValue + a.mUncertainty;
-		}
-		
-		bool operator<(const BaseType& a) const{
-			return this->mValue+this->mUncertainty < a;
-		}
-		
-		bool operator>(const BaseType& a) const{
-			return this->mValue-this->mUncertainty > a;
-		}
-
     explicit operator ValueElement<T, false>() const { return ValueElement<T, false>(*this); }
 
     constexpr static std::size_t size() noexcept {return sizeof(VType)+sizeof(UType);}
@@ -540,17 +562,7 @@ bool operator<=(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
 }
 
 template<typename T, bool U>
-bool operator<=(const ValueElement<T, U>& a, const T& b){
-	return !(a>b);
-}
-
-template<typename T, bool U>
 bool operator>=(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
-	return !(a<b);
-}
-
-template<typename T, bool U>
-bool operator>=(const ValueElement<T, U>& a, const T& b){
 	return !(a<b);
 }
 
@@ -560,55 +572,63 @@ bool operator==(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
 }
 
 template<typename T, bool U>
-bool operator==(const ValueElement<T, U>& a, const T& b){
-	return a<=b && a>=b;
-}
-
-template<typename T, bool U>
 bool operator!=(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
 	return a<b || a>b;
 }
 
+
 template<typename T, bool U>
-bool operator!=(const ValueElement<T, U>& a, const T& b){
-	return a<b || a>b;
+ValueElement<T, U> operator+(const ValueElement<T, U>& a, const ValueElement<T, U>& b) {
+	return ValueElement<T, U>(a)+=b;
 }
 
-template<typename T1, typename T2, bool U>
-ValueElement<T1, U> operator+(const T2& a, const ValueElement<T1,U>& b) {
-  T1 v,u;
-  v = a+b.value();
-  u = b.uncertainty();
-  return ValueElement<T1, U>({v, u});
+template<typename T, bool U>
+ValueElement<T, U> operator-(const ValueElement<T, U>& a, const ValueElement<T, U>& b) {
+	return ValueElement<T, U>(a)-=b;
 }
 
-template<typename T1, typename T2, bool U>
-ValueElement<T1, U> operator-(const T2& a, const ValueElement<T1,U>& b) {
-  T1 v,u;
-  v = a-b.value();
-  u = b.uncertainty();
-  return ValueElement<T1, U>({v, u});
+template<typename T, bool U>
+ValueElement<T, U> operator*(const ValueElement<T, U>& a, const ValueElement<T, U>& b) {
+	return ValueElement<T, U>(a)*=b;
 }
 
-template<typename T1, typename T2, bool U>
-ValueElement<T1, U> operator*(const T2& a, const ValueElement<T1,U>& b) {
-  T1 v,u;
-  v = a*b.value();
-  u = a*b.uncertainty();
-  return ValueElement<T1, U>({v, u});
+template<typename T, bool U>
+ValueElement<T, U> operator/(const ValueElement<T, U>& a, const ValueElement<T, U>& b) {
+	return ValueElement<T, U>(a)/=b;
 }
 
-template<typename T1, typename T2, bool U>
-ValueElement<T1, U> operator/(const T2& a, const ValueElement<T1,U>& b) {
-  T1 v,u;
-  v = a/b.value();
-  if(!b.uncertainty())
-    u = 0;
-  if(b.uncertainty()>abs(b.value())) {
-    v = 0;
-    u = std::numeric_limits<T1>::max();
-  }
-  return ValueElement<T1, U>({v, u});
+template<typename T, bool U>
+ValueElement<T, U> operator+(const ValueElement<T, U>& a, T b){
+	return ValueElement<T, U>(a)+=b;
+}
+template<typename T, bool U>
+ValueElement<T, U> operator-(const ValueElement<T, U>& a, T b){
+	return ValueElement<T, U>(a)-=b;
+}
+template<typename T, bool U>
+ValueElement<T, U> operator*(const ValueElement<T, U>& a, T b){
+	return ValueElement<T, U>(a)*=b;
+}
+template<typename T, bool U>
+ValueElement<T, U> operator/(const ValueElement<T, U>& a, T b){
+	return ValueElement<T, U>(a)/=b;
+}
+
+template<typename T, bool U>
+ValueElement<T, U> operator+(T a, const ValueElement<T, U>& b){
+	return ValueElement<T, U>(a)+=b;
+}
+template<typename T, bool U>
+ValueElement<T, U> operator-(T a, const ValueElement<T, U>& b){
+	return ValueElement<T, U>(a)-=b;
+}
+template<typename T, bool U>
+ValueElement<T, U> operator*(T a, const ValueElement<T, U>& b){
+	return ValueElement<T, U>(a)*=b;
+}
+template<typename T, bool U>
+ValueElement<T, U> operator/(T a, const ValueElement<T, U>& b){
+	return ValueElement<T, U>(a)/=b;
 }
 
 template<typename PB, typename T>
