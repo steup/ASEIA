@@ -95,11 +95,11 @@ tests: ${BIN}/${RUN_TESTS}
 run_tests: ${BIN}/${RUN_TESTS}
 	@./$<
 
-${BTEST}/${RUN_TESTS}.o: ${TESTS}/${RUN_TESTS}.cpp ${MAKEFILE} | ${BTEST} ${GTEST}
+${BTEST}/${RUN_TESTS}.o: ${TESTS}/${RUN_TESTS}.cpp ${MAKEFILE} ${GTEST} | ${BTEST} 
 	@echo "Building unit tests $@ <- $<"
 	@${CXX} -MMD -c ${CXXFLAGS} -I${TESTS} ${GTEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES} ${GTEST_INCLUDES}
 
-${BIN}/${RUN_TESTS}: ${BTEST}/${RUN_TESTS}.o ${MAKEFILE} ${GTEST_LIBS} | ${BIN} ${DYNLIB}
+${BIN}/${RUN_TESTS}: ${BTEST}/${RUN_TESTS}.o ${MAKEFILE} ${GTEST} | ${BIN} ${DYNLIB}
 	@echo "Linking unit tests $@ <- $<"
 	@${CXX} ${LDFLAGS} ${GTEST_LDFLAGS} $< -o $@ ${LDPATHS} ${LIBS} ${GTEST_LDPATHS} ${GTEST_LIBS}
 
