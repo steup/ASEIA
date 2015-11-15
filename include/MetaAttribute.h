@@ -19,9 +19,12 @@ class MetaAttribute {
   MetaAttribute() = default;
 
   MetaAttribute(id::attribute::ID id    = id::attribute::Base::value()) : mID(id) {}
+	MetaAttribute(const MetaAttribute& copy);
+	MetaAttribute(MetaAttribute&& movee);
 	MetaAttribute& operator=(const MetaAttribute& copy);
-	MetaAttribute& operator=(MetaAttribute&& copy);
+	MetaAttribute& operator=(MetaAttribute&& movee);
 	MetaAttribute& operator+=(const MetaAttribute& b);
+	bool operator==(const MetaAttribute& b) const;
 
   id::attribute::ID id() const { return mID; }
 

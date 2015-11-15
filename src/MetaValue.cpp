@@ -53,6 +53,13 @@ MetaValue MetaValue::operator+(const MetaValue& b) const {
     return MetaValue();
 }
 
+bool MetaValue::operator==(const MetaValue& b) const {
+  if(compatible(b))
+    return *mImpl==*b.mImpl;
+  else
+    return false;
+}
+
 bool MetaValue::valid() const {
   return mImpl->typeId() != id::type::Base::value();
 }

@@ -9,6 +9,13 @@ using namespace std;
 
 using std::move;
 
+MetaAttribute::MetaAttribute(const MetaAttribute& copy) {
+	*this = copy;
+}
+
+MetaAttribute::MetaAttribute(MetaAttribute&& movee) {
+	*this = movee;
+}
 MetaAttribute& MetaAttribute::operator=(const MetaAttribute& copy) {
 	if(mUnit == copy.mUnit) {
 		mScale = copy.mScale;
@@ -39,6 +46,10 @@ MetaAttribute& MetaAttribute::operator+=(const MetaAttribute& b) {
 	} else
 		mValue = mValue + b.value();
 	return *this;
+}
+
+bool MetaAttribute::operator==(const MetaAttribute& b) const { 
+	return id() == b.id() &&  value() == b.value() && unit() == b.unit() && scale() == b.scale();
 }
 
 ostream& operator<<(ostream& o, const MetaAttribute& ma) {
