@@ -6,6 +6,7 @@
 #include <valueElement.cpp>
 #include <value.cpp>
 #include <metaValueImpl.cpp>
+#include <metaEvent.cpp>
 
 /** \namespace tests
  *  \brief %Unit Test Suites
