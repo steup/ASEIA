@@ -9,6 +9,8 @@
 #include <ostream>
 
 class MetaEvent{
+  public:
+    using ID = id::attribute::ID;
   private:
 		using Storage =  std::map<id::attribute::ID, MetaAttribute>;
 		Storage mStorage;
@@ -26,7 +28,14 @@ class MetaEvent{
 		};
 
   public:
-		MetaAttribute& attribute(id::attribute::ID id);
+		MetaAttribute* attribute(ID id);
+		const MetaAttribute* attribute(ID id) const;
+    bool add(const MetaAttribute&);
+    bool add(MetaAttribute&& mA);
+    bool remove(ID id) { return mStorage.erase(id); }
+
+    bool operator==(const MetaEvent& a) const;
+    bool operator!=(const MetaEvent& a) const { return !(*this==a); }
 
 		iterator begin() noexcept;
 		const_iterator begin() const noexcept;
