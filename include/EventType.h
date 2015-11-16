@@ -17,20 +17,6 @@ class EventType{
     using PairType    = StorageType::value_type;
     StorageType mStorage;
 
-    class iterator{
-      private:
-        StorageType::iterator i;
-      public:
-        iterator(StorageType::iterator i);
-        iterator&   operator++();
-        ValueType& operator*();
-        bool operator==(const iterator& b);
-        bool operator!=(const iterator& b);
-    };
-
-    iterator begin();
-    iterator end();
-
     class Parser{
       private:
         StorageType& mStorage;
@@ -44,15 +30,10 @@ class EventType{
     };
 
   public:
-    class const_iterator{
-      protected:
-        StorageType::const_iterator i;
+    class const_iterator : public StorageType::const_iterator {
       public:
         const_iterator(StorageType::const_iterator i);
-        const_iterator&   operator++();
         const ValueType& operator*() const;
-        bool operator==(const const_iterator& b);
-        bool operator!=(const const_iterator& b);
     };
 
     const_iterator begin() const;

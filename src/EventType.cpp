@@ -1,51 +1,12 @@
 #include <EventType.h>
 
-EventType::iterator::iterator(StorageType::iterator i) : i(i) {}
-
-EventType::iterator& EventType::iterator::operator++() { 
-  i++; 
-  return *this;
-}
-
-EventType::ValueType& EventType::iterator::operator*() {
-  return i->second;
-}
-
-bool EventType::iterator::operator==(const iterator& b) { 
-  return i == b.i;
-}
-
-bool EventType::iterator::operator!=(const iterator& b) { 
-  return !(*this== b);
-}
-
-EventType::iterator EventType::begin() { 
-  return iterator(mStorage.begin());
-}
-
-EventType::iterator EventType::end() { 
-  return iterator(mStorage.end());
-}
-
 EventType::Parser::Parser(StorageType& storage) : mStorage(storage) {}
 
-EventType::const_iterator::const_iterator(StorageType::const_iterator i) : i(i) {}
-
-EventType::const_iterator& EventType::const_iterator::operator++() { 
-  i++; 
-  return *this;
-}
+EventType::const_iterator::const_iterator(StorageType::const_iterator i)
+  : StorageType::const_iterator(i) {}
 
 const EventType::ValueType& EventType::const_iterator::operator*() const { 
-  return i->second;
-}
-
-bool EventType::const_iterator::operator==(const const_iterator& b) { 
-  return i == b.i;
-}
-
-bool EventType::const_iterator::operator!=(const const_iterator& b) { 
-  return !(*this== b);
+  return this->StorageType::const_iterator::operator*().second;
 }
 
 EventType::const_iterator EventType::begin() const { 
