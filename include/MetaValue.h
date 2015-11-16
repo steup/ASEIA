@@ -70,10 +70,14 @@ public:
 
     explicit operator ValueType() const;
 
-    friend std::ostream& operator<<(std::ostream&, const MetaValue&);
-    friend class MetaFactoryImplementation;
+    std::ostream& print(std::ostream& o) const {
+      return mImpl->print(o);
+    }
+
+  friend class MetaFactoryImplementation;
 };
 
 inline std::ostream& operator<<(std::ostream& o, const MetaValue& v) {
-  return v.mImpl->print(o);
+  return v.print(o);
+}
 }
