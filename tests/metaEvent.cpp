@@ -15,10 +15,11 @@ using namespace std;
 			MetaFactory& f=MetaFactory::instance();
 			MetaEvent e;
 			MetaEventSuite(){
-				MetaAttribute& position = e.attribute(posID);
+				MetaAttribute position = posID;
 				position.value() = f.create({{0,1}, {1,1}, {2,1}});
 				position.unit()  = Meter();
 				position.scale() = ratio<1, 1000>();
+        e.add(position);
 			}
 	};
 
@@ -27,7 +28,9 @@ using namespace std;
 		test.value() = f.create({{0,1}, {1,1}, {2,1}});
 		test.unit()  = Meter();
 		test.scale() = ratio<1, 1000>();
-
-		EXPECT_EQ(e.attribute(posID), test) << "Position attribute not stored correctly";
+    const MetaAttribute* posPtr = e.attribute(posID);
+    ASSERT_NE(posPtr, nullptr) << "Position attribute could not be retrieved";
+    const MetaAttribute& pos = *posPtr;
+		EXPECT_EQ(pos, test) << "Position attribute not stored correctly";
 	}
 }}
