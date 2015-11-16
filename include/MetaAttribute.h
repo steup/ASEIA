@@ -3,6 +3,8 @@
 #include <MetaValue.h>
 #include <MetaUnit.h>
 #include <MetaScale.h>
+#include <Serializer.h>
+#include <DeSerializer.h>
 
 #include <iosfwd>
 
@@ -38,6 +40,17 @@ class MetaAttribute {
           MetaValue& value()       { return mValue; }
     const MetaValue& value() const { return mValue; }
 
+  template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, const MetaValue&);
 };
 
 std::ostream& operator<<(std::ostream& o, const MetaAttribute& ma);
+
+template<typename PB>
+Serializer<PB>& operator<<(Serializer<PB>& s, const MetaAttribute& me){
+  return s;
+}
+
+template<typename PB>
+DeSerializer<PB>& operator>>(DeSerializer<PB>& d, const MetaAttribute& me){
+  return d;
+}
