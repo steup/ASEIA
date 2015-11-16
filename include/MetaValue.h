@@ -36,6 +36,7 @@ public:
 
     MetaValue operator+(const MetaValue& b) const;
 		bool operator==(const MetaValue& b) const;
+		bool operator!=(const MetaValue& b) const { return !(*this==b); }
 
 		MetaValue& scale(const MetaScale& b) { (*mImpl)*=b; return *this; }
 
