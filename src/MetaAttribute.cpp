@@ -18,20 +18,18 @@ MetaAttribute::MetaAttribute(MetaAttribute&& movee) {
 	*this = movee;
 }
 MetaAttribute& MetaAttribute::operator=(const MetaAttribute& copy) {
-	if(mUnit == copy.mUnit) {
-		mScale = copy.mScale;
-		mValue = copy.mValue;
-	}
+	mUnit = copy.mUnit;
+  mScale = copy.mScale;
+	mValue = copy.mValue;
 	return *this;
 }
 
 MetaAttribute& MetaAttribute::operator=(MetaAttribute&& copy) {
-	if(&copy == this)
-		return *this;
-	if(mUnit == copy.mUnit) {
-		mScale = move(copy.mScale);
-		mValue = move(copy.mValue);
-	}
+	if(&copy != this) {
+	  mUnit = move(copy.mUnit);
+	  mScale = move(copy.mScale);
+	  mValue = move(copy.mValue);
+  }
 	return *this;
 }
 
