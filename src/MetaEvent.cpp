@@ -62,6 +62,13 @@ bool MetaEvent::operator==(const MetaEvent& b) const {
   return true;
 }
 
+MetaEvent::operator EventType() const {
+  EventType eT;
+  for(const MetaAttribute& a : *this)
+    eT.add( (AttributeType)a );
+  return eT;
+}
+
 MetaEvent::iterator MetaEvent::begin() noexcept { 
 	return iterator(mStorage.begin()); 
 }

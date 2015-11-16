@@ -2,6 +2,7 @@
 
 #include <ID.h>
 #include <MetaAttribute.h>
+#include <EventType.h>
 #include <Serializer.h>
 #include <DeSerializer.h>
 
@@ -36,6 +37,8 @@ class MetaEvent{
 
     bool operator==(const MetaEvent& a) const;
     bool operator!=(const MetaEvent& a) const { return !(*this==a); }
+
+    explicit operator EventType() const;
 
 		iterator begin() noexcept;
 		const_iterator begin() const noexcept;
