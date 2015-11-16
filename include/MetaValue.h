@@ -74,10 +74,20 @@ public:
       return mImpl->print(o);
     }
 
+  template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, const MetaValue&);
   friend class MetaFactoryImplementation;
 };
 
 inline std::ostream& operator<<(std::ostream& o, const MetaValue& v) {
   return v.print(o);
 }
+
+template<typename PB>
+Serializer<PB>& operator<<(Serializer<PB>& s, const MetaValue& me){
+  return s;
+}
+
+template<typename PB>
+DeSerializer<PB>& operator>>(DeSerializer<PB>& d, MetaValue& me){
+  return d;
 }
