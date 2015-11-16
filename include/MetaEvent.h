@@ -2,6 +2,8 @@
 
 #include <ID.h>
 #include <MetaAttribute.h>
+#include <Serializer.h>
+#include <DeSerializer.h>
 
 #include <map>
 #include <ostream>
@@ -42,6 +44,6 @@ Serializer<PB>& operator<<(Serializer<PB>& s, const MetaEvent& me){
 }
 
 template<typename PB>
-DeSerializer<PB>& operator>>(DeSerializer<PB>& d, const MetaEvent& me){
+DeSerializer<PB>& operator>>(DeSerializer<PB>& d, MetaEvent& me){
   return d;
 }
