@@ -67,9 +67,6 @@ bool MetaValue::valid() const {
 bool MetaValue::compatible(const MetaValue& b) const {
   return valid() && mImpl->typeId() == b.mImpl->typeId() && mImpl->cols() == b.mImpl->cols() && mImpl->rows() == mImpl->rows();
 }
-
-MetaValue::operator ValueType() {
+MetaValue::operator ValueType() const {
   return ValueType(typeId(), rows(), cols(), hasUncertainty());
 }
-
-

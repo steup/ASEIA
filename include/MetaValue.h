@@ -67,7 +67,7 @@ public:
       return mImpl->hasUncertainty();
     }
 
-    operator ValueType();
+    explicit operator ValueType() const;
 
     friend std::ostream& operator<<(std::ostream&, const MetaValue&);
     friend class MetaFactoryImplementation;
