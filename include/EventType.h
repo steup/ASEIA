@@ -47,6 +47,13 @@ class EventType{
       foreach<typename Event::AttributeList>(p);
     }
 
+    bool add(const AttributeType& aT) {
+      if(mStorage.count(aT.id()))
+        return false;
+      mStorage.insert(std::make_pair(aT.id(), aT));
+      return true;
+    }
+
     const AttributeType* attribute(KeyType key) const;
     
     bool operator==(const EventType& b) const;
@@ -74,7 +81,7 @@ DeSerializer<PB>& operator>>(DeSerializer<PB>& d, EventType& t){
   while(len--){
     AttributeType aT;
     d >> aT;
-    t.mStorage.insert(EventType::PairType(aT.id(), aT));
+    t.add(aT);
   }
   return d;
 }
