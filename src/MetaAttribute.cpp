@@ -1,4 +1,5 @@
 #include <MetaAttribute.h>
+#include <AttributeType.h>
 #include <IDIO.h>
 #include <IO.h>
 
@@ -50,6 +51,10 @@ MetaAttribute& MetaAttribute::operator+=(const MetaAttribute& b) {
 
 bool MetaAttribute::operator==(const MetaAttribute& b) const { 
 	return id() == b.id() &&  value() == b.value() && unit() == b.unit() && scale() == b.scale();
+}
+ 
+MetaAttribute::operator AttributeType() const {
+  return AttributeType(id(), ValueType(value()), scale(), unit());
 }
 
 ostream& operator<<(ostream& o, const MetaAttribute& ma) {

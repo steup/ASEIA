@@ -8,6 +8,8 @@
 
 #include <iosfwd>
 
+class AttributeType;
+
 class MetaAttribute { 
   public:
     using ID = id::attribute::ID;
@@ -39,6 +41,9 @@ class MetaAttribute {
 
           MetaValue& value()       { return mValue; }
     const MetaValue& value() const { return mValue; }
+
+    explicit operator AttributeType() const;
+
 
   template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, const MetaValue&);
 };
