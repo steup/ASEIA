@@ -39,7 +39,7 @@ class EventType{
         template<typename Attr>
         void operator()(Attr attr){
           AttributeType aT(attr);
-          mStorage.insert(PairType(aT.attributeId(), aT));
+          mStorage.insert(PairType(aT.id(), aT));
         }
     };
 
@@ -69,6 +69,7 @@ class EventType{
     const AttributeType* attribute(KeyType key) const;
     
     bool operator==(const EventType& b) const;
+    bool operator!=(const EventType& b) const { return !(*this==b); }
 
     uint8_t length() const;
 
@@ -92,7 +93,7 @@ DeSerializer<PB>& operator>>(DeSerializer<PB>& d, EventType& t){
   while(len--){
     AttributeType aT;
     d >> aT;
-    t.mStorage.insert(EventType::PairType(aT.attributeId(), aT));
+    t.mStorage.insert(EventType::PairType(aT.id(), aT));
   }
   return d;
 }
