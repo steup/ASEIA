@@ -3,6 +3,7 @@
 #include <Endianess.h>
 #include <Serializer.h>
 #include <DeSerializer.h>
+#include <EventType.h>
 
 #include <type_traits>
 
@@ -71,6 +72,18 @@ class Event : public Attributes...
       }
     };
 
+		class Parser{
+      private:
+        EventType& eT;
+      public:
+        Parser(EventType& eT) : eT(eT) {}
+
+        template<typename Attr>
+        void operator()(Attr attr) {
+          eT.add((AttributeType)attr);
+        }
+    };
+
   public:
     
     template<typename NewAttribute>
@@ -88,6 +101,12 @@ class Event : public Attributes...
     auto attribute(ID i) -> typename findAttribute<ID>::type&{
       using TargetAttribute = typename findAttribute<ID>::type;
       return *static_cast<TargetAttribute*>(this);
+    }
+    
+		explicit operator EventType() const {
+			EventType eT;
+      foreach<AttributeList>(Parser(eT));
+			return eT;
     }
 
     static constexpr std::size_t size() noexcept{

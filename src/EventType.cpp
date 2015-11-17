@@ -1,7 +1,5 @@
 #include <EventType.h>
 
-EventType::Parser::Parser(StorageType& storage) : mStorage(storage) {}
-
 EventType::const_iterator::const_iterator(StorageType::const_iterator i)
   : StorageType::const_iterator(i) {}
 

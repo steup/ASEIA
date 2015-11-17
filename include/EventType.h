@@ -1,9 +1,6 @@
 #pragma once
 
 #include <AttributeType.h>
-#include <Event.h>
-#include <Foreach.h>
-
 #include <map>
 
 #include <Serializer.h>
@@ -18,17 +15,6 @@ class EventType{
     using PairType    = StorageType::value_type;
     StorageType mStorage;
 
-    class Parser{
-      private:
-        StorageType& mStorage;
-      public:
-        Parser(StorageType& storage);
-        template<typename Attr>
-        void operator()(Attr attr){
-          AttributeType aT(attr);
-          mStorage.insert(PairType(aT.id(), aT));
-        }
-    };
 
   public:
     class const_iterator : public StorageType::const_iterator {
@@ -41,12 +27,6 @@ class EventType{
     const_iterator end() const;
 
     EventType() = default;
-
-    template<Endianess end=hostEndianess, typename... Attributes>
-    EventType(const Event<end, Attributes...>& e){
-      Parser p(mStorage);
-      foreach<typename Event<end, Attributes...>::AttributeList>(p);
-    }
 
     bool add(const AttributeType& aT) {
       if(mStorage.count(aT.id()))
