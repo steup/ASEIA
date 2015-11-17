@@ -1,6 +1,7 @@
 #pragma once
 
 #include <AttributeType.h>
+#include <Event.h>
 #include <Foreach.h>
 
 #include <map>
@@ -41,10 +42,10 @@ class EventType{
 
     EventType() = default;
 
-    template<typename Event>
-    EventType(const Event& e){
+    template<Endianess end=hostEndianess, typename... Attributes>
+    EventType(const Event<end, Attributes...>& e){
       Parser p(mStorage);
-      foreach<typename Event::AttributeList>(p);
+      foreach<typename Event<end, Attributes...>::AttributeList>(p);
     }
 
     bool add(const AttributeType& aT) {
