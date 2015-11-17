@@ -33,6 +33,8 @@
 		using RowInitType = std::initializer_list<Scalar>;
 		using InitType    = std::initializer_list<RowInitType>;
 		using BaseType    = Scalar;
+		using U           = typename BaseType::U;
+		using TypeID      = typename BaseType::TypeID;
 
 		Matrix(InitType l) : Matrix(l.size(), l.begin()->size()){
       unsigned int i=0;
@@ -45,10 +47,12 @@
     }
 
 		explicit operator ValueType() const {
-			return ValueType(BaseType::TypeID::value(), 
+			return ValueType(TypeID::value(), 
 											 this->rows(), this->cols(), 
-											 BaseType::hasUncertainty());
+											 U::value);
 		}
+    
+		constexpr bool hasUncertainty()     noexcept {return U::value;}
 
     constexpr static std::size_t staticSize() { return RowsAtCompileTime * ColsAtCompileTime * BaseType::size(); }
     std::size_t dynamicSize() const { return this->rows() * this->cols() * BaseType::size(); }

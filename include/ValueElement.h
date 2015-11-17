@@ -255,6 +255,7 @@ class ValueElementBase {
 		using UType    = typename make_unsigned<T>::type;
 		using PType    = typename multType<T>::type;
     using InitType = std::initializer_list<PType>;
+    using U        = boost::mpl::bool_<false>;
     using TypeID   = typename id::type::t2Type<T>::type;
     using BaseType = T;
 	protected:
@@ -311,8 +312,9 @@ class ValueElementBase {
 			return *this;
 		}
 
-		constexpr static std::size_t size() noexcept { return sizeof(VType);}
-    constexpr bool hasUncertainty()     noexcept {return false;}
+		constexpr static std::size_t size() noexcept { return sizeof(VType);   }
+    constexpr        id::type::ID  id() noexcept { return TypeID::value(); }
+    constexpr bool     hasUncertainty() noexcept { return U::value;        }
 		operator T() const {
 			return mValue;
 		}
@@ -330,6 +332,7 @@ class ValueElement<T, false> : public ValueElementBase<T>{
     using typename Base::TypeID;
     using typename Base::BaseType;
 		using typename Base::PType;
+    using typename Base::U;
 
 		constexpr ValueElement() = default;
 		ValueElement(const T v) : Base(v) {}
@@ -387,6 +390,7 @@ class ValueElement<T, true> : public ValueElementBase<T>{
     using typename Base::TypeID;
     using typename Base::BaseType;
 		using typename Base::PType;
+    using typename Base::U;
   protected:
     UType mUncertainty;
   public:
@@ -553,7 +557,7 @@ class ValueElement<T, true> : public ValueElementBase<T>{
     explicit operator ValueElement<T, false>() const { return ValueElement<T, false>(*this); }
 
     constexpr static std::size_t size() noexcept {return sizeof(VType)+sizeof(UType);}
-    constexpr bool hasUncertainty()     noexcept {return true;}
+    constexpr bool hasUncertainty()     noexcept {return U::value;}
 };
 
 template<typename T, bool U>
