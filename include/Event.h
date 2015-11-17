@@ -72,11 +72,8 @@ class Event : public Attributes...
       }
     };
 
-		class Parser{
-      private:
-        EventType& eT;
-      public:
-        Parser(EventType& eT) : eT(eT) {}
+		struct EventTypeHelper{
+        EventType eT;
 
         template<typename Attr>
         void operator()(Attr attr) {
@@ -104,9 +101,9 @@ class Event : public Attributes...
     }
     
 		explicit operator EventType() const {
-			EventType eT;
-      foreach<AttributeList>(Parser(eT));
-			return eT;
+			EventTypeHelper eTH;
+      foreach<AttributeList>(eTH);
+			return eTH.eT;
     }
 
     static constexpr std::size_t size() noexcept{
