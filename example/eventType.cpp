@@ -33,7 +33,7 @@ void printV(const vector<uint8_t>& v){
 
 int main(){
   DistanceEvent e;
-  EventType out(e);
+  EventType out=(EventType)e;
 
   vector<uint8_t> buffer;
 

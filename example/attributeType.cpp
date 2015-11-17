@@ -16,7 +16,7 @@ int main(){
   array<uint8_t, AttributeType::size()> buffer;
 
   Position pos;
-  AttributeType out(pos);
+  AttributeType out = (AttributeType)pos;
 
   cout << "AttributeType out: " << out <<  endl;
 
