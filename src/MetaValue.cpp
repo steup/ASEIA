@@ -5,25 +5,6 @@
 
 using namespace std;
 
-/*MetaValue::~MetaValue() { 
-  if(mImpl != &MetaValueBaseImplementation::sInstance)
-    delete mImpl;
-}
-
-MetaValue& MetaValue::operator=(const MetaValue& b) {
-  if(mImpl != &MetaValueBaseImplementation::sInstance)
-    delete mImpl;
-  mImpl = &b.mImpl->copy();
-  return *this;
-}
-
-MetaValue& MetaValue::operator=(MetaValueBaseImplementation& b) {
-  if(mImpl != &MetaValueBaseImplementation::sInstance)
-    delete mImpl;
-  mImpl = &b;
-  return *this;
-}*/
-
 MetaValue::MetaValue(MetaValue::Ptr&& ptr){
 		mImpl = move(ptr);
 }

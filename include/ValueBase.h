@@ -43,11 +43,6 @@
 				i++;
 			}
     }
-		/*Matrix(RowInitType l) : Matrix(l.size(), 1){
-      unsigned int i=0;
-      for(const auto& elem : l)
-        this->operator()(i++, 0)=elem;
-    }*/
 
 		explicit operator ValueType() const {
 			return ValueType(BaseType::TypeID::value(), 

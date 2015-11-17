@@ -1,9 +1,9 @@
 #pragma once
 
 #include <Unit.h>
+#include <Value.h>
 #include <Serializer.h>
 #include <DeSerializer.h>
-#include <Value.h>
 #include <AttributeType.h>
 
 #include <ratio>
