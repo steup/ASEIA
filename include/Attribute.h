@@ -4,6 +4,7 @@
 #include <Serializer.h>
 #include <DeSerializer.h>
 #include <Value.h>
+#include <AttributeType.h>
 
 #include <ratio>
 
@@ -30,6 +31,9 @@ class Attribute
     constexpr IDType id() noexcept {return IDType();}
     constexpr ScaleType scale() noexcept {return ScaleType();}
     constexpr UnitType unit() noexcept {return UnitType();}
+		explicit operator AttributeType() const {
+			return AttributeType(id(), value(), scale(), unit());
+		}
     constexpr static std::size_t size() noexcept {return Value::staticSize();}
 };
 

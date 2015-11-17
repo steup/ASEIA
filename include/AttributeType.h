@@ -4,7 +4,6 @@
 #include <ScaleType.h>
 #include <UnitType.h>
 #include <ValueType.h>
-#include <Attribute.h>
 
 #include <Serializer.h>
 #include <DeSerializer.h>
@@ -21,10 +20,6 @@ class AttributeType{
     AttributeType() = default;
     AttributeType(ID id, const ValueType& v, const ScaleType& s, const UnitType& u)
       : mId(id), mValue(v), mScale(s), mUnit(u) {}
-    
-    template<typename I, typename V, typename U, typename S>
-    AttributeType(const Attribute<I,V,U,S> a)
-      : AttributeType(I::value(), (ValueType)a.value(), S(), U()) {}
     
           ID            id() const;
     const UnitType&   unit() const;
