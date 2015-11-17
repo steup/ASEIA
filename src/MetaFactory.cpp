@@ -9,6 +9,8 @@
 #include <type_traits>
 #include <utility>
 
+using namespace std;
+
 template<typename... Types>
 class Conversions {
   private:
@@ -112,14 +114,20 @@ MetaValue MetaFactoryImplementation::convert(const ValueType& type, const MetaVa
   return temp;
 }
 
-MetaValue MetaFactoryImplementation::create(std::initializer_list<ValueElement<double>> l, id::type::ID id) const{
-  MetaValue temp = create(id, l.size(), 1, true);
-  if(temp.cols()!=1 || temp.rows()!=l.size())
-    return temp;
-    
-  unsigned int i=0;
-  for(const auto& elem : l)
-    temp.set(i++, 0, elem);
+MetaValue MetaFactoryImplementation::create(
+	initializer_list<initializer_list<ValueElement<double>>> l, id::type::ID id) const{
+	if(l.size()==0 || l.begin()->size()==0)
+		return MetaValue();
+
+  MetaValue temp = create(id, l.size(), l.begin()->size(), true);
+  
+	unsigned int i=0;
+  for(const auto& col : l) {
+		unsigned int j=0;
+		for(const auto& elem : col)
+    	temp.set(i, j++, elem);
+		i++;
+	}
    return temp;
 }
 
