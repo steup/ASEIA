@@ -3,6 +3,7 @@
 #define EIGEN_MATRIX_PLUGIN <ValueBase.h>
 
 #include <ValueElement.h>
+#include <ValueType.h>
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #include <Eigen/Core>
 #pragma GCC diagnostic pop

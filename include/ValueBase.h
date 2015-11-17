@@ -49,5 +49,11 @@
         this->operator()(i++, 0)=elem;
     }*/
 
+		explicit operator ValueType() const {
+			return ValueType(BaseType::TypeID::value(), 
+											 this->rows(), this->cols(), 
+											 BaseType::hasUncertainty());
+		}
+
     constexpr static std::size_t staticSize() { return RowsAtCompileTime * ColsAtCompileTime * BaseType::size(); }
     std::size_t dynamicSize() const { return this->rows() * this->cols() * BaseType::size(); }
