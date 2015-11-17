@@ -32,7 +32,7 @@ class Attribute
     constexpr ScaleType scale() noexcept {return ScaleType();}
     constexpr UnitType unit() noexcept {return UnitType();}
 		explicit operator AttributeType() const {
-			return AttributeType(id(), value(), scale(), unit());
+			return AttributeType(id().value(), (::ValueType)value(), scale(), unit());
 		}
     constexpr static std::size_t size() noexcept {return Value::staticSize();}
 };
