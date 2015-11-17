@@ -25,7 +25,7 @@ using namespace std;
 
 	TEST_F(MetaEventSuite, findAttributeTest) {
 		MetaAttribute test = posID;
-		test.value() = f.create({{0, 1, 2}});
+		test.value() = f.create({{{0,1}, {1,1}, {2,1}}});
 		test.unit()  = Meter();
 		test.scale() = ratio<1, 1000>();
     const MetaAttribute* posPtr = e.attribute(posID);
