@@ -14,7 +14,7 @@ int main() {
   {
     MetaFactory& instance = MetaFactory::instance();
 
-    MetaValue test = instance.create({{-5.1, 0.0},  {2.2, 0.0}, {3.3, 0.0}});
+    MetaValue test = instance.create({{{-5.1, 0.0},  {2.2, 0.0}, {3.3, 0.0}}});
     cout << "test : " << ValueType(test) << ":" << endl << test << endl;
 
     MetaValue test2(instance.convert(VU3(), test));
