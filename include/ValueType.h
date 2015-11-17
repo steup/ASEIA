@@ -33,6 +33,7 @@ class ValueType{
     static constexpr unsigned int size() { return sizeof(mTypeId) + sizeof(mRows) + sizeof(mCols);}
 
     bool operator==(const ValueType& b) const;
+    bool operator!=(const ValueType& b) const { return !(*this==b); }
 
     template<typename I> friend DeSerializer<I>& operator>>(DeSerializer<I>&, ValueType&);
 };
