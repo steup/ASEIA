@@ -1,12 +1,13 @@
 #include <MetaEvent.h>
 #include <MetaFactory.h>
+#include <ID.h>
 #include <ratio>
 
-namespace test {
+namespace tests {
 
 namespace metaEventSuite {
 
-using namespace id::attribute;
+using namespace ::id::attribute;
 using namespace std;
 
 	class MetaEventSuite : public ::testing::Test {
