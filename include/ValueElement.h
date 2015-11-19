@@ -352,11 +352,12 @@ class ValueElement<T, false> : public ValueElementBase<T>{
       value(v);
     }
 
-		bool operator>(const ValueElement& a) const { 
-			return this->mValue > a.mValue; 
+		ValueElement<bool, false> operator<(const ValueElement& a) const{
+			return this->mValue < a.mValue;
 		}
-		bool operator<(const ValueElement& a) const { 
-			return this->mValue < a.mValue; 
+
+		ValueElement<bool, false> operator>(const ValueElement& a) const{
+			return this->mValue > a.mValue;
 		}
 		
 		ValueElement operator-() const {
@@ -430,11 +431,11 @@ class ValueElement<T, true> : public ValueElementBase<T>{
     UType uncertainty() const{ return mUncertainty; }
     void uncertainty(UType u){ mUncertainty = u; }
     
-		bool operator<(const ValueElement& a) const{
+		ValueElement<bool, false> operator<(const ValueElement& a) const{
 			return this->mValue+this->mUncertainty < a.mValue - a.mUncertainty;
 		}
 		
-		bool operator>(const ValueElement& a) const{
+		ValueElement<bool, false> operator>(const ValueElement& a) const{
 			return this->mValue-this->mUncertainty > a.mValue + a.mUncertainty;
 		}
 		
@@ -583,22 +584,22 @@ class ValueElement<T, true> : public ValueElementBase<T>{
 };
 
 template<typename T, bool U>
-bool operator<=(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
+ValueElement<bool, false> operator<=(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
 	return !(a>b);
 }
 
 template<typename T, bool U>
-bool operator>=(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
+ValueElement<bool, false> operator>=(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
 	return !(a<b);
 }
 
 template<typename T, bool U>
-bool operator==(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
+ValueElement<bool, false> operator==(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
 	return a<=b && a>=b;
 }
 
 template<typename T, bool U>
-bool operator!=(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
+ValueElement<bool, false> operator!=(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
 	return a<b || a>b;
 }
 
