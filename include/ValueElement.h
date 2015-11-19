@@ -366,6 +366,11 @@ class ValueElement<T, false> : public ValueElementBase<T>{
 			else
 				return ValueElement(-this->mValue);
 		}
+
+		ValueElement<bool ,false> operator!() const {
+				return ValueElement<bool, false> (!this->mValue);
+		}
+
 		ValueElement& operator+=(const ValueElement& a) {
 			Base::operator+=(a.mValue);
 			return *this;
@@ -439,13 +444,20 @@ class ValueElement<T, true> : public ValueElementBase<T>{
 			return this->mValue-this->mUncertainty > a.mValue + a.mUncertainty;
 		}
 		
+		ValueElement<bool, true> operator!() const {
+			if(!mUncertainty)
+				return ValueElement<bool, true>(!this->mValue, false);
+			else
+				return ValueElement<bool, true>(!this->mValue, true);
+		}
+
 		ValueElement operator-() const{
       ValueElement temp(*this);
 			if(std::is_same<T, bool>::value) {
 				temp.mValue = !temp.mValue;
 				return temp;
 			}
-			
+
       if(std::is_signed<T>::value)
         temp.mValue=-temp.mValue;
       else{
