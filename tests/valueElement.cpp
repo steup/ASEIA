@@ -25,7 +25,29 @@ bool exactlyEqual(const ValueElement<T, U>& a, const ValueElement<T, U>& b) {
     EXPECT_TRUE(exactlyEqual(a/b, div)) << a << " / " << b << " = " << (a/b) << " != " << div; \
 }
 
-TEST(ValueElementSuite, CertainUInt8Test) {
+TEST(ValueElementSuite, certainBoolTest) {
+  using V=ValueElement<bool, false>;
+	V e0 = {false};
+	V e1 = { true};
+	testComp(e0, e1, false, true , true, false, true , false);
+	testOp(e0, e1, e1, e0, e0, e0);
+}
+
+TEST(ValueElementSuite, uncertainBoolTest) {
+  using V=ValueElement<bool, false>;
+	V e0 = {false, false};
+	V e1 = { true, false};
+	V e2 = {false, true};
+	V e3 = { true, true};
+	testComp(e0, e1, false, true , true , false, true , false);
+	testOp(e0, e1, e1, e0, e0, e0);
+	testComp(e0, e2, true , false, true , true , false, false);
+	testOp(e0, e2, e2, e2, e0, e2);
+	testComp(e1, e3, true , false, true , true , false, false);
+	testOp(e1, e3, e3, e2, e3, e2);
+}
+
+TEST(ValueElementSuite, certainUInt8Test) {
   using V=ValueElement<uint8_t, false>;
 	V e0 = {  0};
 	V e1 = {255};
@@ -41,7 +63,7 @@ TEST(ValueElementSuite, CertainUInt8Test) {
 	testOp(a,  c, V({ 16}), V({10}), V({ 39}), V({ 4}));
 }
 
-TEST(ValueElementSuite, CertainInt8Test) {
+TEST(ValueElementSuite, certainInt8Test) {
   using V=ValueElement<int8_t, false>;
 	V e0 = {   0};
 	V e1 = { 127};
@@ -61,7 +83,7 @@ TEST(ValueElementSuite, CertainInt8Test) {
 	testOp(a,  c, V({  16}), V({  10}), V({  39}), V({ 4}));
 }
 
-TEST(ValueElementSuite, UncertainUInt8Test) {
+TEST(ValueElementSuite, uncertainUInt8Test) {
   using V=ValueElement<uint8_t, true>;
 	V e0 = {0, 0};
 	V e1 = {0, 255};
@@ -81,7 +103,7 @@ TEST(ValueElementSuite, UncertainUInt8Test) {
 	testOp(a, c, V({16, 39}), V({10, 39}), V({65, 185}), V({13, 37}));
 }
 
-TEST(ValueElementSuite, UncertainInt8Test) {
+TEST(ValueElementSuite, uncertainInt8Test) {
   using V=ValueElement<int8_t, true>;
 	V e0 = {0, 0};
 	V e1 = {0, 255};
