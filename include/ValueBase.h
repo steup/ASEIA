@@ -51,7 +51,15 @@
 											 this->rows(), this->cols(), 
 											 U::value);
 		}
-    
+
+		Matrix<ValueElement<bool, false>, RowsAtCompileTime, ColsAtCompileTime> operator<( const Matrix& b ) const {
+			Matrix<ValueElement<bool, false>, RowsAtCompileTime, ColsAtCompileTime> res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) < b(i, j);
+			return res;
+    }
+
 		constexpr bool hasUncertainty()     noexcept {return U::value;}
 
     constexpr static std::size_t staticSize() { return RowsAtCompileTime * ColsAtCompileTime * BaseType::size(); }
