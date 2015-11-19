@@ -280,7 +280,10 @@ class ValueElementBase {
 		}
 
 		ValueElementBase& operator-=(T a){
-			satSub(mValue, a);
+			if(std::is_same<T, bool>::value)
+				mValue=false;
+			else
+				satSub(mValue, a);
 			return *this;
 		}
 
@@ -295,6 +298,10 @@ class ValueElementBase {
 		}
 
 		ValueElementBase& operator/=(T a){
+			if(std::is_same<T, bool>::value) {
+				mValue = false;
+				return *this;
+			}
 			if(!a) {
 				mValue = 0;
 				if(mValue>0)
@@ -433,6 +440,11 @@ class ValueElement<T, true> : public ValueElementBase<T>{
 		
 		ValueElement operator-() const{
       ValueElement temp(*this);
+			if(std::is_same<T, bool>::value) {
+				temp.mValue = !temp.mValue;
+				return temp;
+			}
+			
       if(std::is_signed<T>::value)
         temp.mValue=-temp.mValue;
       else{
@@ -453,7 +465,12 @@ class ValueElement<T, true> : public ValueElementBase<T>{
     }
 
 
-    ValueElement operator-=(const ValueElement& a){
+    ValueElement& operator-=(const ValueElement& a){
+			if(std::is_same<T, bool>::value) {
+				this->mValue = false;
+				mUncertainty = true;
+				return *this;;
+			}
 			if(satSub(this->mValue, a.mValue))
         mUncertainty = std::numeric_limits<UType>::max();
       else {
@@ -463,7 +480,7 @@ class ValueElement<T, true> : public ValueElementBase<T>{
       return *this;
     }
 
-    ValueElement operator*=(const ValueElement& a){
+    ValueElement& operator*=(const ValueElement& a){
       using T2 = PType;
 
 			T2 min = std::numeric_limits<T>::max();
@@ -505,7 +522,12 @@ class ValueElement<T, true> : public ValueElementBase<T>{
       return *this;
     }
 
-    ValueElement operator/=(const ValueElement& a){
+    ValueElement& operator/=(const ValueElement& a){
+			if(std::is_same<T, bool>::value) {
+				this->mValue = false;
+				mUncertainty = true;
+				return *this;
+			}
       if(a==ValueElement(0,0)){
         this->mValue = 0;
         mUncertainty = std::numeric_limits<UType>::max();
