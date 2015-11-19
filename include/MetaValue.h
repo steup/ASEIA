@@ -38,7 +38,7 @@ public:
 		bool operator==(const MetaValue& b) const;
 		bool operator!=(const MetaValue& b) const { return !(*this==b); }
 
-		MetaValue& scale(const MetaScale& b) { (*mImpl)*=b; return *this; }
+		MetaValue& operator*=(const MetaScale& b) { (*mImpl)*=b; return *this; }
 
     void set(std::size_t row, std::size_t col, ValueElement<double> value) {
       mImpl->set(row, col, value);

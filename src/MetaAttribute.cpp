@@ -40,7 +40,7 @@ MetaAttribute& MetaAttribute::operator+=(const MetaAttribute& b) {
 	}
 	if(!(mScale == b.mScale)) {
 		MetaValue sumB = b.value();
-		sumB.scale(b.mScale / mScale);
+		sumB*=(b.mScale / mScale);
 		mValue = mValue + sumB;
 	} else
 		mValue = mValue + b.value();
