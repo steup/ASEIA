@@ -60,6 +60,14 @@
 			return res;
     }
 
+		Matrix<ValueElement<bool, false>, RowsAtCompileTime, ColsAtCompileTime> operator!() const {
+			Matrix<ValueElement<bool, false>, RowsAtCompileTime, ColsAtCompileTime> res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = !res(i, j);
+			return res;
+    }
+
 		constexpr bool hasUncertainty()     noexcept {return U::value;}
 
     constexpr static std::size_t staticSize() { return RowsAtCompileTime * ColsAtCompileTime * BaseType::size(); }
