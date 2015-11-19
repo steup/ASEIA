@@ -70,7 +70,7 @@ namespace id{
       static constexpr ID value(){return 0;}
     };
 
-        struct UInt8 : public Base{
+    struct UInt8 : public Base{
       using Type = std::uint8_t;
       static constexpr ID value(){return 1;}
     };
@@ -119,6 +119,12 @@ namespace id{
       using Type = double;
       static constexpr ID value(){return 10;}
     };
+		
+		struct Bool : public Base{
+      using Type = bool;
+      static constexpr ID value(){return 11;}
+    };
+
 
     template<ID id>
     struct id2Type;
@@ -133,6 +139,7 @@ namespace id{
     template<> struct id2Type< UInt64::value() > { using type = UInt64; };
     template<> struct id2Type< Float ::value() > { using type = Float ; };
     template<> struct id2Type< Double::value() > { using type = Double; };
+    template<> struct id2Type< Bool  ::value() > { using type = Bool; };
 
     static constexpr ID id( int8_t   ) { return Int8  ::value(); }
     static constexpr ID id( int16_t  ) { return Int16 ::value(); }
@@ -144,6 +151,7 @@ namespace id{
     static constexpr ID id( uint64_t ) { return UInt64::value(); }
     static constexpr ID id( float    ) { return Float ::value(); }
     static constexpr ID id( double   ) { return Double::value(); }
+    static constexpr ID id( bool     ) { return Bool  ::value(); }
 
     template<typename T> struct t2Type { using type = typename id2Type< id( T() ) >::type; };
   }
