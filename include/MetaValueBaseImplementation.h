@@ -1,33 +1,36 @@
 #pragma once
 
-#include <cstdint>
+#include <ValueElement.h>
 #include <ID.h>
-#include <ostream>
+
 #include <memory>
+#include <iosfwd>
+#include <cstdint>
+
+class MetaScale;
 
 class MetaValueBaseImplementation {
-  private:
-    using Type = MetaValueBaseImplementation;
   protected:
-    static  Type sInstance;
+    using Interface = MetaValueBaseImplementation;
+    static Interface sInstance;
 
     struct Deleter{
-      void operator()(Type* ptr){
+      void operator()(Interface* ptr){
         if( ptr != &sInstance )
           delete ptr;
       }
     } deleter;
 
-    virtual void n( std::size_t n) { }
-    virtual void hasUncetrainty( bool u ) { }
+    virtual void resize( std::size_t rows, std::size_t cols) { }
+    virtual void hasUncertainty( bool u ) { }
 
     MetaValueBaseImplementation() = default;
 
   public:
-    using Ptr = std::unique_ptr<Type, Deleter>;
+    using Ptr = std::unique_ptr<Interface, Deleter>;
     virtual ~MetaValueBaseImplementation() = default;
 
-    virtual Type& operator=( const Type& b) { 
+    virtual Interface& operator=( const Interface& b) { 
       return *this; 
     }
 
@@ -35,32 +38,46 @@ class MetaValueBaseImplementation {
       return Ptr(&sInstance, sInstance.deleter);
     }
 
-    virtual Type& operator+=( const Type& b ) {
+    virtual Interface& operator+=( const Interface& b ) {
       return *this; 
     }
+    
+		virtual bool operator==( const Interface& b ) const {
+      return false; 
+    }
+		
+		virtual bool operator!=( const Interface& b ) const {
+      return !(*this==b); 
+    }
+
+		virtual Interface& operator*=(const MetaScale& b) { return *this; }
 
     virtual id::type::ID typeId() const { 
       return id::type::Base::value(); 
     }
     
-    virtual void set(uint8_t i, double value, double uncertainty) { }
+    virtual void set(std::size_t row, std::size_t col, ValueElement<double> value) { }
 
-    virtual std::size_t n() const { 
-      return 0; 
+    virtual std::size_t cols() const { 
+      return 0;
+    }
+
+    virtual std::size_t rows() const { 
+      return 0;
     }
 
     virtual bool hasUncertainty() const { 
-      return false; 
+      return true; 
     }
 
     virtual std::size_t size() const { 
-      return sizeof(Type); 
+      return 0; 
     }
 
-    virtual void print( std::ostream& o ) const { 
-      o << "void"; 
-    }
+    virtual std::ostream& print( std::ostream& o ) const;
 
     friend class MetaFactoryImplementation;
     friend class MetaValue;
 };
+
+std::ostream& operator<<(std::ostream& o, const MetaValueBaseImplementation& mvbi);

@@ -3,6 +3,7 @@
 #include <Endianess.h>
 #include <Serializer.h>
 #include <DeSerializer.h>
+#include <EventType.h>
 
 #include <type_traits>
 
@@ -22,7 +23,6 @@ class Event : public Attributes...
     static const Endianess endianess = e;
     using AttributeList=boost::mpl::vector<Attributes...>;
 
-  private:
     template<typename ID>
     struct findAttribute{
       struct compare{
@@ -35,6 +35,7 @@ class Event : public Attributes...
       using type = typename boost::mpl::deref<TargetIterator>::type;
     };
 
+	private:
     struct toConstInt{
       template<typename Attr>
       struct apply{
@@ -71,6 +72,15 @@ class Event : public Attributes...
       }
     };
 
+		struct EventTypeHelper{
+        EventType eT;
+
+        template<typename Attr>
+        void operator()(Attr attr) {
+          eT.add((AttributeType)attr);
+        }
+    };
+
   public:
     
     template<typename NewAttribute>
@@ -88,6 +98,12 @@ class Event : public Attributes...
     auto attribute(ID i) -> typename findAttribute<ID>::type&{
       using TargetAttribute = typename findAttribute<ID>::type;
       return *static_cast<TargetAttribute*>(this);
+    }
+    
+		explicit operator EventType() const {
+			EventTypeHelper eTH;
+      foreach<AttributeList>(eTH);
+			return eTH.eT;
     }
 
     static constexpr std::size_t size() noexcept{

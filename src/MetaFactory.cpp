@@ -9,6 +9,8 @@
 #include <type_traits>
 #include <utility>
 
+using namespace std;
+
 template<typename... Types>
 class Conversions {
   private:
@@ -87,15 +89,15 @@ MetaFactoryImplementation::~MetaFactoryImplementation() {
 MetaValue MetaFactoryImplementation::create(const ValueType& type) const {
   auto iter = creators.find(type.typeId());
   if(iter!=creators.end())
-    return MetaValue(iter->second(type.rows(), type.hasUncertainty()));
+    return MetaValue(iter->second(type.rows(), type.cols(), type.hasUncertainty()));
   else
     return MetaValue();
 }
 
-MetaValue MetaFactoryImplementation::create(id::type::ID id, std::size_t n, bool u) const {
+MetaValue MetaFactoryImplementation::create(id::type::ID id, std::size_t rows, std::size_t cols, bool u) const {
   auto iter = creators.find(id);
   if(iter!=creators.end())
-    return MetaValue(iter->second(n, u));
+    return MetaValue(iter->second(rows, cols, u));
   else
     return MetaValue();
 }
@@ -112,17 +114,20 @@ MetaValue MetaFactoryImplementation::convert(const ValueType& type, const MetaVa
   return temp;
 }
 
-MetaValue MetaFactoryImplementation::create(std::initializer_list<std::initializer_list<double>> l, id::type::ID id) const{
-  MetaValue temp = create(id, l.size() ,true);
-  uint8_t i=0;
-  for(const auto& elem : l){
-    double data[]={0,0};
-    uint8_t j=0;
-    for(const double& d : elem)
-      if(j<2)
-        data[j++]=d;
-    temp.implementation()->set(i++, data[0], data[1]);
-   }
+MetaValue MetaFactoryImplementation::create(
+	initializer_list<initializer_list<ValueElement<double>>> l, id::type::ID id) const{
+	if(l.size()==0 || l.begin()->size()==0)
+		return MetaValue();
+
+  MetaValue temp = create(id, l.size(), l.begin()->size(), true);
+  
+	unsigned int i=0;
+  for(const auto& col : l) {
+		unsigned int j=0;
+		for(const auto& elem : col)
+    	temp.set(i, j++, elem);
+		i++;
+	}
    return temp;
 }
 

@@ -1,41 +1,61 @@
 #pragma once
 
 #include <ID.h>
-
+#include <MetaAttribute.h>
+#include <EventType.h>
 #include <Serializer.h>
 #include <DeSerializer.h>
 
-class MetaValue{
+#include <map>
+#include <ostream>
+
+class MetaEvent{
+  public:
+    using ID = id::attribute::ID;
   private:
-
-    id::type::ID mTypeID = id::type::Base::value();
-    bool mHasUncertainty = true;
-    std::vector<std::pair<Data, Data>> mData;
-
-    currentDataPair
+		using Storage =  std::map<id::attribute::ID, MetaAttribute>;
+		Storage mStorage;
+		
+		class iterator : public Storage::iterator{
+			public:
+				iterator(Storage::iterator iter);
+				MetaAttribute& operator*();
+		};
+		
+		class const_iterator : public Storage::const_iterator{
+			public:
+				const_iterator(Storage::const_iterator iter);
+				const MetaAttribute& operator*() const;
+		};
 
   public:
-    id::type::ID typeID() const {return mTypeID; }
-    bool hasUncertainty() const {return mHasUncertainty; }
+		MetaAttribute* attribute(ID id);
+		const MetaAttribute* attribute(ID id) const;
+    bool add(const MetaAttribute&);
+    bool add(MetaAttribute&& mA);
+    bool remove(ID id) { return mStorage.erase(id); }
 
-    template<typename T, std::size_t m, bool u>
-    Value<T,n,u> operator Value<T,n,u>(){
-      Value<T,n,u> value;
-      for(uint32_t i=0;i<n;)
-        std::pair<T,T> p=
-        if(u)
-          value[i]={{mData[i].}}
-    }
+    bool operator==(const MetaEvent& a) const;
+    bool operator!=(const MetaEvent& a) const { return !(*this==a); }
+
+    explicit operator EventType() const;
+
+		iterator begin() noexcept;
+		const_iterator begin() const noexcept;
+		iterator end() noexcept;
+		const_iterator end() const noexcept;
 
   template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, const MetaValue&);
 };
 
+std::ostream& operator<<(std::ostream& o, const MetaEvent& me);
+
 template<typename PB>
-Serializer<PB>& operator<<(Serializer<PB>& s, const MetaValue& mv){
+Serializer<PB>& operator<<(Serializer<PB>& s, const MetaEvent& me){
   return s;
 }
 
 template<typename PB>
-DeSerializer<PB>& operator>>(DeSerializer<PB>& d, const MetaValue& mv){
+DeSerializer<PB>& operator>>(DeSerializer<PB>& d, MetaEvent& me){
   return d;
 }
