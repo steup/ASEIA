@@ -68,6 +68,22 @@ Data MetaValueImplementation<T>::get( Attributes a ) const {
 	}
 	return res;
 }
+template<typename T>
+ValueElement<double, true> MetaValueImplementation<T>::get(size_t row, size_t col) const {
+  if(row < (size_t)mData.rows() && col < (size_t)mData.cols())
+    return mData(row, col);
+  else
+    return ValueElement<double, true>();
+}
+
+template<typename T>
+bool MetaValueImplementation<T>::set(size_t row, size_t col, const ValueElement<double, true>& v) {
+  if(row < (size_t)mData.rows() && col < (size_t)mData.cols()) {
+    mData(row, col) = v;
+    return true;
+  }
+  return false;
+}
 
 template<typename T>
 bool MetaValueImplementation<T>::set(Attributes a, Data d) {

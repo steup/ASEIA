@@ -30,8 +30,12 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
     virtual Ptr copy() const;
 
     virtual Data get( Attributes a ) const;
+    
+    virtual ValueElement<double, true> get(std::size_t row, std::size_t col) const;
 
 		virtual bool set(Attributes a, Data d);
+
+    virtual bool set(std::size_t row, std::size_t col, const ValueElement<double, true>& v); 
 
 		virtual Interface& unaryOp( UnaryOp op);
 
