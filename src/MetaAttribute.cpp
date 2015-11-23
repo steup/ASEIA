@@ -48,7 +48,7 @@ MetaAttribute& MetaAttribute::operator+=(const MetaAttribute& b) {
 }
 
 bool MetaAttribute::operator==(const MetaAttribute& b) const { 
-	return id() == b.id() &&  value() == b.value() && unit() == b.unit() && scale() == b.scale();
+	return id() == b.id() &&  (ValueType)value() == (ValueType)b.value() && unit() == b.unit() && scale() == b.scale();
 }
  
 MetaAttribute::operator AttributeType() const {
