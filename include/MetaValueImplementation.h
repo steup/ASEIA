@@ -1,7 +1,7 @@
 #pragma once
 
 #include <MetaValueBaseImplementation.h>
-//#include <MetaFactory.h>
+#include <MetaFactory.h>
 #include <Value.h>
 
 template<typename T>
@@ -60,7 +60,7 @@ extern template class MetaValueImplementation<float>;
 extern template class MetaValueImplementation<double>;
 extern template class MetaValueImplementation<bool>;
 
-/*template<typename T0, typename T1>
+template<typename T0, typename T1>
 struct Converter{
   using Base = MetaValueBaseImplementation;
   using T0Impl = MetaValueImplementation<T0>;
@@ -75,4 +75,4 @@ struct Converter{
   operator MetaFactory::Converter(){
     return {{id::type::id(T0()), id::type::id(T1())}, &Converter::convert};
   }
-};*/
+};

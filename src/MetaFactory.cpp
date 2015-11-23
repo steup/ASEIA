@@ -1,5 +1,6 @@
 #include <MetaFactory.h>
 #include <MetaValueImplementation.h>
+#include <ValueElement.h>
 
 #include <boost/mpl/list.hpp>
 #include <boost/mpl/fold.hpp>

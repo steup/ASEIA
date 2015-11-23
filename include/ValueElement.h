@@ -477,8 +477,8 @@ class ValueElement<bool, true> : public ValueElementBase<bool>{
 
     template<typename T2>
     ValueElement(const ValueElement<T2, true>& data){
-      mValue = data.mValue;
-			mUncertainty = data.mUncertainty;
+      mValue = data.value();
+			mUncertainty = data.uncertainty();
     }
 
     UType uncertainty() const{ return mUncertainty; }
