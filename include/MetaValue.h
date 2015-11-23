@@ -4,6 +4,7 @@
 #include <ID.h>
 #include <Serializer.h>
 #include <DeSerializer.h>
+#include <ValueElement.h>
 
 #include <iosfwd>
 #include <memory>
@@ -40,9 +41,8 @@ class MetaValue {
 		MetaValue operator==(const MetaValue& b) const;
 		MetaValue operator!=(const MetaValue& b) const;
 		MetaValue& operator*=(const MetaScale& b);
-    /*void set(std::size_t row, std::size_t col, ValueElement<double> value) {
-      mImpl->set(row, col, value);
-    }*/
+    ValueElement<double, true> get(std::size_t row, std::size_t col) const;
+    bool set(std::size_t row, std::size_t col, const ValueElement<double, true>& v);
     
     std::size_t size()   const;
     std::size_t cols()   const;

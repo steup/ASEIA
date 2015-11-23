@@ -48,6 +48,13 @@ MetaValue& MetaValue::operator=(MetaValue&& copy) {
 	return *this;
 }
 
+ValueElement<double, true> MetaValue::get(std::size_t row, std::size_t col) const {
+  return mImpl->get(row, col);
+}
+bool MetaValue::set(std::size_t row, std::size_t col, const ValueElement<double, true>& v) {
+  return mImpl->set(row, col, v);
+}
+    
 MetaValue MetaValue::operator+(const MetaValue& b) const {
   if(compatible(b)) {
     MetaValue temp(*this);
