@@ -800,6 +800,11 @@ ValueElement<bool, U> operator!=(const ValueElement<T, U>& a, const ValueElement
 	return a<b || a>b;
 }
 
+template<typename T, bool U>
+ValueElement<bool, U> approxEqual(const ValueElement<T, U>& a, const ValueElement<T, U>& b){
+	return a<=b || a>=b;
+}
+
 
 template<typename T, bool U>
 ValueElement<T, U> operator+(const ValueElement<T, U>& a, const ValueElement<T, U>& b) {

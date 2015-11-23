@@ -133,7 +133,7 @@ Ptr MetaValueImplementation<T>::binaryConstOp( BinaryConstOp op, const Interface
 	 							      							 break;
    case(BinaryConstOp::NotEqual)   : ptr = Ptr(new Bool(mData != reinterpret_cast<const Impl&>(b).mData));
 	 								    							 break;
-   case(BinaryConstOp::ApproxEqual): /** \todo Implement approximate equal **/
+   case(BinaryConstOp::ApproxEqual): ptr = Ptr(new Bool(approxEqual(mData, reinterpret_cast<const Impl&>(b).mData)));
 	 								    							 break;
 	 case(BinaryConstOp::Smaller)    : ptr = Ptr(new Bool(mData < reinterpret_cast<const Impl&>(b).mData));
 	 								    							 break;
