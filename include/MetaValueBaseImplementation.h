@@ -30,9 +30,8 @@ class MetaValueBaseImplementation {
 		};
 
 		enum class UnaryOp {
-			Neg,
-			Not
-		};
+			Neg
+    };
 
 		enum class BinaryOp {
 			Add,

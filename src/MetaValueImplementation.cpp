@@ -102,9 +102,7 @@ bool MetaValueImplementation<T>::set(Attributes a, Data d) {
 template<typename T>
 Interface& MetaValueImplementation<T>::unaryOp( UnaryOp op)  {
 	switch(op) {
-		case(UnaryOp::Neg): /** \todo Implement negation **/
-												break;
-		case(UnaryOp::Not): /** \todo Implement not **/
+		case(UnaryOp::Neg): mData = -mData;
 												break;
 		default           : return Interface::unaryOp(op);
 	}
@@ -116,12 +114,12 @@ Interface& MetaValueImplementation<T>::binaryOp( BinaryOp op, const Interface& b
 	switch(op) {
       case(BinaryOp::Add): mData += reinterpret_cast<const Impl&>(b).mData;
 													 break;
-			case(BinaryOp::Sub): /** \todo Implement subtraction **/
+			case(BinaryOp::Sub): mData -= reinterpret_cast<const Impl&>(b).mData;
 													 break;
-			case(BinaryOp::Mul): /** \todo Implement multiplication **/
+			case(BinaryOp::Mul): /** /todo handle scalar and eWise product; **/
 													 break;
-			case(BinaryOp::Div): /** \todo Implement division **/
-													 break;
+			case(BinaryOp::Div): /** handle scalar **/
+                           break;
 			default            : return Interface::binaryOp(op, b);
 	}
 	return *this;
@@ -137,13 +135,13 @@ Ptr MetaValueImplementation<T>::binaryConstOp( BinaryConstOp op, const Interface
 	 								    							 break;
    case(BinaryConstOp::ApproxEqual): /** \todo Implement approximate equal **/
 	 								    							 break;
-	 case(BinaryConstOp::Smaller)    : /** \todo Implement smaller comparision **/
+	 case(BinaryConstOp::Smaller)    : ptr = Ptr(new Bool(mData < reinterpret_cast<const Impl&>(b).mData));
 	 								    							 break;
-	 case(BinaryConstOp::Greater)    : /** \todo Implement greater comparision **/
+	 case(BinaryConstOp::Greater)    : ptr = Ptr(new Bool(mData > reinterpret_cast<const Impl&>(b).mData));
 	 								    							 break;
-	 case(BinaryConstOp::SmallEqual) : /** \todo Implement smaller or equal comparision **/
+	 case(BinaryConstOp::SmallEqual) : ptr = Ptr(new Bool(mData <= reinterpret_cast<const Impl&>(b).mData));
 	 								    							 break;
-	 case(BinaryConstOp::GreatEqual) : /** \todo Implement greater or equal comparision **/
+	 case(BinaryConstOp::GreatEqual) : ptr = Ptr(new Bool(mData >= reinterpret_cast<const Impl&>(b).mData));
 	 								    							 break;
 	 default          							 : return Interface::binaryConstOp(op, b);
 	}

@@ -101,14 +101,6 @@
 			return res;
 		}
 
-		Matrix& operator*(const Matrix& b) {
-			if(this->rows() == b.rows() && this->cols() == b.cols())
-				this->cwiseProduct(b);
-			else
-				*this*=b;
-			return *this;
-		}
-
 		constexpr bool hasUncertainty() noexcept {return U::value;}
 
     constexpr static std::size_t staticSize() { return RowsAtCompileTime * ColsAtCompileTime * BaseType::size(); }
