@@ -38,6 +38,14 @@ bool MVBI::set(Attributes a, Data d) {
 	return false;
 }
 
+ValueElement<double, true> MetaValueBaseImplementation::get(std::size_t row, std::size_t col) const {
+    return ValueElement<double, true>();
+}
+
+bool MetaValueBaseImplementation::set(std::size_t row, std::size_t col, const ValueElement<double, true>& v) {
+  return false;
+}
+
 Interface& MVBI::unaryOp( UnaryOp op) {
 	return *this; 
 }
