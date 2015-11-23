@@ -1,10 +1,8 @@
 #pragma once
 
 #include <MetaValueBaseImplementation.h>
-#include <MetaFactory.h>
-#include <MetaScale.h>
+//#include <MetaFactory.h>
 #include <Value.h>
-#include <IO.h>
 
 template<typename T>
 class MetaValueImplementation : public MetaValueBaseImplementation {
@@ -15,81 +13,54 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
 
     Base mData;
 
-    static Ptr factoryCreate(std::size_t rows, std::size_t cols, bool u) {
-      return Ptr(new MetaValueImplementation(rows, cols, u));
-    }
-
-  public:
-    
-    MetaValueImplementation(const MetaValueImplementation& copy) = default;
-
-    virtual Ptr copy() const{
-      return Ptr(new MetaValueImplementation(*this), deleter);
-    }
-
-    virtual void resize( std::size_t rows, std::size_t cols ) { 
-      mData.resize(rows, cols);
-    }
-    
-  public:
-    using DataType = T;
-
-    MetaValueImplementation(std::size_t rows, std::size_t cols, bool u=true) : mData(rows, cols) { }
-
-    MetaValueImplementation(typename Base::InitType values) : mData(values) { }
-
-    virtual ~MetaValueImplementation() = default;
-
-    virtual MetaValueImplementation& operator=( const MetaValueImplementation& b) = delete;
-
-    virtual Interface& operator+=(const Interface& b) {
-      mData += reinterpret_cast<const MetaValueImplementation&>(b).mData;
-      return *this;
-    }
-    
-		virtual bool operator==(const Interface& b) const {
-      return mData == reinterpret_cast<const MetaValueImplementation&>(b).mData;
-    }
+    static Ptr factoryCreate(std::size_t rows, std::size_t cols, bool u);
 		
-		virtual bool operator!=(const Interface& b) const {
-      return !(mData == reinterpret_cast<const MetaValueImplementation&>(b).mData);
-    }
+		MetaValueImplementation(const MetaValueImplementation& copy) = default;
+		MetaValueImplementation(const Base& copy);
 
-		virtual Interface& operator*=(const MetaScale& b) {
-			mData  *= b.num();
-      mData  /= b.denom();
-      return *this;
-		}
+  public:
+    MetaValueImplementation(std::size_t rows, std::size_t cols);
 
-    virtual void set(std::size_t row, std::size_t col, ValueElement<double> value) {
-      mData(row, col)=value;
-    }
-   
-    virtual id::type::ID typeId() const {
-      return id::type::id(T());
-    }
-
-    virtual std::size_t cols() const { 
-      return mData.cols();
-    }
+    MetaValueImplementation(typename Base::InitType values);
     
-    virtual std::size_t rows() const { 
-      return mData.rows();
-    }
+		virtual ~MetaValueImplementation() = default;
 
-    virtual std::size_t size() const { 
-      return Elem::size()*cols()*rows();
-    }
+		virtual Interface& operator=( Interface&& movee);
+	
+    virtual Ptr copy() const;
 
-    virtual std::ostream& print(std::ostream& o) const {
-      return o << mData;
-    }
+    virtual Data get( Attributes a ) const;
+
+		virtual bool set(Attributes a, Data d);
+
+		virtual Interface& unaryOp( UnaryOp op);
+
+		virtual Interface& binaryOp( BinaryOp op, const Interface& b);
+
+		virtual Ptr binaryConstOp( BinaryConstOp op, const Interface& b ) const;
+
+		virtual Interface& scale(const MetaScale& scale);
+		
+		std::ostream& print(std::ostream& o) const;
 
     friend class MetaFactoryImplementation;
+    template<typename T0>  friend class MetaValueImplementation;
     template<typename T1, typename T2> friend class Converter;
 };
 
-template<typename T0, typename T1>
+extern template class MetaValueImplementation<uint8_t>;
+extern template class MetaValueImplementation<uint16_t>;
+extern template class MetaValueImplementation<uint32_t>;
+extern template class MetaValueImplementation<uint64_t>;
+extern template class MetaValueImplementation<int8_t>;
+extern template class MetaValueImplementation<int16_t>;
+extern template class MetaValueImplementation<int32_t>;
+extern template class MetaValueImplementation<int64_t>;
+extern template class MetaValueImplementation<float>;
+extern template class MetaValueImplementation<double>;
+extern template class MetaValueImplementation<bool>;
+
+/*template<typename T0, typename T1>
 struct Converter{
   using Base = MetaValueBaseImplementation;
   using T0Impl = MetaValueImplementation<T0>;
@@ -104,4 +75,4 @@ struct Converter{
   operator MetaFactory::Converter(){
     return {{id::type::id(T0()), id::type::id(T1())}, &Converter::convert};
   }
-};
+};*/
