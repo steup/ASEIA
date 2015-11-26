@@ -1,9 +1,10 @@
 #pragma once
 
 #include <Unit.h>
+#include <Value.h>
 #include <Serializer.h>
 #include <DeSerializer.h>
-#include <Value.h>
+#include <AttributeType.h>
 
 #include <ratio>
 
@@ -30,7 +31,10 @@ class Attribute
     constexpr IDType id() noexcept {return IDType();}
     constexpr ScaleType scale() noexcept {return ScaleType();}
     constexpr UnitType unit() noexcept {return UnitType();}
-    constexpr static std::size_t size() noexcept {return Value::size();}
+		explicit operator AttributeType() const {
+			return AttributeType(id().value(), (::ValueType)value(), scale(), unit());
+		}
+    constexpr static std::size_t size() noexcept {return Value::staticSize();}
 };
 
 template<typename PB, typename ID, typename V, typename U, typename S>

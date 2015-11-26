@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ID.h>
-#include <Value.h>
 
 #include <Serializer.h>
 #include <DeSerializer.h>
@@ -26,14 +25,6 @@ class ValueType{
 
     ValueType(id::type::ID id, int32_t rows, int32_t cols, bool u) : mTypeId(id), mHasUncertainty(u), mRows(rows), mCols(cols) { }
     
-    template<typename T, int32_t rows, int32_t cols, bool u>
-    ValueType(Value<T, rows, cols, u>) : 
-      mTypeId(id::type::id(T())),
-      mHasUncertainty(u),
-      mRows(rows),
-      mCols(cols)
-    {}
-
     id::type::ID typeId()         const;
     bool         hasUncertainty() const;
     uint32_t     cols()              const;
@@ -42,6 +33,7 @@ class ValueType{
     static constexpr unsigned int size() { return sizeof(mTypeId) + sizeof(mRows) + sizeof(mCols);}
 
     bool operator==(const ValueType& b) const;
+    bool operator!=(const ValueType& b) const { return !(*this==b); }
 
     template<typename I> friend DeSerializer<I>& operator>>(DeSerializer<I>&, ValueType&);
 };

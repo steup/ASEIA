@@ -1,53 +1,164 @@
 #include <MetaValueImplementation.h>
-#include <MetaFactory.h>
+#include <MetaScale.h>
+#include <IO.h>
+
+#include <memory>
+#include <ostream>
+
+using namespace std;
+using Interface = MetaValueBaseImplementation::Interface;
+using Ptr = MetaValueBaseImplementation::Ptr;
+using Data = MetaValueBaseImplementation::Data;
+using UnaryOp = MetaValueBaseImplementation::UnaryOp;
+using BinaryOp = MetaValueBaseImplementation::BinaryOp;
+using BinaryConstOp = MetaValueBaseImplementation::BinaryConstOp;
 
 template<typename T>
-MetaValueImplementation<T>::MetaValueImplementation(std::size_t n, bool u) : mHasUncertainty(u) {
-  mData.resize(n);
+using MVI = MetaValueImplementation<T>;
+
+using Bool = MetaValueImplementation<bool>;
+
+template<typename T>
+Ptr MetaValueImplementation<T>::factoryCreate(std::size_t rows, std::size_t cols, bool u) {
+	return Ptr(new MetaValueImplementation<T>(rows, cols));
+}
+
+		
+template<typename T>
+MetaValueImplementation<T>::MetaValueImplementation(std::size_t rows, std::size_t cols) : mData(rows, cols) {
+
 }
 
 template<typename T>
-MetaValueBaseImplementation& MetaValueImplementation<T>::operator+=(const MetaValueBaseImplementation& b) {
-  mData += reinterpret_cast<const MetaValueImplementation&>(b).mData;
-  return *this;
+MetaValueImplementation<T>::MetaValueImplementation(typename Base::InitType values) : mData(values) { 
+
 }
 
-/*template<typename T>
-MetaValueBaseImplementation& MetaValueImplementation<T>::copy() const {
-  try{
-    return *new Type(*this);
-  }catch(...){
-    return Base::sInstance;
+template<typename T>
+MetaValueImplementation<T>::MetaValueImplementation(const typename MVI<T>::Base& data) : mData(data) { 
+
+}
+
+template<typename T>
+Interface& MetaValueImplementation<T>::operator=( Interface&& movee) {
+ mData = move(reinterpret_cast<MVI<T>&&>(movee).mData);
+ return *this;
+}
+
+template<typename T>
+Ptr MetaValueImplementation<T>::copy() const {
+	return Ptr(new MetaValueImplementation(*this), Interface::Deleter());
+}
+
+template<typename T>
+Data MetaValueImplementation<T>::get( Attributes a ) const {
+	Data res;
+	switch(a) {
+  	case(Attributes::TypeID): 				res.typeID = id::type::id(T());
+																			break;
+		case(Attributes::Cols): 					res.cols = mData.cols();
+																			break;
+		case(Attributes::Rows): 					res.cols = mData.rows();
+																			break;
+		case(Attributes::Size): 					res.size = Elem::size()*mData.cols()*mData.rows();
+																			break;
+		case(Attributes::HasUncertainty): res.hasUncertainty = true;
+																			break;
+		default:													return Interface::get(a);
+	}
+	return res;
+}
+template<typename T>
+ValueElement<double, true> MetaValueImplementation<T>::get(size_t row, size_t col) const {
+  if(row < (size_t)mData.rows() && col < (size_t)mData.cols())
+    return mData(row, col);
+  else
+    return ValueElement<double, true>();
+}
+
+template<typename T>
+bool MetaValueImplementation<T>::set(size_t row, size_t col, const ValueElement<double, true>& v) {
+  if(row < (size_t)mData.rows() && col < (size_t)mData.cols()) {
+    mData(row, col) = v;
+    return true;
   }
-}*/
-
-template<typename T>
-void MetaValueImplementation<T>::print(std::ostream& o) const {
-  o << "(";
-  bool first = true;
-  for(const auto& e : mData){
-    if(first)
-      first=!first;
-    else
-      o << ", ";
-    if(mHasUncertainty)
-      o << e;
-    else
-      o << e.value();
-  }
-  o << ")";
+  return false;
 }
 
 template<typename T>
-MetaValueBaseImplementation::Ptr MetaValueImplementation<T>::factoryCreate(std::size_t n, bool u) {
-  return MetaValueImplementation<T>(n, u).copy();
+bool MetaValueImplementation<T>::set(Attributes a, Data d) {
+	switch(a) {
+  	case(Attributes::TypeID): 				return false;
+		case(Attributes::Cols): 					mData.conservativeResize(Eigen::NoChange_t() ,d.cols);
+																			return true;
+		case(Attributes::Rows): 					mData.conservativeResize(d.rows, Eigen::NoChange_t());
+																			return true;
+		case(Attributes::Size): 					return false;
+		case(Attributes::HasUncertainty): return false;
+		default:													return Interface::set(a, d);
+	}
 }
 
-/*  template<typename T0, typename T1>
-  I::BaseValue& convert(const I::BaseValue& a){
-    I::BaseValue& temp = create<T1>(a.n(), a.hasUncertainty());
-    //TODO
-  }*/
+template<typename T>
+Interface& MetaValueImplementation<T>::unaryOp( UnaryOp op)  {
+	switch(op) {
+		case(UnaryOp::Neg): mData = -mData;
+												break;
+		default           : return Interface::unaryOp(op);
+	}
+	return *this;
+}
+
+template<typename T>
+Interface& MetaValueImplementation<T>::binaryOp( BinaryOp op, const Interface& b)  {
+	switch(op) {
+      case(BinaryOp::Add): mData += reinterpret_cast<const Impl&>(b).mData;
+													 break;
+			case(BinaryOp::Sub): mData -= reinterpret_cast<const Impl&>(b).mData;
+													 break;
+			case(BinaryOp::Mul): /** /todo handle scalar and eWise product; **/
+													 break;
+			case(BinaryOp::Div): /** handle scalar **/
+                           break;
+			default            : return Interface::binaryOp(op, b);
+	}
+	return *this;
+}
+
+template<typename T>
+Ptr MetaValueImplementation<T>::binaryConstOp( BinaryConstOp op, const Interface& b ) const {
+	Ptr ptr;
+	switch(op) {
+   case(BinaryConstOp::Equal)      : ptr = Ptr(new Bool(mData == reinterpret_cast<const Impl&>(b).mData));
+	 							      							 break;
+   case(BinaryConstOp::NotEqual)   : ptr = Ptr(new Bool(mData != reinterpret_cast<const Impl&>(b).mData));
+	 								    							 break;
+   case(BinaryConstOp::ApproxEqual): ptr = Ptr(new Bool(approxEqual(mData, reinterpret_cast<const Impl&>(b).mData)));
+	 								    							 break;
+	 case(BinaryConstOp::Smaller)    : ptr = Ptr(new Bool(mData < reinterpret_cast<const Impl&>(b).mData));
+	 								    							 break;
+	 case(BinaryConstOp::Greater)    : ptr = Ptr(new Bool(mData > reinterpret_cast<const Impl&>(b).mData));
+	 								    							 break;
+	 case(BinaryConstOp::SmallEqual) : ptr = Ptr(new Bool(mData <= reinterpret_cast<const Impl&>(b).mData));
+	 								    							 break;
+	 case(BinaryConstOp::GreatEqual) : ptr = Ptr(new Bool(mData >= reinterpret_cast<const Impl&>(b).mData));
+	 								    							 break;
+	 default          							 : return Interface::binaryConstOp(op, b);
+	}
+	return ptr;
+}
+
+template<typename T>
+Interface& MetaValueImplementation<T>::scale(const MetaScale& scale) {
+	mData  *= scale.num();
+	mData  /= scale.denom();
+	return *this;
+}
+
+template<typename T>
+ostream& MetaValueImplementation<T>::print(ostream& o) const {
+	return o << mData;
+}
 
 template class MetaValueImplementation<uint8_t>;
 template class MetaValueImplementation<uint16_t>;

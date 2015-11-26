@@ -22,24 +22,29 @@ struct EventConfig : public BaseConfig
 using DistanceAttribute    = Attribute<Distance, Value<int16_t, 1>, Meter, std::ratio<1,1000>>;
 using DistanceEvent        = BaseEvent<EventConfig>::append<DistanceAttribute>::type;
 
+void printV(const vector<uint8_t>& v){
+	cout << "Binary: ";
+	auto formatFlags = cout.flags();
+  for(auto byte : v)
+      cout << hex << setw(2) << setfill('0') << byte << " ";
+	cout.flags(formatFlags);
+	cout << endl;
+}
+
 int main(){
   DistanceEvent e;
-  EventType out(e);
+  EventType out=(EventType)e;
 
   vector<uint8_t> buffer;
-  buffer.resize(out.size());
 
   cout << "Size: " << out.size() << endl;
 
   cout << "out: " << out <<  endl;
 
-  Serializer<decltype(buffer.begin())> s(buffer.begin(), buffer.end());
+  Serializer<decltype(back_inserter(buffer))> s(back_inserter(buffer));
   s << out;
 
-  cout << "Binarystream: " << hex << setfill('0') << setw(2);
-  for(auto b : buffer)
-    cout << "0x" << b << " ";
-  cout << dec << endl;
+  printV(buffer);
 
   EventType in;
 

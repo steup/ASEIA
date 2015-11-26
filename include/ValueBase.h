@@ -24,24 +24,84 @@
 
 		Iterator begin() { return Iterator(this->data()); }
 
-		Iterator end()   { return Iterator(this->data()+RowsAtCompileTime*ColsAtCompileTime); }
+		Iterator end()   { return Iterator(this->data()+this->cols()*this->rows()); }
 
 		ConstIterator begin() const { return ConstIterator(this->data()); }
 
-		ConstIterator end() const { return ConstIterator(this->data()+RowsAtCompileTime*ColsAtCompileTime); }
+		ConstIterator end() const { return ConstIterator(this->data()+this->cols()*this->rows()); }
 	
-		using InitType = std::initializer_list<Scalar>;
-		using BaseType = Scalar;
+		using RowInitType = std::initializer_list<Scalar>;
+		using InitType    = std::initializer_list<RowInitType>;
+		using BaseType    = Scalar;
+		using U           = typename BaseType::U;
+		using TypeID      = typename BaseType::TypeID;
+		using Bool        = Matrix<ValueElement<bool, U::value>, RowsAtCompileTime, ColsAtCompileTime>;
 
-		Matrix(InitType l){
- 			if(!l.size())
-					return;
-			
-			auto i = std::begin(l);
-      auto temp = *this << *i;
-			i=std::next(i);
-			for(;i!=std::end(l);i=std::next(i))
-					temp, *i;
+		Matrix(InitType l) : Matrix(l.size(), l.begin()->size()){
+      unsigned int i=0;
+      for(const auto& row : l) {
+				unsigned int j=0;
+      	for(const auto& elem : row)
+        	this->operator()(i, j++)=elem;
+				i++;
+			}
     }
 
-   constexpr static std::size_t size() noexcept {return RowsAtCompileTime*ColsAtCompileTime*sizeof(Scalar);}
+		explicit operator ValueType() const {
+			return ValueType(TypeID::value(), 
+											 this->rows(), this->cols(), 
+											 U::value);
+		}
+
+		Bool operator<( const Matrix& b ) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) < b(i, j);
+			return res;
+    }
+
+		Bool operator>( const Matrix& b ) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) > b(i, j);
+			return res;
+    }
+
+		Bool operator<=(const Matrix& b) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) <= b(i, j);
+			return res;
+		}
+
+		Bool operator>=(const Matrix& b) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) >= b(i, j);
+			return res;
+		}
+
+		Bool operator==(const Matrix& b) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) == b(i, j);
+			return res;
+		}
+
+		Bool operator!=(const Matrix& b) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) != b(i, j);
+			return res;
+		}
+
+		constexpr bool hasUncertainty() noexcept {return U::value;}
+
+    constexpr static std::size_t staticSize() { return RowsAtCompileTime * ColsAtCompileTime * BaseType::size(); }
+    std::size_t dynamicSize() const { return this->rows() * this->cols() * BaseType::size(); }

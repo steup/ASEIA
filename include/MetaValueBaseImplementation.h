@@ -1,66 +1,104 @@
 #pragma once
 
-#include <cstdint>
 #include <ID.h>
-#include <ostream>
+#include <ValueElement.h>
+
 #include <memory>
+#include <iosfwd>
+#include <cstddef>
+
+class MetaScale;
 
 class MetaValueBaseImplementation {
-  private:
-    using Type = MetaValueBaseImplementation;
-  protected:
-    static  Type sInstance;
+	public:
+    using Interface = MetaValueBaseImplementation;
+		
+		enum class Attributes {
+			HasUncertainty,
+			Size,
+			Rows,
+			Cols,
+			TypeID,
+		};
 
+		union Data {
+			bool hasUncertainty;
+			std::size_t  size;
+			std::size_t  rows;
+			std::size_t  cols;
+			id::type::ID typeID;
+		};
+
+		enum class UnaryOp {
+			Neg
+    };
+
+		enum class BinaryOp {
+			Add,
+			Sub,
+			Mul,
+			Div
+		};
+
+		enum class BinaryConstOp {
+			Smaller,
+			Greater,
+			SmallEqual,
+			GreatEqual,
+			Equal,
+			NotEqual,
+			ApproxEqual
+		};
+
+  protected:
     struct Deleter{
-      void operator()(Type* ptr){
+      void operator()(Interface* ptr){
         if( ptr != &sInstance )
           delete ptr;
       }
-    } deleter;
+    };
 
-    virtual void n( std::size_t n) { }
-    virtual void hasUncetrainty( bool u ) { }
+	public:
+    using Ptr = std::unique_ptr<Interface, Deleter>;
+
+	protected:
+
+    static Interface sInstance;
 
     MetaValueBaseImplementation() = default;
+		
+		MetaValueBaseImplementation(const Interface& copy) = default;
 
   public:
-    using Ptr = std::unique_ptr<Type, Deleter>;
+
     virtual ~MetaValueBaseImplementation() = default;
 
-    virtual Type& operator=( const Type& b) { 
-      return *this; 
-    }
+		Interface& operator=(const Interface& copy) = delete;
 
-    virtual Ptr copy() const { 
-      return Ptr(&sInstance, sInstance.deleter);
-    }
+		virtual Interface& operator=( Interface&& movee);
+	
+		virtual Ptr copy() const;
 
-    virtual Type& operator+=( const Type& b ) {
-      return *this; 
-    }
+    virtual Data get( Attributes a ) const;
 
-    virtual id::type::ID typeId() const { 
-      return id::type::Base::value(); 
-    }
-    
-    virtual void set(uint8_t i, double value, double uncertainty) { }
+    virtual ValueElement<double, true> get(std::size_t row, std::size_t col) const;
 
-    virtual std::size_t n() const { 
-      return 0; 
-    }
+		virtual bool set(Attributes a, Data d);
 
-    virtual bool hasUncertainty() const { 
-      return false; 
-    }
+    virtual bool set(std::size_t row, std::size_t col, const ValueElement<double, true>& v); 
 
-    virtual std::size_t size() const { 
-      return sizeof(Type); 
-    }
+		virtual Interface& unaryOp( UnaryOp op);
 
-    virtual void print( std::ostream& o ) const { 
-      o << "void"; 
-    }
+		virtual Interface& binaryOp( BinaryOp op, const Interface& b);
 
-    friend class MetaFactoryImplementation;
-    friend class MetaValue;
+		virtual Ptr binaryConstOp( BinaryConstOp op, const Interface& b ) const;
+
+		virtual Interface& scale(const MetaScale& scale);
+		
+    virtual std::ostream& print( std::ostream& o ) const;
+
+	friend class MetaFactoryImplementation;
+  friend class MetaValue;
 };
+
+std::ostream& operator<<(std::ostream& o, const MetaValueBaseImplementation& mvbi);

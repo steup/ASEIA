@@ -1,132 +1,79 @@
 #pragma once
 
 #include <MetaValueBaseImplementation.h>
-#include <MetaValue.h>
 #include <MetaFactory.h>
-#include <ValueElement.h>
 #include <Value.h>
-#include <ID.h>
-#include <IO.h>
-
-#include <valarray>
-#include <ostream>
-
-class MetaValue;
 
 template<typename T>
 class MetaValueImplementation : public MetaValueBaseImplementation {
   private:
-    using Base = MetaValueBaseImplementation;
-    using Ptr  = Base::Ptr;
-    using Type = MetaValueImplementation;
+    using Impl = MetaValueImplementation;
+		using Base = Value<T, Eigen::Dynamic, Eigen::Dynamic>;
+		using Elem = typename Base::BaseType;
 
-    std::valarray<ValueElement<T>> mData;
-    bool mHasUncertainty;
+    Base mData;
 
-    static Ptr factoryCreate(std::size_t n, bool u);
+    static Ptr factoryCreate(std::size_t rows, std::size_t cols, bool u);
+		
+		MetaValueImplementation(const MetaValueImplementation& copy) = default;
+		MetaValueImplementation(const Base& copy);
 
   public:
+    MetaValueImplementation(std::size_t rows, std::size_t cols);
+
+    MetaValueImplementation(typename Base::InitType values);
     
-    MetaValueImplementation(const Type&) = default;
+		virtual ~MetaValueImplementation() = default;
 
-    MetaValueImplementation(std::size_t n, bool u);
+		virtual Interface& operator=( Interface&& movee);
+	
+    virtual Ptr copy() const;
 
-    virtual Ptr copy() const{
-      return Ptr(new MetaValueImplementation(*this), deleter);
-    }
+    virtual Data get( Attributes a ) const;
+    
+    virtual ValueElement<double, true> get(std::size_t row, std::size_t col) const;
 
-    virtual void n( std::size_t n ) { 
-      mData.resize(n);
-    }
+		virtual bool set(Attributes a, Data d);
 
-    virtual void hasUncertainty( bool u) { 
-      mHasUncertainty = u;
-    }
+    virtual bool set(std::size_t row, std::size_t col, const ValueElement<double, true>& v); 
 
-  public:
-    using DataType = T;
+		virtual Interface& unaryOp( UnaryOp op);
 
-    MetaValueImplementation(std::initializer_list<std::initializer_list<T>> values)
-      : mHasUncertainty(true)
-    {
-      {
-        auto temp = values.begin();
-        std::size_t n=0;
-        while(temp!=values.end()){n++;temp=std::next(temp);}
-        mData.resize(n);
-        n=0;
-      }
-      std::size_t i=0;
-      for(const std::initializer_list<T>& elem : values){
-        auto uI = std::next(elem.begin());
-        T v = *elem.begin();
-        if(uI!=elem.end()) {
-          T u = *uI;
-          mData[i++]=ValueElement<T>(v,u);
-        }else
-          mData[i++]=ValueElement<T>(v);
-      }
-    }
+		virtual Interface& binaryOp( BinaryOp op, const Interface& b);
 
-    MetaValueImplementation(std::initializer_list<T> i)
-      : mHasUncertainty(false)
-    {
-      {
-        auto temp = i.begin();
-        std::size_t n=0;
-        while(temp!=i.end()){n++;temp=std::next(temp);}
-        mData.resize(n);
-      }
-      std::size_t n=0;
-      for(const auto& elem : i)
-          mData[n++]=ValueElement<T>(elem);
-    }
+		virtual Ptr binaryConstOp( BinaryConstOp op, const Interface& b ) const;
 
-    virtual ~MetaValueImplementation() = default;
-
-    virtual Type& operator=( const Type& b) = delete;
-
-    virtual Base& operator+=(const Base& b);
-
-    virtual void set(uint8_t i, double value, double uncertainty){
-      mData[i].value(value);
-      mData[i].uncertainty(uncertainty);
-    }
-   
-    virtual id::type::ID typeId() const {
-      return id::type::id(T());
-    }
-
-    virtual std::size_t n() const { 
-      return mData.size();
-    }
-
-    virtual bool hasUncertainty() const { 
-      return mHasUncertainty;
-    }
-
-    virtual std::size_t size() const { 
-      return sizeof(Type) + sizeof(ValueElement<T>)*n();
-    }
-
-    virtual void print(std::ostream& o) const;
+		virtual Interface& scale(const MetaScale& scale);
+		
+		std::ostream& print(std::ostream& o) const;
 
     friend class MetaFactoryImplementation;
+    template<typename T0>  friend class MetaValueImplementation;
     template<typename T1, typename T2> friend class Converter;
 };
+
+extern template class MetaValueImplementation<uint8_t>;
+extern template class MetaValueImplementation<uint16_t>;
+extern template class MetaValueImplementation<uint32_t>;
+extern template class MetaValueImplementation<uint64_t>;
+extern template class MetaValueImplementation<int8_t>;
+extern template class MetaValueImplementation<int16_t>;
+extern template class MetaValueImplementation<int32_t>;
+extern template class MetaValueImplementation<int64_t>;
+extern template class MetaValueImplementation<float>;
+extern template class MetaValueImplementation<double>;
+extern template class MetaValueImplementation<bool>;
 
 template<typename T0, typename T1>
 struct Converter{
   using Base = MetaValueBaseImplementation;
+  using T0Impl = MetaValueImplementation<T0>;
+  using T1Impl = MetaValueImplementation<T1>;
 
   static void convert(const Base& in, Base& out){
-    auto i=std::begin(reinterpret_cast<MetaValueImplementation<T1>&>(out).mData);
-    auto end=std::end(reinterpret_cast<MetaValueImplementation<T1>&>(out).mData);
-    for(const auto& elem : reinterpret_cast<const MetaValueImplementation<T0>&>(in).mData){
-      if(i==end)
-        break;
-      *i++=elem;
-    }
+    const T0Impl& inC = reinterpret_cast<const T0Impl&>(in);
+    T1Impl& outC = reinterpret_cast<T1Impl&>(out);
+    outC.mData = inC.mData.template cast< typename T1Impl::Base::BaseType >();
   }
   
   operator MetaFactory::Converter(){

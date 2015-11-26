@@ -2,10 +2,10 @@
 
 #include <PODConverter.h>
 
-template<typename ConstPacketBufferIterator>
+template<typename ForwardIterator>
 class DeSerializer{
   private:
-    using Iterator = ConstPacketBufferIterator;
+    using Iterator = ForwardIterator;
     Iterator mI;
     Iterator mEnd;
     bool mError;

@@ -33,22 +33,25 @@ MAKEFILE := $(lastword ${MAKEFILE_LIST})
 
 BASEDIR  := $(dir $(abspath ${MAKEFILE}))
 
-SRC      := src
-EXAMPLE  := example
-INC      := include
-DOC      := doc
+SRC       := src
+EXAMPLE   := example
+INC       := include
+DOC       := doc
+TESTS     := tests
+RUN_TESTS := run_tests
 
 HTML     := ${DOC}/html
 BIN      := bin
 BUILD    := build
 BLIB     := ${BUILD}/lib
 BPROG    := ${BUILD}/prog
+BTEST    := ${BUILD}/test
 LIB      := lib
 CMAKE    := cmake
 PKG      := pkgconfig
 LOG      := log
 
-DIRS     := ${BIN} ${BLIB} ${BPROG} ${BUILD} ${LIB} ${CMAKE} ${PKG} ${LOG}
+DIRS     := ${BIN} ${BLIB} ${BPROG} ${BTEST} ${BUILD} ${LIB} ${CMAKE} ${PKG} ${LOG}
 GARBAGE  := ${HTML} ${DIRS}
 
 CMAKEFILE:= ${CMAKE}/aseiaConfig.cmake
@@ -79,11 +82,27 @@ CXXFLAGS := ${CXXFLAGS} ${PKG_CFLAGS}
 LDFLAGS  := ${LDFLAGS} ${PKG_LDFLAGS}
 DEPS     := $(wildcard ${BUILD}/*/*.d)
 
-.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% doc
+
+.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% tests run_tests doc
 .PRECIOUS: ${BPROG}/%.o ${BLIB}/%.o
 
 all: ${DYNLIB} ${STATLIB} 
 	
+include gtest.mk
+
+tests: ${BIN}/${RUN_TESTS}
+
+run_tests: ${BIN}/${RUN_TESTS}
+	@./$<
+
+${BTEST}/${RUN_TESTS}.o: ${TESTS}/${RUN_TESTS}.cpp ${MAKEFILE} ${GTEST} | ${BTEST} 
+	@echo "Building unit tests $@ <- $<"
+	@${CXX} -MMD -c ${CXXFLAGS} -I${TESTS} ${GTEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES} ${GTEST_INCLUDES}
+
+${BIN}/${RUN_TESTS}: ${BTEST}/${RUN_TESTS}.o ${MAKEFILE} ${GTEST} | ${BIN} ${DYNLIB}
+	@echo "Linking unit tests $@ <- $<"
+	@${CXX} ${LDFLAGS} ${GTEST_LDFLAGS} $< -o $@ ${LDPATHS} ${LIBS} ${GTEST_LDPATHS} ${GTEST_LIBS}
+
 examples: ${EXAMPLES}
 
 ${EXAMPLES}: %: ${BIN}/%
