@@ -23,11 +23,11 @@ int main()
 {
   AngleEvent e;
   
-  e.attribute(Position()).value()    = {{100, 20}, {200,20}};
-  e.attribute(Time()).value()        = {{(unsigned long)std::time(nullptr), 1}};
-  e.attribute(PublisherID()).value() = {{55}};
-  e.attribute(Validity()).value()    = {{80}};
-  e.attribute(Angle()).value()       = {{314}};
+  e.attribute(Position()).value()    = {{{100, 20}}, {{200,20}}};
+  e.attribute(Time()).value()        = {{{(unsigned long)std::time(nullptr), 1}}};
+  e.attribute(PublisherID()).value() = {{{55}}};
+  e.attribute(Validity()).value()    = {{{80}}};
+  e.attribute(Angle()).value()       = {{{314}}};
   
   std::cout << e;  
   std::cout << "Size: " << AngleEvent::size() << std::endl;
