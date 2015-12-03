@@ -1,5 +1,6 @@
 #include <MetaFactory.h>
 #include <MetaValueImplementation.h>
+#include <ValueElement.h>
 
 #include <boost/mpl/list.hpp>
 #include <boost/mpl/fold.hpp>
@@ -60,6 +61,7 @@ class Conversions {
 
 MetaFactoryImplementation::MetaFactoryImplementation() : 
   creators{
+    {id::type::Bool  ::value(), &MetaValueImplementation<bool    >::factoryCreate},
     {id::type::UInt8 ::value(), &MetaValueImplementation<uint8_t >::factoryCreate},
     {id::type::UInt16::value(), &MetaValueImplementation<uint16_t>::factoryCreate},
     {id::type::UInt32::value(), &MetaValueImplementation<uint32_t>::factoryCreate},
@@ -71,7 +73,8 @@ MetaFactoryImplementation::MetaFactoryImplementation() :
     {id::type::Float ::value(), &MetaValueImplementation<float   >::factoryCreate},
     {id::type::Double::value(), &MetaValueImplementation<double  >::factoryCreate},
   }{ 
-    Conversions<uint8_t,
+    Conversions<bool,
+                uint8_t,
                 uint16_t,
                 uint32_t,
                 uint64_t,

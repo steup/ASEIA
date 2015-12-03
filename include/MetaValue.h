@@ -2,31 +2,34 @@
 
 #include <MetaValueBaseImplementation.h>
 #include <ID.h>
+#include <Serializer.h>
+#include <DeSerializer.h>
+#include <ValueElement.h>
 
 #include <iosfwd>
+#include <memory>
 
 class MetaScale;
 class ValueType;
 
 class MetaValue {
-  private:
+  public:
     using Ptr = MetaValueBaseImplementation::Ptr;
+		using ID  = id::type::ID;
+
+	private:
     Ptr mImpl;
-public:
+
+	public:
     explicit MetaValue(Ptr&& ref);
     Ptr& implementation() { return mImpl; }
     const Ptr& implementation() const { return mImpl; }
     
-    void resize(std::size_t rows, std::size_t cols) { 
-      return mImpl->resize(rows, cols);
-    }
-    
-    void hasUncertainy(bool u) { 
-      mImpl->hasUncertainty(u);
-    }
+    bool resize(std::size_t rows, std::size_t cols);
+    bool hasUncertainy(bool u);
 
   public:
-    MetaValue() : mImpl(MetaValueBaseImplementation::sInstance.copy()) {}
+    MetaValue();
 
     MetaValue(const MetaValue& copy);
     MetaValue(MetaValue&& copy);
@@ -35,44 +38,24 @@ public:
     MetaValue& operator=(MetaValue&& b);
 
     MetaValue operator+(const MetaValue& b) const;
-		bool operator==(const MetaValue& b) const;
-		bool operator!=(const MetaValue& b) const { return !(*this==b); }
-
-		MetaValue& operator*=(const MetaScale& b) { (*mImpl)*=b; return *this; }
-
-    void set(std::size_t row, std::size_t col, ValueElement<double> value) {
-      mImpl->set(row, col, value);
-    }
+		MetaValue operator==(const MetaValue& b) const;
+		MetaValue operator!=(const MetaValue& b) const;
+		MetaValue& operator*=(const MetaScale& b);
+    ValueElement<double, true> get(std::size_t row, std::size_t col) const;
+    bool set(std::size_t row, std::size_t col, const ValueElement<double, true>& v);
     
-    std::size_t size() const { 
-      return mImpl->size();
-    }
-
-    std::size_t cols() const { 
-      return mImpl->cols();
-    }
-    
-    std::size_t rows() const { 
-      return mImpl->rows();
-    }
-
-    id::type::ID typeId() const { 
-      return mImpl->typeId();
-    }
+    std::size_t size()   const;
+    std::size_t cols()   const;
+    std::size_t rows()   const;
+    ID          typeId() const;
+    bool hasUncertainty() const;
 
     bool valid() const;
-
     bool compatible(const MetaValue& b) const;
-
-    bool hasUncertainty() const { 
-      return mImpl->hasUncertainty();
-    }
 
     explicit operator ValueType() const;
 
-    std::ostream& print(std::ostream& o) const {
-      return mImpl->print(o);
-    }
+    std::ostream& print(std::ostream& o) const;
 
   template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, const MetaValue&);
   friend class MetaFactoryImplementation;

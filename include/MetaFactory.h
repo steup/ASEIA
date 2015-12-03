@@ -3,6 +3,7 @@
 #include <Singleton.h>
 #include <MetaValue.h>
 #include <ValueType.h>
+#include <ValueElement.h>
 #include <ID.h>
 
 #include <map>

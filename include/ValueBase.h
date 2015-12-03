@@ -35,6 +35,7 @@
 		using BaseType    = Scalar;
 		using U           = typename BaseType::U;
 		using TypeID      = typename BaseType::TypeID;
+		using Bool        = Matrix<ValueElement<bool, U::value>, RowsAtCompileTime, ColsAtCompileTime>;
 
 		Matrix(InitType l) : Matrix(l.size(), l.begin()->size()){
       unsigned int i=0;
@@ -52,23 +53,55 @@
 											 U::value);
 		}
 
-		Matrix<ValueElement<bool, false>, RowsAtCompileTime, ColsAtCompileTime> operator<( const Matrix& b ) const {
-			Matrix<ValueElement<bool, false>, RowsAtCompileTime, ColsAtCompileTime> res(this->rows(), this->cols());
+		Bool operator<( const Matrix& b ) const {
+			Bool res(this->rows(), this->cols());
 			for(unsigned int i=0;i<this->rows();i++)
 				for(unsigned int j=0;j<this->cols();j++)
 					res(i, j) = (*this)(i, j) < b(i, j);
 			return res;
     }
 
-		Matrix<ValueElement<bool, false>, RowsAtCompileTime, ColsAtCompileTime> operator!() const {
-			Matrix<ValueElement<bool, false>, RowsAtCompileTime, ColsAtCompileTime> res(this->rows(), this->cols());
+		Bool operator>( const Matrix& b ) const {
+			Bool res(this->rows(), this->cols());
 			for(unsigned int i=0;i<this->rows();i++)
 				for(unsigned int j=0;j<this->cols();j++)
-					res(i, j) = !res(i, j);
+					res(i, j) = (*this)(i, j) > b(i, j);
 			return res;
     }
 
-		constexpr bool hasUncertainty()     noexcept {return U::value;}
+		Bool operator<=(const Matrix& b) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) <= b(i, j);
+			return res;
+		}
+
+		Bool operator>=(const Matrix& b) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) >= b(i, j);
+			return res;
+		}
+
+		Bool operator==(const Matrix& b) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) == b(i, j);
+			return res;
+		}
+
+		Bool operator!=(const Matrix& b) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) != b(i, j);
+			return res;
+		}
+
+		constexpr bool hasUncertainty() noexcept {return U::value;}
 
     constexpr static std::size_t staticSize() { return RowsAtCompileTime * ColsAtCompileTime * BaseType::size(); }
     std::size_t dynamicSize() const { return this->rows() * this->cols() * BaseType::size(); }

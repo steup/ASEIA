@@ -12,9 +12,7 @@ struct EventConfig : public BaseConfig
 {
   using PositionValueType    = Value<int16_t, 2>;
   using PublisherIDValueType = Value<uint16_t, 1, 1, false>;
-  using ValidityValueType    = Value<uint8_t, 1, 1, false>;
   using PositionScale        = std::ratio<1,1000>;
-  using ValidityScale        = std::ratio<1,100>;
 	using TimeScale            = std::ratio<1,1000000000>;
 };
 
@@ -31,7 +29,6 @@ int main()
 																				{{3200, 200}}};
   e.attribute(Time()).value()        = {{{now.count(),1LL}}};
   e.attribute(PublisherID()).value() = {{{1337}}};
-  e.attribute(Validity()).value()    = {{{90}}};
   e.attribute(Distance()).value()    = {{{1000, 300}}};
 
   cout << e;

@@ -30,6 +30,15 @@ std::ostream& operator<<(std::ostream& o, const ValueElement<T, u>& e)
   return o;
 }
 
+template<bool u>
+std::ostream& operator<<(std::ostream& o, const ValueElement<bool, u>& e) {
+  if(u)
+    o << "[" << (e.value()?"true ":"false") << " +- " << (e.uncertainty()?"true ":"false") << "]";
+  else
+    o << (e.value()?"true ":"false");
+  return o;
+}
+
 namespace {
   struct UnitOutputHelper {
     std::ostream& o;
