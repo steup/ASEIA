@@ -5,6 +5,7 @@
 #include <deserializer.cpp>
 #include <valueElement.cpp>
 #include <value.cpp>
+#include <attribute.cpp>
 #include <metaValueImpl.cpp>
 #include <metaEvent.cpp>
 
