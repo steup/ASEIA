@@ -12,4 +12,6 @@ class MetaScale : public ScaleType {
 
     MetaScale operator*(const MetaScale& b) const;
     MetaScale operator/(const MetaScale& b) const;
+    MetaScale& operator*=(const MetaScale& b);
+    MetaScale& operator/=(const MetaScale& b);
 };

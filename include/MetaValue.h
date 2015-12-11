@@ -41,6 +41,7 @@ class MetaValue {
 		MetaValue operator==(const MetaValue& b) const;
 		MetaValue operator!=(const MetaValue& b) const;
 		MetaValue& operator*=(const MetaScale& b);
+		MetaValue& operator/=(const MetaScale& b);
     ValueElement<double, true> get(std::size_t row, std::size_t col) const;
     bool set(std::size_t row, std::size_t col, const ValueElement<double, true>& v);
     

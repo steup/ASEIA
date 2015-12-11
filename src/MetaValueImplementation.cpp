@@ -149,9 +149,14 @@ Ptr MetaValueImplementation<T>::binaryConstOp( BinaryConstOp op, const Interface
 }
 
 template<typename T>
-Interface& MetaValueImplementation<T>::scale(const MetaScale& scale) {
-	mData  *= scale.num();
-	mData  /= scale.denom();
+Interface& MetaValueImplementation<T>::scale(const MetaScale& scale, bool invert) {
+  if(invert) {
+	  mData  *= scale.denom();
+	  mData  /= scale.num();
+  } else {
+	  mData  *= scale.num();
+	  mData  /= scale.denom();
+  }
 	return *this;
 }
 

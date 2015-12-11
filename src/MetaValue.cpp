@@ -83,6 +83,11 @@ MetaValue& MetaValue::operator*=(const MetaScale& b) {
 	return *this;
 }
 
+MetaValue& MetaValue::operator/=(const MetaScale& b) { 
+	mImpl->scale(b, true);
+	return *this;
+}
+
 size_t MetaValue::size() const {
 	return mImpl->get(Attributes::Size).size;
 }

@@ -93,7 +93,7 @@ class MetaValueBaseImplementation {
 
 		virtual Ptr binaryConstOp( BinaryConstOp op, const Interface& b ) const;
 
-		virtual Interface& scale(const MetaScale& scale);
+		virtual Interface& scale(const MetaScale& scale, bool invert = false);
 		
     virtual std::ostream& print( std::ostream& o ) const;
 

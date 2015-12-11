@@ -58,7 +58,7 @@ Ptr MVBI::binaryConstOp( BinaryConstOp op, const Interface& b ) const {
 	return copy();
 } 
 		
-Interface& MVBI::scale(const MetaScale& scale){
+Interface& MVBI::scale(const MetaScale& scale, bool invert){
 	return *this;
 }
 		

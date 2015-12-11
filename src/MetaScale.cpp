@@ -8,18 +8,23 @@ void MetaScale::normalize() {
   mDenom /= gcd;
 }
 
+MetaScale& MetaScale::operator*=(const MetaScale& b) {
+  mNum*=b.num();
+  mDenom*=b.denom();
+  normalize();
+  return *this;
+}
+
+MetaScale& MetaScale::operator/=(const MetaScale& b) {
+  mNum*=b.denom();
+  mDenom*=b.num();
+  normalize();
+  return *this;
+}
 MetaScale MetaScale::operator*(const MetaScale& b) const {
-  MetaScale temp(*this);
-  temp.mNum*=b.num();
-  temp.mDenom*=b.denom();
-  temp.normalize();
-  return temp;
+  return MetaScale(*this) *= b;
 }
 
 MetaScale MetaScale::operator/(const MetaScale& b) const {
-  MetaScale temp(*this);
-  temp.mNum*=b.denom();
-  temp.mDenom*=b.num();
-  temp.normalize();
-  return temp;
+  return MetaScale(*this) /= b;
 }

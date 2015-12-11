@@ -46,6 +46,13 @@ MetaAttribute& MetaAttribute::operator+=(const MetaAttribute& b) {
 		mValue = mValue + b.value();
 	return *this;
 }
+    
+MetaAttribute MetaAttribute::operator*(const MetaScale& scale) const {
+  MetaAttribute temp(*this);
+  temp.scale() *= scale;
+  temp.value() /= scale;
+  return temp;
+}
 
 bool MetaAttribute::operator==(const MetaAttribute& b) const { 
 	return id() == b.id() &&  (ValueType)value() == (ValueType)b.value() && unit() == b.unit() && scale() == b.scale();
