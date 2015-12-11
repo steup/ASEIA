@@ -7,6 +7,7 @@
 #include <value.cpp>
 #include <attribute.cpp>
 #include <metaValueImpl.cpp>
+#include <metaAttribute.cpp>
 #include <metaEvent.cpp>
 
 /** \namespace tests
