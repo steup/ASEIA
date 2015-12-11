@@ -36,6 +36,10 @@
 		using U           = typename BaseType::U;
 		using TypeID      = typename BaseType::TypeID;
 		using Bool        = Matrix<ValueElement<bool, U::value>, RowsAtCompileTime, ColsAtCompileTime>;
+    using Base::operator*;
+    using Base::operator*=;
+    using Base::operator/=;
+    using Base::operator/;
 
 		Matrix(InitType l) : Matrix(l.size(), l.begin()->size()){
       unsigned int i=0;
@@ -45,6 +49,36 @@
         	this->operator()(i, j++)=elem;
 				i++;
 			}
+    }
+
+    template<std::intmax_t num, std::intmax_t den>
+    Matrix operator*(std::ratio<num, den> r) {
+      Matrix res = *this;
+      res *= Scalar(r.num);
+      res /= Scalar(r.den);
+      return res;
+    }
+    
+    template<std::intmax_t num, std::intmax_t den>
+    Matrix& operator*=(std::ratio<num, den> r) {
+      *this *= Scalar(r.num);
+      *this /= Scalar(r.den);
+      return *this;
+    }
+    
+    template<std::intmax_t num, std::intmax_t den>
+    Matrix operator/(std::ratio<num, den> r) {
+      Matrix res = *this;
+      res *= Scalar(r.den);
+      res /= Scalar(r.num);
+      return res;
+    }
+    
+    template<std::intmax_t num, std::intmax_t den>
+    Matrix& operator/=(std::ratio<num, den> r) {
+      *this *= Scalar(r.den);
+      *this /= Scalar(r.num);
+      return *this;
     }
 
 		explicit operator ValueType() const {
