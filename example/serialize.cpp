@@ -77,7 +77,6 @@ void baseEventOut(){
   S s(back_inserter(v));
   BaseEvent<> e;
   e.attribute(id::attribute::PublisherID()).value() = {{{1337}}};
-  e.attribute(id::attribute::Validity()).value() = {{{0.9}}};
   s << e;
   cout << (EventType)e << endl << e << endl;
   printV(v);
