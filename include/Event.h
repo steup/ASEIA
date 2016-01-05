@@ -4,6 +4,7 @@
 #include <Serializer.h>
 #include <DeSerializer.h>
 #include <EventType.h>
+#include <EventID.h>
 
 #include <type_traits>
 
@@ -105,6 +106,8 @@ class Event : public Attributes...
       foreach<AttributeList>(eTH);
 			return eTH.eT;
     }
+
+		EventID id() const { return EventID(*this); }
 
     static constexpr std::size_t size() noexcept{
       using namespace boost::mpl;

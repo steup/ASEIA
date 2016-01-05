@@ -9,6 +9,7 @@
 #include <metaValueImpl.cpp>
 #include <metaAttribute.cpp>
 #include <metaEvent.cpp>
+#include <event.cpp>
 
 /** \namespace tests
  *  \brief %Unit Test Suites
