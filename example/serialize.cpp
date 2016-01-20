@@ -55,7 +55,7 @@ void valueOut(){
 							 {{0.0, 0.2}},
 							 {{4.2, 1.1}}};
   s << value;
-  cout << ValueType(value) << endl << value << endl;
+  cout << (ValueType)value << endl << value << endl;
   printV(v);
 }
 
@@ -68,7 +68,7 @@ void attributeOut(){
 								{{0.0, 0.2}},
 								{{4.2, 1.1}}};
   s << value;
-  cout << AttributeType(value) << endl << value << endl;
+  cout << (AttributeType)value << endl << value << endl;
   printV(v);
 }
 
@@ -77,9 +77,8 @@ void baseEventOut(){
   S s(back_inserter(v));
   BaseEvent<> e;
   e.attribute(id::attribute::PublisherID()).value() = {{{1337}}};
-  e.attribute(id::attribute::Validity()).value() = {{{0.9}}};
   s << e;
-  cout << EventType(e) << endl << e << endl;
+  cout << (EventType)e << endl << e << endl;
   printV(v);
 }
 

@@ -1,12 +1,13 @@
 #pragma once
 
+#include <ratio>
 #define EIGEN_MATRIX_PLUGIN <ValueBase.h>
 
 #include <ValueElement.h>
+#include <ValueType.h>
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #include <Eigen/Core>
 #pragma GCC diagnostic pop
-
 
 #include <cmath>
 
@@ -38,6 +39,18 @@ ValueElement<T, U> log(const ValueElement<T, U>& x)  { return ValueElement<T, U>
 
 template<typename T, int32_t rows, int32_t cols = 1, bool useUncertainty=true>
 using Value = Eigen::Matrix<ValueElement<T, useUncertainty>, rows, cols>;
+
+template<typename T, int32_t rows, int32_t cols, bool u>
+auto approxEqual(const Value<T, rows, cols, u>& a, const Value<T, rows, cols, u>& b) -> typename Value<T, rows, cols, u>::Bool {
+  using Bool = typename Value<T, rows, cols, u>::Bool;
+  if(a.rows() != b.rows() || a.cols() != b.cols())
+    return Bool::Zero(a.rows(), b.rows());
+  Bool res(a.rows(), a.cols());
+  for(unsigned int i=0;i<a.rows();i++)
+    for(unsigned int j=0;j<a.cols();j++)
+      res(i, j) = approxEqual(a(i, j), b(i, j));
+  return res;
+}
 
 template<typename PB, typename T, int32_t rows, int32_t cols, bool u>
 Serializer<PB>& operator<<(Serializer<PB>& s, const Value<T,rows,cols,u>& value){

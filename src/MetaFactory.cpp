@@ -1,5 +1,6 @@
 #include <MetaFactory.h>
 #include <MetaValueImplementation.h>
+#include <ValueElement.h>
 
 #include <boost/mpl/list.hpp>
 #include <boost/mpl/fold.hpp>
@@ -8,6 +9,8 @@
 #include <boost/mpl/for_each.hpp>
 #include <type_traits>
 #include <utility>
+
+using namespace std;
 
 template<typename... Types>
 class Conversions {
@@ -58,6 +61,7 @@ class Conversions {
 
 MetaFactoryImplementation::MetaFactoryImplementation() : 
   creators{
+    {id::type::Bool  ::value(), &MetaValueImplementation<bool    >::factoryCreate},
     {id::type::UInt8 ::value(), &MetaValueImplementation<uint8_t >::factoryCreate},
     {id::type::UInt16::value(), &MetaValueImplementation<uint16_t>::factoryCreate},
     {id::type::UInt32::value(), &MetaValueImplementation<uint32_t>::factoryCreate},
@@ -69,7 +73,8 @@ MetaFactoryImplementation::MetaFactoryImplementation() :
     {id::type::Float ::value(), &MetaValueImplementation<float   >::factoryCreate},
     {id::type::Double::value(), &MetaValueImplementation<double  >::factoryCreate},
   }{ 
-    Conversions<uint8_t,
+    Conversions<bool,
+                uint8_t,
                 uint16_t,
                 uint32_t,
                 uint64_t,
@@ -112,14 +117,20 @@ MetaValue MetaFactoryImplementation::convert(const ValueType& type, const MetaVa
   return temp;
 }
 
-MetaValue MetaFactoryImplementation::create(std::initializer_list<ValueElement<double>> l, id::type::ID id) const{
-  MetaValue temp = create(id, l.size(), 1, true);
-  if(temp.cols()!=1 || temp.rows()!=l.size())
-    return temp;
-    
-  unsigned int i=0;
-  for(const auto& elem : l)
-    temp.set(i++, 0, elem);
+MetaValue MetaFactoryImplementation::create(
+	initializer_list<initializer_list<ValueElement<double>>> l, id::type::ID id) const{
+	if(l.size()==0 || l.begin()->size()==0)
+		return MetaValue();
+
+  MetaValue temp = create(id, l.size(), l.begin()->size(), true);
+  
+	unsigned int i=0;
+  for(const auto& col : l) {
+		unsigned int j=0;
+		for(const auto& elem : col)
+    	temp.set(i, j++, elem);
+		i++;
+	}
    return temp;
 }
 

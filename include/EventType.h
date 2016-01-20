@@ -1,8 +1,6 @@
 #pragma once
 
 #include <AttributeType.h>
-#include <Foreach.h>
-
 #include <map>
 
 #include <Serializer.h>
@@ -17,42 +15,12 @@ class EventType{
     using PairType    = StorageType::value_type;
     StorageType mStorage;
 
-    class iterator{
-      private:
-        StorageType::iterator i;
-      public:
-        iterator(StorageType::iterator i);
-        iterator&   operator++();
-        ValueType& operator*();
-        bool operator==(const iterator& b);
-        bool operator!=(const iterator& b);
-    };
-
-    iterator begin();
-    iterator end();
-
-    class Parser{
-      private:
-        StorageType& mStorage;
-      public:
-        Parser(StorageType& storage);
-        template<typename Attr>
-        void operator()(Attr attr){
-          AttributeType aT(attr);
-          mStorage.insert(PairType(aT.attributeId(), aT));
-        }
-    };
 
   public:
-    class const_iterator{
-      protected:
-        StorageType::const_iterator i;
+    class const_iterator : public StorageType::const_iterator {
       public:
         const_iterator(StorageType::const_iterator i);
-        const_iterator&   operator++();
         const ValueType& operator*() const;
-        bool operator==(const const_iterator& b);
-        bool operator!=(const const_iterator& b);
     };
 
     const_iterator begin() const;
@@ -60,15 +28,17 @@ class EventType{
 
     EventType() = default;
 
-    template<typename Event>
-    EventType(const Event& e){
-      Parser p(mStorage);
-      foreach<typename Event::AttributeList>(p);
+    bool add(const AttributeType& aT) {
+      if(mStorage.count(aT.id()))
+        return false;
+      mStorage.insert(std::make_pair(aT.id(), aT));
+      return true;
     }
 
     const AttributeType* attribute(KeyType key) const;
     
     bool operator==(const EventType& b) const;
+    bool operator!=(const EventType& b) const { return !(*this==b); }
 
     uint8_t length() const;
 
@@ -92,7 +62,7 @@ DeSerializer<PB>& operator>>(DeSerializer<PB>& d, EventType& t){
   while(len--){
     AttributeType aT;
     d >> aT;
-    t.mStorage.insert(EventType::PairType(aT.attributeId(), aT));
+    t.add(aT);
   }
   return d;
 }

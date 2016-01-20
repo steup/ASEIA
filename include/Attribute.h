@@ -1,9 +1,10 @@
 #pragma once
 
 #include <Unit.h>
+#include <Value.h>
 #include <Serializer.h>
 #include <DeSerializer.h>
-#include <Value.h>
+#include <AttributeType.h>
 
 #include <ratio>
 
@@ -20,6 +21,9 @@ class Attribute
   private:
     ValueType v;
 
+    template<typename NewScale>
+    using mult = Attribute<AttributeID, Value, Unit, std::ratio_multiply<Scale, NewScale>>;
+
   public:
     Attribute(){}
     Attribute(InitType l) : v(l){}
@@ -27,9 +31,24 @@ class Attribute
     const ValueType& value() const {return v;}
     ValueType& value(){return v;}
     void value(const ValueType& v){this->v=v;}
+    
+    template<typename ScaleArg>
+    auto operator*(ScaleArg dummy)
+      -> mult<ScaleArg> {
+      mult<ScaleArg> temp;
+      temp.value() = value() / ScaleArg();
+      return temp;
+    }
+    
     constexpr IDType id() noexcept {return IDType();}
     constexpr ScaleType scale() noexcept {return ScaleType();}
     constexpr UnitType unit() noexcept {return UnitType();}
+		explicit operator AttributeType() const {
+			return AttributeType(id().value(), (::ValueType)value(), scale(), unit());
+		}
+
+    bool operator==(const Attribute& b) const { return (value()==b.value()).prod(); }
+
     constexpr static std::size_t size() noexcept {return Value::staticSize();}
 };
 

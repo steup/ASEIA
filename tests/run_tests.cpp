@@ -5,7 +5,11 @@
 #include <deserializer.cpp>
 #include <valueElement.cpp>
 #include <value.cpp>
+#include <attribute.cpp>
 #include <metaValueImpl.cpp>
+#include <metaAttribute.cpp>
+#include <metaEvent.cpp>
+#include <event.cpp>
 
 /** \namespace tests
  *  \brief %Unit Test Suites

@@ -33,6 +33,13 @@
 		using RowInitType = std::initializer_list<Scalar>;
 		using InitType    = std::initializer_list<RowInitType>;
 		using BaseType    = Scalar;
+		using U           = typename BaseType::U;
+		using TypeID      = typename BaseType::TypeID;
+		using Bool        = Matrix<ValueElement<bool, U::value>, RowsAtCompileTime, ColsAtCompileTime>;
+    using Base::operator*;
+    using Base::operator*=;
+    using Base::operator/=;
+    using Base::operator/;
 
 		Matrix(InitType l) : Matrix(l.size(), l.begin()->size()){
       unsigned int i=0;
@@ -43,11 +50,92 @@
 				i++;
 			}
     }
-		/*Matrix(RowInitType l) : Matrix(l.size(), 1){
-      unsigned int i=0;
-      for(const auto& elem : l)
-        this->operator()(i++, 0)=elem;
-    }*/
+
+    template<std::intmax_t num, std::intmax_t den>
+    Matrix operator*(std::ratio<num, den> r) {
+      Matrix res = *this;
+      res *= Scalar(r.num);
+      res /= Scalar(r.den);
+      return res;
+    }
+    
+    template<std::intmax_t num, std::intmax_t den>
+    Matrix& operator*=(std::ratio<num, den> r) {
+      *this *= Scalar(r.num);
+      *this /= Scalar(r.den);
+      return *this;
+    }
+    
+    template<std::intmax_t num, std::intmax_t den>
+    Matrix operator/(std::ratio<num, den> r) {
+      Matrix res = *this;
+      res *= Scalar(r.den);
+      res /= Scalar(r.num);
+      return res;
+    }
+    
+    template<std::intmax_t num, std::intmax_t den>
+    Matrix& operator/=(std::ratio<num, den> r) {
+      *this *= Scalar(r.den);
+      *this /= Scalar(r.num);
+      return *this;
+    }
+
+		explicit operator ValueType() const {
+			return ValueType(TypeID::value(), 
+											 this->rows(), this->cols(), 
+											 U::value);
+		}
+
+		Bool operator<( const Matrix& b ) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) < b(i, j);
+			return res;
+    }
+
+		Bool operator>( const Matrix& b ) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) > b(i, j);
+			return res;
+    }
+
+		Bool operator<=(const Matrix& b) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) <= b(i, j);
+			return res;
+		}
+
+		Bool operator>=(const Matrix& b) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) >= b(i, j);
+			return res;
+		}
+
+		Bool operator==(const Matrix& b) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) == b(i, j);
+			return res;
+		}
+
+		Bool operator!=(const Matrix& b) const {
+			Bool res(this->rows(), this->cols());
+			for(unsigned int i=0;i<this->rows();i++)
+				for(unsigned int j=0;j<this->cols();j++)
+					res(i, j) = (*this)(i, j) != b(i, j);
+			return res;
+		}
+
+		constexpr bool hasUncertainty() noexcept {return U::value;}
 
     constexpr static std::size_t staticSize() { return RowsAtCompileTime * ColsAtCompileTime * BaseType::size(); }
     std::size_t dynamicSize() const { return this->rows() * this->cols() * BaseType::size(); }
