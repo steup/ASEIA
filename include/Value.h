@@ -6,6 +6,7 @@
 #include <ValueElement.h>
 #include <ValueType.h>
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <Eigen/Core>
 #pragma GCC diagnostic pop
 
