@@ -49,7 +49,7 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
 
     friend class MetaFactoryImplementation;
     template<typename T0>  friend class MetaValueImplementation;
-    template<typename T1, typename T2> friend class Converter;
+    template<typename T1, typename T2> friend struct Converter;
 };
 
 extern template class MetaValueImplementation<uint8_t>;

@@ -193,17 +193,7 @@ namespace {
 
   template<typename T>
   typename make_unsigned<T>::type opError(T result){
-    return 0;
-  }
-
-  template<>
-  float opError(float result){
-    return std::numeric_limits<float>::epsilon()*result;
-  }
-
-  template<>
-  double opError(double result){
-    return std::numeric_limits<double>::epsilon()*result;
+    return std::numeric_limits<T>::epsilon()*result;
   }
 
   template<typename T>
@@ -319,9 +309,9 @@ class ValueElementBase {
 			return *this;
 		}
 
-		constexpr static std::size_t size() noexcept { return sizeof(VType);   }
-    constexpr        id::type::ID  id() noexcept { return TypeID::value(); }
-    constexpr bool     hasUncertainty() noexcept { return U::value;        }
+		constexpr const static std::size_t size() noexcept { return sizeof(VType);   }
+    constexpr const        id::type::ID  id() const noexcept { return TypeID::value(); }
+    constexpr const bool     hasUncertainty() const noexcept { return U::value;        }
 		operator T() const {
 			return mValue;
 		}
@@ -373,9 +363,9 @@ class ValueElementBase<bool> {
 			return *this;
 		}
 
-		constexpr static std::size_t size() noexcept { return sizeof(VType);   }
-    constexpr        id::type::ID  id() noexcept { return TypeID::value(); }
-    constexpr bool     hasUncertainty() noexcept { return U::value;        }
+		constexpr const static std::size_t size() noexcept { return sizeof(VType);   }
+    constexpr const        id::type::ID  id() const noexcept { return TypeID::value(); }
+    constexpr const bool     hasUncertainty() const noexcept { return U::value;        }
 		operator T() const {
 			return mValue;
 		}
@@ -521,8 +511,8 @@ class ValueElement<bool, true> : public ValueElementBase<bool>{
       return *this;
     }
 
-    constexpr static std::size_t size() noexcept {return sizeof(VType)+sizeof(UType);}
-    constexpr bool hasUncertainty()     noexcept {return U::value;}
+    constexpr const static std::size_t size() noexcept {return sizeof(VType)+sizeof(UType);}
+    constexpr const bool hasUncertainty() const    noexcept {return U::value;}
 };
 
 template<typename T>
@@ -775,8 +765,8 @@ class ValueElement<T, true> : public ValueElementBase<T>{
       return *this;
     }
 
-    constexpr static std::size_t size() noexcept {return sizeof(VType)+sizeof(UType);}
-    constexpr bool hasUncertainty()     noexcept {return U::value;}
+    constexpr const static std::size_t size() noexcept {return sizeof(VType)+sizeof(UType);}
+    constexpr const bool hasUncertainty() const    noexcept {return U::value;}
 };
 
 

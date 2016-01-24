@@ -63,12 +63,6 @@ std::ostream& operator<<(std::ostream& o, const Unit<Dimensions>& u) {
   return o;
 }
 
-template<typename ID, typename V, typename S, typename U>
-std::ostream& operator<<(std::ostream& o, const Attribute<ID,V,S,U>& a)
-{
-  return o << id::attribute::name(ID().value()) << ": " << a.value() << " " << a.scale() << "" << a.unit();
-}
-
 inline std::ostream& operator<<(std::ostream& o, const std::milli& r) {
   return o << "m";
 }
@@ -108,6 +102,12 @@ inline std::ostream& operator<<(std::ostream& o, const int8_t& v) {
 template<std::intmax_t N, std::intmax_t D>
 std::ostream& operator<<(std::ostream& o, const std::ratio<N,D>& r){
   return o << N << "/" << D << " ";
+}
+
+template<typename ID, typename V, typename S, typename U>
+std::ostream& operator<<(std::ostream& o, const Attribute<ID,V,S,U>& a)
+{
+  return o << id::attribute::name(ID().value()) << ": " << a.value() << " " << a.scale() << "" << a.unit();
 }
 
 namespace {
