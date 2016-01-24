@@ -87,6 +87,11 @@ inline std::ostream& operator<<(std::ostream& o, const std::ratio<1,1>& r) {
   return o;
 }
 
+template<std::intmax_t N, std::intmax_t D>
+std::ostream& operator<<(std::ostream& o, const std::ratio<N,D>& r) {
+  return o << r.num << "/" << r.den << " ";
+}
+
 inline std::ostream& operator<<(std::ostream& o, const Dimensionless& u) {
   return o;
 }
@@ -97,11 +102,6 @@ inline std::ostream& operator<<(std::ostream& o, const uint8_t& v) {
 
 inline std::ostream& operator<<(std::ostream& o, const int8_t& v) {
   return o << (int16_t)v;
-}
-
-template<std::intmax_t N, std::intmax_t D>
-std::ostream& operator<<(std::ostream& o, const std::ratio<N,D>& r){
-  return o << N << "/" << D << " ";
 }
 
 template<typename ID, typename V, typename S, typename U>
