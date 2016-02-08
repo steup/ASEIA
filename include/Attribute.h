@@ -40,16 +40,16 @@ class Attribute
       return temp;
     }
     
-    constexpr IDType id() noexcept {return IDType();}
-    constexpr ScaleType scale() noexcept {return ScaleType();}
-    constexpr UnitType unit() noexcept {return UnitType();}
+    constexpr const IDType id() const noexcept {return IDType();}
+    constexpr const ScaleType scale() const noexcept {return ScaleType();}
+    constexpr const UnitType unit() const noexcept {return UnitType();}
 		explicit operator AttributeType() const {
 			return AttributeType(id().value(), (::ValueType)value(), scale(), unit());
 		}
 
     bool operator==(const Attribute& b) const { return (value()==b.value()).prod(); }
 
-    constexpr static std::size_t size() noexcept {return Value::staticSize();}
+    constexpr const static std::size_t size() noexcept {return Value::staticSize();}
 };
 
 template<typename PB, typename ID, typename V, typename U, typename S>

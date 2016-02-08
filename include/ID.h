@@ -11,39 +11,39 @@ namespace id{
     using ID = std::uint8_t;
 
     struct Base : public Tag{
-      static constexpr ID value(){return 0;}
+      static constexpr const ID value(){return 0;}
     };
 
     struct Position : public Base{
-      static constexpr ID value(){return 1;}
+      static constexpr const ID value(){return 1;}
     };
     
     struct Time : public Base{
-      static constexpr ID value(){return 2;}
+      static constexpr const ID value(){return 2;}
     };
     
     struct PublisherID : public Base{
-      static constexpr ID value(){return 3;}
+      static constexpr const ID value(){return 3;}
     };
     
     struct Validity : public Base{
-      static constexpr ID value(){return 4;}
+      static constexpr const ID value(){return 4;}
     };
 
     struct Distance : public Base{
-      static constexpr ID value(){return 5;}
+      static constexpr const ID value(){return 5;}
     };
 
     struct Orientation : public Base{
-      static constexpr ID value(){return 6;}
+      static constexpr const ID value(){return 6;}
     };
 
     struct Angle : public Base{
-      static constexpr ID value(){return 7;}
+      static constexpr const ID value(){return 7;}
     };
 
     struct Reference : public Base{
-      static constexpr ID value(){return 8;}
+      static constexpr const ID value(){return 8;}
     };
 
     template<ID id>
@@ -67,62 +67,62 @@ namespace id{
 
     struct Base : public Tag{
       using Type = void;
-      static constexpr ID value(){return 0;}
+      static constexpr const ID value(){return 0;}
     };
 
     struct UInt8 : public Base{
       using Type = std::uint8_t;
-      static constexpr ID value(){return 1;}
+      static constexpr const ID value(){return 1;}
     };
 
     struct UInt16 : public Base{
       using Type = uint16_t;
-      static constexpr ID value(){return 2;}
+      static constexpr const ID value(){return 2;}
     };
 
     struct UInt32 : public Base{
       using Type = uint32_t;
-      static constexpr ID value(){return 3;}
+      static constexpr const ID value(){return 3;}
     };
 
     struct UInt64 : public Base{
       using Type = uint64_t;
-      static constexpr ID value(){return 4;}
+      static constexpr const ID value(){return 4;}
     };
 
     struct Int8 : public Base{
       using Type = std::int8_t;
-      static constexpr ID value(){return 5;}
+      static constexpr const ID value(){return 5;}
     };
 
     struct Int16 : public Base{
       using Type = int16_t;
-      static constexpr ID value(){return 6;}
+      static constexpr const ID value(){return 6;}
     };
 
     struct Int32 : public Base{
       using Type = int32_t;
-      static constexpr ID value(){return 7;}
+      static constexpr const ID value(){return 7;}
     };
 
     struct Int64 : public Base{
       using Type = int64_t;
-      static constexpr ID value(){return 8;}
+      static constexpr const ID value(){return 8;}
     };
 
     struct Float : public Base{
       using Type = float;
-      static constexpr ID value(){return 9;}
+      static constexpr const ID value(){return 9;}
     };
 
     struct Double : public Base{
       using Type = double;
-      static constexpr ID value(){return 10;}
+      static constexpr const ID value(){return 10;}
     };
 		
 		struct Bool : public Base{
       using Type = bool;
-      static constexpr ID value(){return 11;}
+      static constexpr const ID value(){return 11;}
     };
 
 
@@ -141,17 +141,17 @@ namespace id{
     template<> struct id2Type< Double::value() > { using type = Double; };
     template<> struct id2Type< Bool  ::value() > { using type = Bool; };
 
-    static constexpr ID id( int8_t   ) { return Int8  ::value(); }
-    static constexpr ID id( int16_t  ) { return Int16 ::value(); }
-    static constexpr ID id( int32_t  ) { return Int32 ::value(); }
-    static constexpr ID id( int64_t  ) { return Int64 ::value(); }
-    static constexpr ID id( uint8_t  ) { return UInt8 ::value(); }
-    static constexpr ID id( uint16_t ) { return UInt16::value(); }
-    static constexpr ID id( uint32_t ) { return UInt32::value(); }
-    static constexpr ID id( uint64_t ) { return UInt64::value(); }
-    static constexpr ID id( float    ) { return Float ::value(); }
-    static constexpr ID id( double   ) { return Double::value(); }
-    static constexpr ID id( bool     ) { return Bool  ::value(); }
+    static constexpr const ID id( int8_t   ) { return Int8  ::value(); }
+    static constexpr const ID id( int16_t  ) { return Int16 ::value(); }
+    static constexpr const ID id( int32_t  ) { return Int32 ::value(); }
+    static constexpr const ID id( int64_t  ) { return Int64 ::value(); }
+    static constexpr const ID id( uint8_t  ) { return UInt8 ::value(); }
+    static constexpr const ID id( uint16_t ) { return UInt16::value(); }
+    static constexpr const ID id( uint32_t ) { return UInt32::value(); }
+    static constexpr const ID id( uint64_t ) { return UInt64::value(); }
+    static constexpr const ID id( float    ) { return Float ::value(); }
+    static constexpr const ID id( double   ) { return Double::value(); }
+    static constexpr const ID id( bool     ) { return Bool  ::value(); }
 
     template<typename T> struct t2Type { using type = typename id2Type< id( T() ) >::type; };
   }

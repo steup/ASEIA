@@ -135,7 +135,7 @@
 			return res;
 		}
 
-		constexpr bool hasUncertainty() noexcept {return U::value;}
+		constexpr const bool hasUncertainty() const noexcept {return U::value;}
 
-    constexpr static std::size_t staticSize() { return RowsAtCompileTime * ColsAtCompileTime * BaseType::size(); }
+    static constexpr const std::size_t staticSize() { return RowsAtCompileTime * ColsAtCompileTime * BaseType::size(); }
     std::size_t dynamicSize() const { return this->rows() * this->cols() * BaseType::size(); }
