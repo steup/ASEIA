@@ -31,7 +31,7 @@ class Attribute
     const ValueType& value() const {return v;}
     ValueType& value(){return v;}
     void value(const ValueType& v){this->v=v;}
-    
+
     template<typename ScaleArg>
     auto operator*(ScaleArg dummy)
       -> mult<ScaleArg> {
@@ -39,15 +39,37 @@ class Attribute
       temp.value() = value() / ScaleArg();
       return temp;
     }
-    
+
+    bool operator>(const Attribute& b) const {
+      return (value() > b.value()).prod();
+    }
+
+    bool operator<(const Attribute& b) const {
+      return (value() < b.value()).prod();
+    }
+
+    bool operator==(const Attribute& b) const {
+      return (value() == b.value()).prod();
+    }
+
+    bool operator!=(const Attribute& b) const {
+      return (value() != b.value()).prod();
+    }
+
+    bool operator>=(const Attribute& b) const {
+      return (value() >= b.value()).prod();
+    }
+
+    bool operator<=(const Attribute& b) const {
+      return (value() <= b.value()).prod();
+    }
+
     constexpr const IDType id() const noexcept {return IDType();}
     constexpr const ScaleType scale() const noexcept {return ScaleType();}
     constexpr const UnitType unit() const noexcept {return UnitType();}
 		explicit operator AttributeType() const {
 			return AttributeType(id().value(), (::ValueType)value(), scale(), unit());
 		}
-
-    bool operator==(const Attribute& b) const { return (value()==b.value()).prod(); }
 
     constexpr const static std::size_t size() noexcept {return Value::staticSize();}
 };
