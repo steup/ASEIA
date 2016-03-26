@@ -83,7 +83,7 @@ class Event : public Attributes...
     };
 
   public:
-    
+
     template<typename NewAttribute>
     struct append{
       using type = Event<e, Attributes..., NewAttribute>;
@@ -96,11 +96,21 @@ class Event : public Attributes...
     }
 
     template<typename ID>
+    auto operator[](ID i) const -> const typename findAttribute<ID>::type&{
+      return attribute(i);
+    }
+
+    template<typename ID>
     auto attribute(ID i) -> typename findAttribute<ID>::type&{
       using TargetAttribute = typename findAttribute<ID>::type;
       return *static_cast<TargetAttribute*>(this);
     }
-    
+
+    template<typename ID>
+    auto operator[](ID i) -> typename findAttribute<ID>::type&{
+      return attribute(i);
+    }
+
 		explicit operator EventType() const {
 			EventTypeHelper eTH;
       foreach<AttributeList>(eTH);
