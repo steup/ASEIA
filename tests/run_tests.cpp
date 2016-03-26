@@ -10,7 +10,7 @@
 #include <metaAttribute.cpp>
 #include <metaEvent.cpp>
 #include <event.cpp>
-
+#include <filter.cpp>
 /** \namespace tests
  *  \brief %Unit Test Suites
  **/
