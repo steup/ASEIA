@@ -6,6 +6,7 @@ namespace tests {
 namespace filterTestSuite {
 
 using namespace ::id::attribute;
+using namespace filter;
 
 class FilterTestSuite : public ::testing::Test {
   public:
@@ -20,7 +21,6 @@ class FilterTestSuite : public ::testing::Test {
 };
 
 TEST_F(FilterTestSuite, basicFilterExpressionTest){
-  using filter::e0;
   auto filter0 = e0[Time()] > c0;
   auto filter1 = e0[Time()] < c0;
   auto filter2 = e0[Time()] == c0;
@@ -40,6 +40,17 @@ TEST_F(FilterTestSuite, basicFilterExpressionTest){
   EXPECT_FALSE(filter4(falseEvent)) << "False positive";
   EXPECT_TRUE(filter5(falseEvent))  << "False negative";
   EXPECT_FALSE(filter5(trueEvent)) << "False positive";
+}
+
+TEST_F(FilterTestSuite, basicFilterSerializationTest) {
+  auto filter0 = e0[Time()] > c0;
+  auto filter1 = e0[Time()] < c0;
+  auto filter2 = e0[Time()] == c0;
+  auto filter3 = e0[Time()] != c0;
+  auto filter4 = e0[Time()] >= c0;
+  auto filter5 = e0[Time()] <= c0;
+	
+
 }
 
 }}
