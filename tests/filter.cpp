@@ -42,15 +42,21 @@ TEST_F(FilterTestSuite, basicFilterExpressionTest){
   EXPECT_FALSE(filter5(trueEvent)) << "False positive";
 }
 
+#include <IO.h>
 TEST_F(FilterTestSuite, basicFilterSerializationTest) {
   auto filter0 = e0[Time()] > c0;
-  auto filter1 = e0[Time()] < c0;
-  auto filter2 = e0[Time()] == c0;
-  auto filter3 = e0[Time()] != c0;
-  auto filter4 = e0[Time()] >= c0;
-  auto filter5 = e0[Time()] <= c0;
-	
+  auto filter1 = filter0(e0) && filter0(e1);
 
+  std::vector<uint8_t> buffer;
+  auto i = std::back_inserter(buffer);
+  Serializer<decltype(i)> s(i);
+  FilterEvent<decltype(s)> s0(0, s);
+  FilterEvent<decltype(s)> s1(1);
+  s << filter1(s0, s1);
+  std::ostringstream os;
+  for(uint8_t v : buffer)
+    os << std::hex << (uint16_t)v << " ";
+  EXPECT_TRUE(false) << os.str();
 }
 
 }}
