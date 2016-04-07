@@ -16,8 +16,8 @@ struct FilterEvent {
   Serializer* mS = nullptr;
   union Event{
     struct {
-      uint8_t num  : 3;
       uint8_t attr : 5;
+      uint8_t num  : 3;
     };
     uint8_t data;
   } mEvent;
@@ -43,15 +43,15 @@ struct FilterPredicate {
   Serializer* mS = nullptr;
   union Op{
     struct {
-      uint8_t constArg  : 1;
       uint8_t code      : 7;
+      uint8_t constArg  : 1;
     };
     uint8_t data;
   } mOp;
-  const Attr* mAttr = nullptr;
   using Event = FilterEvent<Serializer>;
   const Event& mE0;
   const Event* mE1 = nullptr;
+  const Attr* mAttr = nullptr;
   FilterPredicate(id::filterOp::ID op, const Event& e0, const Event& e1) : mE0(e0), mE1(&e1) {
     mOp.code = op;
     mOp.constArg = 0;
