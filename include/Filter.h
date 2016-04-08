@@ -147,10 +147,12 @@ Serializer& operator<<(Serializer& s, const FilterEvent<Serializer>& e) {
   return s << e.mEvent.data;
 }
 
+template<typename Serializer>
+Serializer& operator<<(Serializer& s, const FilterPredicate<Serializer, PseudoAttr>& p) {
+    return s << p.mE0 << p.mOp.data << (*p.mE1);
+}
+
 template<typename Serializer, typename Attr>
 Serializer& operator<<(Serializer& s, const FilterPredicate<Serializer, Attr>& p) {
-  if(!p.mOp.constArg)
-    return s << p.mE0 << p.mOp.data << (*p.mE1);
-  else
     return s << p.mE0 << p.mOp.data << (*p.mAttr);
 }
