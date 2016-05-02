@@ -17,10 +17,16 @@ class EventType{
 
 
   public:
-    class const_iterator : public StorageType::const_iterator {
+    class const_iterator {
+			private:
+				StorageType::const_iterator  mI;
       public:
         const_iterator(StorageType::const_iterator i);
         const ValueType& operator*() const;
+        const_iterator& operator++();
+        const_iterator operator++(int);
+				bool operator==(const const_iterator& b);
+				bool operator!=(const const_iterator& b);
     };
 
     const_iterator begin() const;

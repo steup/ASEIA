@@ -68,6 +68,10 @@ class UnitType{
     bool operator==(const UnitType& b) const {
       return std::equal(mStorage.cbegin(), mStorage.cend(), b.mStorage.cbegin());
     }
+    
+		bool operator!=(const UnitType& b) const {
+      return !(*this==b);
+    }
   
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, UnitType&);
 

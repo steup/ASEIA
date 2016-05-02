@@ -20,7 +20,7 @@ class MetaAttribute {
     MetaScale  mScale ;
 
   public:
-    MetaAttribute() = default;
+    //MetaAttribute() = default;
 
     MetaAttribute(ID id = id::attribute::Base::value()) : mID(id) {}
     MetaAttribute(const MetaAttribute& copy);
@@ -45,7 +45,7 @@ class MetaAttribute {
 
     explicit operator AttributeType() const;
 
-
+	//friend class MetaFactory;
   template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, const MetaValue&);
 };
 
