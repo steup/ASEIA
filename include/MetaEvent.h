@@ -55,6 +55,7 @@ Serializer<PB>& operator<<(Serializer<PB>& s, const MetaEvent& me){
   return s;
 }
 
+/** \todo insert deserialization code */
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& d, MetaEvent& me){
   return d;

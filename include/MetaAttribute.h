@@ -51,11 +51,13 @@ class MetaAttribute {
 
 std::ostream& operator<<(std::ostream& o, const MetaAttribute& ma);
 
+/** \todo insert serialization code */
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, const MetaAttribute& me){
   return s;
 }
 
+/** \todo insert serialization code */
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& d, const MetaAttribute& me){
   return d;
