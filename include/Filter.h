@@ -3,6 +3,8 @@
 #include <boost/phoenix/core/argument.hpp>
 #include <boost/phoenix/operator.hpp>
 
+#include <ID.h>
+
 namespace filter {
   const boost::phoenix::expression::argument<1>::type e0 = {};
   const boost::phoenix::expression::argument<2>::type e1 = {};
@@ -11,17 +13,26 @@ namespace filter {
 
 struct PseudoAttr {};
 
+union EventPlaceholder{
+	struct {
+  	uint8_t attr : 5;
+    uint8_t num  : 3;
+ 	};
+  uint8_t data;
+};
+
+union FilterOp{
+	struct {
+		uint8_t code      : 7;
+		uint8_t constArg  : 1;
+	};
+	uint8_t data;
+};
+
 template<typename Serializer>
 struct FilterEvent {
   Serializer* mS = nullptr;
-  union Event{
-    struct {
-      uint8_t attr : 5;
-      uint8_t num  : 3;
-    };
-    uint8_t data;
-  } mEvent;
-
+	EventPlaceholder mEvent;
 
   FilterEvent(uint8_t num) {
     mEvent.num=num;
@@ -41,13 +52,7 @@ struct FilterEvent {
 template<typename Serializer, typename Attr = PseudoAttr>
 struct FilterPredicate {
   Serializer* mS = nullptr;
-  union Op{
-    struct {
-      uint8_t code      : 7;
-      uint8_t constArg  : 1;
-    };
-    uint8_t data;
-  } mOp;
+  FilterOp mOp;
   using Event = FilterEvent<Serializer>;
   const Event& mE0;
   const Event* mE1 = nullptr;

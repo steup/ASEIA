@@ -199,6 +199,7 @@ namespace id{
 		template<ID id>
 		struct Base : public Tag, boost::mpl::int_<id> { };
 
+		using NOOP= Base< 0>;
 		using LE  = Base< 1>;
 		using GE  = Base< 2>;
 		using LT  = Base< 3>;

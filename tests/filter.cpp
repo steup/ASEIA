@@ -1,5 +1,6 @@
 #include <BaseEvent.h>
 #include <Filter.h>
+#include <MetaFilter.h>
 
 #include <vector>
 #include <algorithm>
@@ -251,5 +252,39 @@ TEST_F(FilterTestSuite, compositeSerializationTest) {
 	EXPECT_EQ(buffer[count+5], gt) << "Operation > with event argument serialized wrongly";
 	EXPECT_EQ(buffer[count+6], e1Time) << "Placeholder event 1 time serialized wrongly";
 	EXPECT_EQ(buffer.size(), count+7) << "Wrong length of serialized packet";
+}
+
+TEST_F(FilterTestSuite, metaFilterBasicTest) {
+	uint8_t e0Time = ::id::attribute::Time::value();
+	uint8_t e1Time = (0x1<<5) | ::id::attribute::Time::value();
+	uint8_t gt = ::id::filterOp::GT::value;
+	uint8_t lt = ::id::filterOp::LT::value;
+	uint8_t ge = ::id::filterOp::GE::value;
+	uint8_t le = ::id::filterOp::LE::value;
+	uint8_t eq = ::id::filterOp::EQ::value;
+	uint8_t ne = ::id::filterOp::NE::value;
+
+	std::vector<uint8_t> buffer({e0Time, gt, e1Time, e0Time, lt, e1Time, e0Time, ge, e1Time, e0Time, le, e1Time, e0Time, eq, e1Time, e0Time, ne, e1Time});
+	DeSerializer<std::vector<uint8_t>::const_iterator> d(buffer.cbegin(), buffer.cend());
+	MetaFilter filter0, filter1, filter2, filter3, filter4, filter5;
+	d >> filter0 >> filter1 >> filter2 >> filter3 >> filter4 >> filter5;
+
+	
+
+	std::vector<MetaEvent> trueEvents(2);
+	std::vector<MetaEvent> falseEvents(2);
+
+	EXPECT_TRUE(filter0(trueEvents))  << "False negative";
+  EXPECT_FALSE(filter0(falseEvents)) << "False positive";
+  EXPECT_TRUE(filter1(falseEvents))  << "False negative";
+  EXPECT_FALSE(filter1(trueEvents)) << "False positive";
+  EXPECT_FALSE(filter2(falseEvents))  << "False positive";
+  EXPECT_FALSE(filter2(trueEvents)) << "False positive";
+  EXPECT_TRUE(filter3(trueEvents))  << "False negative";
+  EXPECT_TRUE(filter3(falseEvents)) << "False negative";
+  EXPECT_TRUE(filter4(trueEvents))  << "False negative";
+  EXPECT_FALSE(filter4(falseEvents)) << "False positive";
+  EXPECT_TRUE(filter5(falseEvents))  << "False negative";
+  EXPECT_FALSE(filter5(trueEvents)) << "False positive";
 }
 }}
