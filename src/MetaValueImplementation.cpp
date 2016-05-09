@@ -116,9 +116,9 @@ Interface& MetaValueImplementation<T>::binaryOp( BinaryOp op, const Interface& b
 													 break;
 			case(BinaryOp::Sub): mData -= reinterpret_cast<const Impl&>(b).mData;
 													 break;
-			case(BinaryOp::Mul): /** /todo handle scalar and eWise product; **/
+			case(BinaryOp::Mul): /** \todo handle scalar multiplication and eWise product; */
 													 break;
-			case(BinaryOp::Div): /** handle scalar **/
+			case(BinaryOp::Div): /** \todo handle scalar division */
                            break;
 			default            : return Interface::binaryOp(op, b);
 	}

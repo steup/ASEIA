@@ -61,6 +61,11 @@ class MetaValueBaseImplementation {
 	public:
     using Ptr = std::unique_ptr<Interface, Deleter>;
 
+		class ConstDataIterator{
+			private:
+				uint8_t
+		}
+
 	protected:
 
     static Interface sInstance;
@@ -68,6 +73,9 @@ class MetaValueBaseImplementation {
     MetaValueBaseImplementation() = default;
 		
 		MetaValueBaseImplementation(const Interface& copy) = default;
+
+		virtual ConstDataIterator begin() const;
+		virtual ConstDataIterator end() const;
 
   public:
 

@@ -52,11 +52,15 @@ std::ostream& operator<<(std::ostream& o, const MetaEvent& me);
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, const MetaEvent& me){
+	for(const MetaAttribute& attr : me)
+		s << me;
   return s;
 }
 
 /** \todo insert deserialization code */
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& d, MetaEvent& me){
+	for(MetaAttribute& attr : me)
+		d >> me;
   return d;
 }

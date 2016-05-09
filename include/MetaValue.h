@@ -59,6 +59,7 @@ class MetaValue {
     std::ostream& print(std::ostream& o) const;
 
   template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, const MetaValue&);
+  template<typename PB> friend Serializer<PB>& operator<<(Serializer<PB>&, const MetaValue&);
   friend class MetaFactoryImplementation;
 };
 
@@ -69,11 +70,15 @@ inline std::ostream& operator<<(std::ostream& o, const MetaValue& v) {
 /** \todo insert deserialization code */
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, const MetaValue& me){
-  return s;
+	if(me.implementation())	
+		me.implementation->serialize(s);
+	return s;
 }
 
 /** \todo insert deserialization code */
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& d, MetaValue& me){
-  return d;
+	if(me.implementation())	
+  	me.implementation->deserialize(d);
+	return d;
 }
