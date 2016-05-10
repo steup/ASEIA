@@ -110,6 +110,27 @@ Interface& MetaValueImplementation<T>::unaryOp( UnaryOp op)  {
 }
 
 template<typename T>
+Ptr MetaValueImplementation<T>::unaryConstOp( UnaryConstOp op) const {
+  Ptr ptr;
+	switch(op) {
+		case(UnaryConstOp::Prod): {
+      MetaValueImplementation<T> temp = *this;
+      temp.mData.resize(1,1);
+      temp.mData(0)=mData.prod();
+      ptr = temp.copy(); }
+			break;
+		case(UnaryConstOp::Sum): {
+      MetaValueImplementation<T> temp = *this;
+      temp.mData.resize(1,1);
+      temp.mData(0)=mData.sum();
+      ptr = temp.copy(); }
+			break;
+		default           : return Interface::unaryConstOp(op);
+	}
+	return ptr;
+}
+
+template<typename T>
 Interface& MetaValueImplementation<T>::binaryOp( BinaryOp op, const Interface& b)  {
 	switch(op) {
       case(BinaryOp::Add): mData += reinterpret_cast<const Impl&>(b).mData;

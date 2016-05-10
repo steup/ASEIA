@@ -24,7 +24,7 @@ class MetaValue {
     explicit MetaValue(Ptr&& ref);
     Ptr& implementation() { return mImpl; }
     const Ptr& implementation() const { return mImpl; }
-    
+
     bool resize(std::size_t rows, std::size_t cols);
     bool hasUncertainy(bool u);
 
@@ -44,7 +44,10 @@ class MetaValue {
 		MetaValue& operator/=(const MetaScale& b);
     ValueElement<double, true> get(std::size_t row, std::size_t col) const;
     bool set(std::size_t row, std::size_t col, const ValueElement<double, true>& v);
-    
+
+    MetaValue prod() const;
+    MetaValue sum() const;
+
     std::size_t size()   const;
     std::size_t cols()   const;
     std::size_t rows()   const;
@@ -55,6 +58,7 @@ class MetaValue {
     bool compatible(const MetaValue& b) const;
 
     explicit operator ValueType() const;
+    operator bool() const { return (bool)*mImpl;}
 
     std::ostream& print(std::ostream& o) const;
 

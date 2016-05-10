@@ -39,11 +39,15 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
 
 		virtual Interface& unaryOp( UnaryOp op);
 
+    virtual Ptr unaryConstOp( UnaryConstOp op) const;
+
 		virtual Interface& binaryOp( BinaryOp op, const Interface& b);
 
 		virtual Ptr binaryConstOp( BinaryConstOp op, const Interface& b ) const;
 
 		virtual Interface& scale(const MetaScale& scale, bool invert = false);
+    
+    virtual explicit operator bool() const { return (bool)mData.prod(); }
 		
 		std::ostream& print(std::ostream& o) const;
 

@@ -12,7 +12,7 @@ class MetaScale;
 class MetaValueBaseImplementation {
 	public:
     using Interface = MetaValueBaseImplementation;
-		
+
 		enum class Attributes {
 			HasUncertainty,
 			Size,
@@ -31,6 +31,11 @@ class MetaValueBaseImplementation {
 
 		enum class UnaryOp {
 			Neg
+    };
+
+    enum class UnaryConstOp {
+			Prod,
+      Sum
     };
 
 		enum class BinaryOp {
@@ -84,7 +89,7 @@ class MetaValueBaseImplementation {
 		Interface& operator=(const Interface& copy) = delete;
 
 		virtual Interface& operator=( Interface&& movee);
-	
+
 		virtual Ptr copy() const;
 
     virtual Data get( Attributes a ) const;
