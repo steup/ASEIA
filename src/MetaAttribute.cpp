@@ -18,6 +18,7 @@ MetaAttribute::MetaAttribute(MetaAttribute&& movee) {
 	*this = movee;
 }
 MetaAttribute& MetaAttribute::operator=(const MetaAttribute& copy) {
+  mID = copy.mID;
 	mUnit = copy.mUnit;
   mScale = copy.mScale;
 	mValue = copy.mValue;
@@ -26,6 +27,7 @@ MetaAttribute& MetaAttribute::operator=(const MetaAttribute& copy) {
 
 MetaAttribute& MetaAttribute::operator=(MetaAttribute&& copy) {
 	if(&copy != this) {
+    mID = move(copy.mID);
 	  mUnit = move(copy.mUnit);
 	  mScale = move(copy.mScale);
 	  mValue = move(copy.mValue);
