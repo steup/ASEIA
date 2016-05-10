@@ -10,6 +10,8 @@
 #include <metaAttribute.cpp>
 #include <metaEvent.cpp>
 #include <event.cpp>
+#include <metaSerialization.cpp>
+#include <metaDeSerialization.cpp>
 
 /** \namespace tests
  *  \brief %Unit Test Suites
