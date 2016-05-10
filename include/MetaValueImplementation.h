@@ -17,6 +17,10 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
 		
 		MetaValueImplementation(const MetaValueImplementation& copy) = default;
 		MetaValueImplementation(const Base& copy);
+		virtual const uint8_t* begin() const;
+		virtual uint8_t* begin();
+		virtual const uint8_t* end() const;
+		virtual uint8_t* end();
 
   public:
     MetaValueImplementation(std::size_t rows, std::size_t cols);

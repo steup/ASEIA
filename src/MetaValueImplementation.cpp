@@ -19,6 +19,29 @@ using MVI = MetaValueImplementation<T>;
 using Bool = MetaValueImplementation<bool>;
 
 template<typename T>
+const uint8_t* MetaValueImplementation<T>::begin() const{
+  return reinterpret_cast<const uint8_t*>(mData.data());
+}
+
+template<typename T>
+const uint8_t* MetaValueImplementation<T>::end() const{
+  return reinterpret_cast<const uint8_t*>(mData.data()+mData.rows()*mData.cols());
+
+}
+
+template<typename T>
+uint8_t* MetaValueImplementation<T>::begin(){
+  return reinterpret_cast<uint8_t*>(mData.data());
+
+}
+
+template<typename T>
+uint8_t* MetaValueImplementation<T>::end(){
+  return reinterpret_cast<uint8_t*>(mData.data()+mData.rows()*mData.cols());
+
+}
+
+template<typename T>
 Ptr MetaValueImplementation<T>::factoryCreate(std::size_t rows, std::size_t cols, bool u) {
 	return Ptr(new MetaValueImplementation<T>(rows, cols));
 }
