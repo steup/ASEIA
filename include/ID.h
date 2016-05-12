@@ -211,5 +211,7 @@ namespace id{
 		using AND = Base< 9>;
 		using OR  = Base<10>;
 		using NOT = Base<11>;
+
+		bool isLogical(ID id);
 	}
 }

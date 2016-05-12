@@ -263,16 +263,30 @@ TEST_F(FilterTestSuite, metaFilterBasicTest) {
 	uint8_t le = ::id::filterOp::LE::value;
 	uint8_t eq = ::id::filterOp::EQ::value;
 	uint8_t ne = ::id::filterOp::NE::value;
+	uint8_t noop = ::id::filterOp::NOOP::value;
 
-	std::vector<uint8_t> buffer({e0Time, gt, e1Time, e0Time, lt, e1Time, e0Time, ge, e1Time, e0Time, le, e1Time, e0Time, eq, e1Time, e0Time, ne, e1Time});
+	std::vector<uint8_t> buffer({e0Time, gt, e1Time, noop,  e0Time, lt, e1Time, noop, e0Time, ge, e1Time, noop, e0Time, le, e1Time, noop, e0Time, eq, e1Time, noop, e0Time, ne, e1Time, noop});
+
 	DeSerializer<std::vector<uint8_t>::const_iterator> d(buffer.cbegin(), buffer.cend());
-	MetaFilter filter0, filter1, filter2, filter3, filter4, filter5;
+	std::vector<EventType> types={(EventType)trueEvent, (EventType)falseEvent};
+	MetaFilter filter0(types), filter1(types), filter2(types), filter3(types), filter4(types), filter5(types);
 	d >> filter0 >> filter1 >> filter2 >> filter3 >> filter4 >> filter5;
 
+	buffer.clear();
 	
+	Serializer<decltype(back_inserter(buffer))> s(back_inserter(buffer));
+	s << compEvent << trueEvent <<  compEvent << falseEvent;
+	d = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.begin(), buffer.end());
 
 	std::vector<MetaEvent> trueEvents(2);
 	std::vector<MetaEvent> falseEvents(2);
+
+	trueEvents[0]=MetaFactory::instance().create((EventType)compEvent);
+	trueEvents[1]=MetaFactory::instance().create((EventType)trueEvent);
+	falseEvents[0]=MetaFactory::instance().create((EventType)compEvent);
+	falseEvents[1]=MetaFactory::instance().create((EventType)falseEvent);
+	d >>trueEvents[0] >> trueEvents[1] >> falseEvents[0] >> falseEvents[1];
+
 
 	EXPECT_TRUE(filter0(trueEvents))  << "False negative";
   EXPECT_FALSE(filter0(falseEvents)) << "False positive";
