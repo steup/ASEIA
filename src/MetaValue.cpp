@@ -6,6 +6,7 @@ using MVB           = MetaValueBaseImplementation;
 using Data          = MVB::Data;
 using Attributes    = MVB::Attributes;
 using UnaryOp       = MVB::UnaryOp;
+using UnaryConstOp  = MVB::UnaryConstOp;
 using BinaryOp      = MVB::BinaryOp;
 using BinaryConstOp = MVB::BinaryConstOp;
 using Ptr           = MetaValue::Ptr;
@@ -88,23 +89,31 @@ MetaValue& MetaValue::operator/=(const MetaScale& b) {
 	return *this;
 }
 
+MetaValue MetaValue::prod() const {
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Prod));
+}
+
+MetaValue MetaValue::sum() const {
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Sum));
+}
+
 size_t MetaValue::size() const {
 	return mImpl->get(Attributes::Size).size;
 }
 
-size_t MetaValue::cols() const { 
+size_t MetaValue::cols() const {
 	return mImpl->get(Attributes::Cols).cols;
 }
 
-size_t MetaValue::rows() const { 
+size_t MetaValue::rows() const {
 	return mImpl->get(Attributes::Rows).rows;
 }
 
-ID MetaValue::typeId() const { 
+ID MetaValue::typeId() const {
 	return mImpl->get(Attributes::TypeID).typeID;
 }
-    
-bool MetaValue::hasUncertainty() const { 
+
+bool MetaValue::hasUncertainty() const {
 	return mImpl->get(Attributes::HasUncertainty).hasUncertainty;
 }
 
@@ -118,7 +127,7 @@ bool MetaValue::compatible(const MetaValue& b) const {
 MetaValue::operator ValueType() const {
   return ValueType(typeId(), rows(), cols(), hasUncertainty());
 }
-    
+
 ostream& MetaValue::print(ostream& o) const {
 	return mImpl->print(o);
 }

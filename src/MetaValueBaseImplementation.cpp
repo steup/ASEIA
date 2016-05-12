@@ -50,6 +50,10 @@ Interface& MVBI::unaryOp( UnaryOp op) {
 	return *this; 
 }
 
+Ptr MVBI::unaryConstOp( UnaryConstOp op ) const { 
+	return copy();
+} 
+
 Interface& MVBI::binaryOp( BinaryOp op, const Interface& b) { 
 	return *this;	
 }

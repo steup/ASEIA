@@ -120,12 +120,18 @@ namespace {
 
   template<typename T>
   inline float modifyU(float u, T dummy){
-    return 1.0f;
+    if(u!=dummy)
+      return 1.0f;
+    else
+      return 0.0f;
   }
 
   template<typename T>
   inline double modifyU(double u, T dummy){
-    return 1.0;
+    if(u!=dummy)
+      return 1.0;
+    else
+      return 0.0;
   }
   
   template<>

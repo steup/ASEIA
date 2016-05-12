@@ -19,6 +19,29 @@ using MVI = MetaValueImplementation<T>;
 using Bool = MetaValueImplementation<bool>;
 
 template<typename T>
+const uint8_t* MetaValueImplementation<T>::begin() const{
+  return reinterpret_cast<const uint8_t*>(mData.data());
+}
+
+template<typename T>
+const uint8_t* MetaValueImplementation<T>::end() const{
+  return reinterpret_cast<const uint8_t*>(mData.data()+mData.rows()*mData.cols());
+
+}
+
+template<typename T>
+uint8_t* MetaValueImplementation<T>::begin(){
+  return reinterpret_cast<uint8_t*>(mData.data());
+
+}
+
+template<typename T>
+uint8_t* MetaValueImplementation<T>::end(){
+  return reinterpret_cast<uint8_t*>(mData.data()+mData.rows()*mData.cols());
+
+}
+
+template<typename T>
 Ptr MetaValueImplementation<T>::factoryCreate(std::size_t rows, std::size_t cols, bool u) {
 	return Ptr(new MetaValueImplementation<T>(rows, cols));
 }
@@ -110,15 +133,36 @@ Interface& MetaValueImplementation<T>::unaryOp( UnaryOp op)  {
 }
 
 template<typename T>
+Ptr MetaValueImplementation<T>::unaryConstOp( UnaryConstOp op) const {
+  Ptr ptr;
+	switch(op) {
+		case(UnaryConstOp::Prod): {
+      MetaValueImplementation<T> temp = *this;
+      temp.mData.resize(1,1);
+      temp.mData(0)=mData.prod();
+      ptr = temp.copy(); }
+			break;
+		case(UnaryConstOp::Sum): {
+      MetaValueImplementation<T> temp = *this;
+      temp.mData.resize(1,1);
+      temp.mData(0)=mData.sum();
+      ptr = temp.copy(); }
+			break;
+		default           : return Interface::unaryConstOp(op);
+	}
+	return ptr;
+}
+
+template<typename T>
 Interface& MetaValueImplementation<T>::binaryOp( BinaryOp op, const Interface& b)  {
 	switch(op) {
       case(BinaryOp::Add): mData += reinterpret_cast<const Impl&>(b).mData;
 													 break;
 			case(BinaryOp::Sub): mData -= reinterpret_cast<const Impl&>(b).mData;
 													 break;
-			case(BinaryOp::Mul): /** /todo handle scalar and eWise product; **/
+			case(BinaryOp::Mul): /** \todo handle scalar multiplication and eWise product; */
 													 break;
-			case(BinaryOp::Div): /** handle scalar **/
+			case(BinaryOp::Div): /** \todo handle scalar division */
                            break;
 			default            : return Interface::binaryOp(op, b);
 	}

@@ -7,6 +7,7 @@ class MetaScale : public ScaleType {
     void normalize();
   public:
     MetaScale() = default;
+		MetaScale(const ScaleType& copy) : ScaleType(copy) {}
     template<std::intmax_t num, std::intmax_t denom>
     MetaScale(const std::ratio<num, denom> scale) : ScaleType(scale) {}
 
