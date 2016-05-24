@@ -21,8 +21,8 @@ ${GTEST_HEADER}: | ${LOG}
 
 ${BTEST}/gtest.o : ${GTEST_HEADER} gtest.mk | ${BTEST} ${LOG}
 	@echo "Building Dependancy GTest $@ <- $< "| tee -a ${LOG}/gtest.log
-	@echo "$(CXX) -MMD -I${GTEST_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GTEST_CODE} -o $@" &>>  ${LOG}/gtest.log
-	@$(CXX) -MMD -I${GTEST_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GTEST_CODE} -o $@ &>>  ${LOG}/gtest.log
+	@echo "$(CXX) -MMD -MF $@.d -I${GTEST_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GTEST_CODE} -o $@" &>>  ${LOG}/gtest.log
+	@$(CXX) -MMD -MF $@.d -I${GTEST_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GTEST_CODE} -o $@ &>>  ${LOG}/gtest.log
 
 ${LIB}/libgtest.a : ${BTEST}/gtest.o gtest.mk | ${LIB} ${LOG}
 	@echo "Linking Dependancy GTest $@ <- [$<]" | tee -a ${LOG}/gtest.log
