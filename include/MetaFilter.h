@@ -41,8 +41,10 @@ class MetaPredicate {
 		bool operator()(const std::vector<MetaEvent>& events) const;
 	/** \brief friend declaration of deserialization function **/
 	template<typename T> friend DeSerializer<T>& operator>>(DeSerializer<T>&, MetaPredicate&);
+	friend std::ostream& operator<<(std::ostream&, const MetaPredicate&);
 };
 
+std::ostream& operator<<(std::ostream& o, const MetaPredicate& f);
  /** \brief Dynamic filter filled by a filter expression. 
 	* 
 	* These expressions may be transmitted in subscriptions and allow the publisher to filter events before transmission. They are stated by the subscriber, serialized into the subscription event and deserialized into this class.
@@ -69,7 +71,11 @@ class MetaFilter {
 		bool operator()(const std::vector<MetaEvent>& events) const;
 	/** \brief friend declaration of deserialization function **/
 	template<typename T> friend DeSerializer<T>& operator>>(DeSerializer<T>&, MetaFilter&);
+	friend std::ostream& operator<<(std::ostream&, const MetaFilter&);
 };
+
+std::ostream& operator<<(std::ostream& o, const MetaFilter& f);
+
 
 /** \brief overloaded and templated deserialization function for dynamic filter predicates
  *  \tparam T the iterator type of the DeSerializer

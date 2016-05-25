@@ -1,5 +1,5 @@
 #include <MetaFilter.h>
-
+#include <IDIO.h>
 using namespace ::id::filterOp;
 
 bool MetaPredicate::operator()(const std::vector<MetaEvent>& events) const {
@@ -26,6 +26,25 @@ bool MetaPredicate::operator()(const std::vector<MetaEvent>& events) const {
 			return false;
 	}
 }
+
+std::ostream& operator<<(std::ostream& o, const MetaPredicate& p){
+	o << "e" << (uint16_t)p.mE0.num << "[" << id::attribute::name(p.mE0.attr) << "]";
+	switch(p.mOp.code) {
+		case(LE::value): o << " <= "; break;
+		case(GE::value): o << " >= "; break;
+		case(LT::value): o << " <  "; break;
+		case(GT::value): o << " >  "; break;
+		case(EQ::value): o << " == "; break;
+		case(NE::value): o << " != "; break;
+		default: o << "unknown";
+	}
+	if(p.mOp.constArg)
+		o << p.mV;
+	else
+		o << "e" << (uint16_t)p.mE1.num << "[" << id::attribute::name(p.mE1.attr) << "]";
+	return o;
+}
+
 bool MetaFilter::operator()(const std::vector<MetaEvent>& events) const {
 	bool result = true;
 	for(const auto& subExpr : mExpr) {
@@ -40,4 +59,14 @@ bool MetaFilter::operator()(const std::vector<MetaEvent>& events) const {
 		}
 	}
 	return result;
+}
+
+std::ostream& operator<<(std::ostream& o, const MetaFilter& f){
+	o  << "Filter: ";
+	for(const auto& p : f.mExpr) {
+		o << p.first << " ";
+		if(p.second != MetaFilter::noop)
+			o << p.second << " ";
+	}
+	return o;
 }
