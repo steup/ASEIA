@@ -80,7 +80,7 @@ LDPATHS  := $(addprefix -L, ${LDPATHS}) ${PKG_LDPATHS}
 INCLUDES := $(addprefix -I, ${INCLUDES} ${INC}) ${PKG_INCLUDE}
 CXXFLAGS := ${CXXFLAGS} ${PKG_CFLAGS}
 LDFLAGS  := ${LDFLAGS} ${PKG_LDFLAGS}
-DEPS     := $(wildcard ${BUILD}/*/*.d)
+DEPS     := $(wildcard ${BUILD}/*/*.o.d)
 
 
 .PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% tests run_tests doc
@@ -97,7 +97,7 @@ run_tests: ${BIN}/${RUN_TESTS}
 
 ${BTEST}/${RUN_TESTS}.o: ${TESTS}/${RUN_TESTS}.cpp ${MAKEFILE} ${GTEST} | ${BTEST} 
 	@echo "Building unit tests $@ <- $<"
-	@${CXX} -MMD -MF $@.d -c ${CXXFLAGS} -I${TESTS} ${GTEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES} ${GTEST_INCLUDES}
+	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} -I${TESTS} ${GTEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES} ${GTEST_INCLUDES}
 
 ${BIN}/${RUN_TESTS}: ${BTEST}/${RUN_TESTS}.o ${MAKEFILE} ${GTEST} | ${BIN} ${DYNLIB}
 	@echo "Linking unit tests $@ <- $<"
@@ -143,11 +143,11 @@ ${DIRS}: %:
 
 ${BLIB}/%.o: ${SRC}/%.cpp ${MAKEFILE} | ${BLIB}
 	@echo "Compiling lib file $@ <- $<"
-	@${CXX} -MMD -MF $@.d -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
+	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
 
 ${BPROG}/%.o: ${EXAMPLE}/%.cpp ${MAKEFILE} | ${BPROG}
 	@echo "Compiling prog $@ <- $<"
-	@${CXX} -MMD -MF $@.d -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
+	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
 
 ${BIN}/%: ${BPROG}/%.o ${MAKEFILE} | ${DYNLIB} ${BIN}
 	@echo "Linking prog $@ <- $<"
