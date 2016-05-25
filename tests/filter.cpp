@@ -289,7 +289,7 @@ TEST_F(FilterTestSuite, metaFilterBasicTest) {
 
 
 	EXPECT_TRUE(filter0(trueEvents))  << "False negative";
-  EXPECT_FALSE(filter0(falseEvents)) << "False positive";
+  EXPECT_FALSE(filter0(falseEvents)) << "False positive:\n" << falseEvents[0] <<  filter0 << "\n" << falseEvents[1];
   EXPECT_TRUE(filter1(falseEvents))  << "False negative";
   EXPECT_FALSE(filter1(trueEvents)) << "False positive";
   EXPECT_FALSE(filter2(falseEvents))  << "False positive";
