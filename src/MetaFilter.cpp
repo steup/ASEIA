@@ -16,12 +16,12 @@ bool MetaPredicate::operator()(const std::vector<MetaEvent>& events) const {
 		b = &bPtr->value();
 	}
 	switch(mOp.code){
-		case(LE::value): return a <= *b;
-		case(GE::value): return a >= *b;
-		case(LT::value): return a < *b;
-		case(GT::value): return a > *b;
-		case(EQ::value): return a == *b;
-		case(NE::value): return a != *b;
+		case(LE::value): return (bool)(a <= *b).prod();
+		case(GE::value): return (bool)(a >= *b).prod();
+		case(LT::value): return (bool)(a  < *b).prod();
+		case(GT::value): return (bool)(a  > *b).prod();
+		case(EQ::value): return (bool)(a == *b).prod();
+		case(NE::value): return (bool)(a != *b).sum();
 		default:
 			return false;
 	}
@@ -46,17 +46,20 @@ std::ostream& operator<<(std::ostream& o, const MetaPredicate& p){
 }
 
 bool MetaFilter::operator()(const std::vector<MetaEvent>& events) const {
-	bool result = true;
+	bool result;
+	ID op = NOOP::value;
 	for(const auto& subExpr : mExpr) {
 		bool temp = subExpr.first(events);
-		switch(subExpr.second){
-			case(AND::value):  result = result && temp;
+		switch(op){
+			case(AND::value):  result = temp && result;
 								  break;
 			case(OR::value):   result = result || temp;
 								  break;
-			case(NOOP::value): break;
+			case(NOOP::value): result = temp;
+												 break;
 			default:    return false;
 		}
+		op = subExpr.second;
 	}
 	return result;
 }
