@@ -40,6 +40,10 @@ class MetaValue {
     MetaValue operator+(const MetaValue& b) const;
 		MetaValue operator==(const MetaValue& b) const;
 		MetaValue operator!=(const MetaValue& b) const;
+		MetaValue operator<=(const MetaValue& b) const;
+		MetaValue operator>=(const MetaValue& b) const;
+		MetaValue operator<(const MetaValue& b) const;
+		MetaValue operator>(const MetaValue& b) const;
 		MetaValue& operator*=(const MetaScale& b);
 		MetaValue& operator/=(const MetaScale& b);
     ValueElement<double, true> get(std::size_t row, std::size_t col) const;
@@ -58,7 +62,7 @@ class MetaValue {
     bool compatible(const MetaValue& b) const;
 
     explicit operator ValueType() const;
-    operator bool() const { return (bool)*mImpl;}
+    explicit operator bool() const { return (bool)(*mImpl);}
 
     std::ostream& print(std::ostream& o) const;
 

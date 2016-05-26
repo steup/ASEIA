@@ -12,13 +12,13 @@ using BinaryConstOp = MVB::BinaryConstOp;
 using Ptr           = MetaValue::Ptr;
 using ID            = MetaValue::ID;
 
-MetaValue::MetaValue() : mImpl(MVB::sInstance.copy()) {}
+MetaValue::MetaValue() : mImpl(new MVB()) {}
 
 MetaValue::MetaValue(MetaValue::Ptr&& ptr){
 		mImpl = move(ptr);
 }
 
-MetaValue::MetaValue(const MetaValue& copy) : mImpl(MetaValueBaseImplementation::sInstance.copy()){
+MetaValue::MetaValue(const MetaValue& copy) : mImpl(new MVB()){
 	mImpl = copy.mImpl->copy();
 }
 
@@ -75,6 +75,34 @@ MetaValue MetaValue::operator==(const MetaValue& b) const {
 MetaValue MetaValue::operator!=(const MetaValue& b) const {
   if(compatible(b))
     return MetaValue(mImpl->binaryConstOp(BinaryConstOp::NotEqual, *b.mImpl));
+  else
+    return MetaValue();
+}
+
+MetaValue MetaValue::operator<=(const MetaValue& b) const {
+  if(compatible(b))
+    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::SmallEqual, *b.mImpl));
+  else
+    return MetaValue();
+}
+
+MetaValue MetaValue::operator>=(const MetaValue& b) const {
+  if(compatible(b))
+    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::GreatEqual, *b.mImpl));
+  else
+    return MetaValue();
+}
+
+MetaValue MetaValue::operator<(const MetaValue& b) const {
+  if(compatible(b))
+    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::Smaller, *b.mImpl));
+  else
+    return MetaValue();
+}
+
+MetaValue MetaValue::operator>(const MetaValue& b) const {
+  if(compatible(b))
+    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::Greater, *b.mImpl));
   else
     return MetaValue();
 }

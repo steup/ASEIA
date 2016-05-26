@@ -70,7 +70,7 @@ Interface& MetaValueImplementation<T>::operator=( Interface&& movee) {
 
 template<typename T>
 Ptr MetaValueImplementation<T>::copy() const {
-	return Ptr(new MetaValueImplementation(*this), Interface::Deleter());
+	return Ptr(new MetaValueImplementation(*this));
 }
 
 template<typename T>
