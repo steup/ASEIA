@@ -20,9 +20,13 @@ class MetaFilterError : public std::runtime_error {
  **/
 class MetaPredicate {
 	private:
+		/** \brief EventPlaceholders to store events taking part in comparision **/
 		EventPlaceholder mE0, mE1;
+		/** \brief the comparision operation **/
 		FilterOp mOp;
+		/** \brief possible constant argument of the comparision **/
 		MetaValue mV;
+		/** \brief event type information for deserialization **/
 		const std::vector<EventType>& mTypes;
 	public:
 		/** \brief Construct a dynamic filter subexpression container
@@ -41,9 +45,15 @@ class MetaPredicate {
 		bool operator()(const std::vector<MetaEvent>& events) const;
 	/** \brief friend declaration of deserialization function **/
 	template<typename T> friend DeSerializer<T>& operator>>(DeSerializer<T>&, MetaPredicate&);
+	/** \brief friend declaration of output stream operator **/
 	friend std::ostream& operator<<(std::ostream&, const MetaPredicate&);
 };
 
+/** \brief overloaded output stream operator
+ *  \param o the output stream object
+ *  \param f the MetaPredicate to be printed
+ *  \return the output stream containing the printed MetaPredicate
+ **/
 std::ostream& operator<<(std::ostream& o, const MetaPredicate& f);
  /** \brief Dynamic filter filled by a filter expression. 
 	* 
@@ -51,8 +61,11 @@ std::ostream& operator<<(std::ostream& o, const MetaPredicate& f);
 	**/
 class MetaFilter {
 	private:
+		/** \brief the filter expression as list of predicate, logical op pairs **/
 		std::vector<std::pair<MetaPredicate, id::filterOp::ID>> mExpr;
+		/** \brief local definition of noop operation to indicate end of list **/
 		static const id::filterOp::ID noop = id::filterOp::NOOP::value;
+		/** \brief event type information to handle deserialization **/
 		const std::vector<EventType>& mTypes;
 	public:
 		/** \brief Construct a dynamic filter container
@@ -71,9 +84,15 @@ class MetaFilter {
 		bool operator()(const std::vector<MetaEvent>& events) const;
 	/** \brief friend declaration of deserialization function **/
 	template<typename T> friend DeSerializer<T>& operator>>(DeSerializer<T>&, MetaFilter&);
+	/** \brief friend declaration of output stream operator **/
 	friend std::ostream& operator<<(std::ostream&, const MetaFilter&);
 };
 
+/** \brief overloaded output stream operator
+ *  \param o the output stream object
+ *  \param f the MetaFilter to be printed
+ *  \return the output stream containing the printed MetaFilter
+ **/
 std::ostream& operator<<(std::ostream& o, const MetaFilter& f);
 
 
