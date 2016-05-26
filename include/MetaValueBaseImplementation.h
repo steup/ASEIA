@@ -55,22 +55,10 @@ class MetaValueBaseImplementation {
 			ApproxEqual
 		};
 
-  protected:
-    struct Deleter{
-      void operator()(Interface* ptr){
-        if( ptr != &sInstance )
-          delete ptr;
-      }
-    };
-
 	public:
-    using Ptr = std::unique_ptr<Interface, Deleter>;
+    using Ptr = std::unique_ptr<Interface>;
 
 	protected:
-
-    static Interface sInstance;
-
-    MetaValueBaseImplementation() = default;
 
 		MetaValueBaseImplementation(const Interface& copy) = default;
 
@@ -80,6 +68,7 @@ class MetaValueBaseImplementation {
 		virtual uint8_t* end() {return nullptr;}
 
   public:
+    MetaValueBaseImplementation() = default;
 
     virtual ~MetaValueBaseImplementation() = default;
 

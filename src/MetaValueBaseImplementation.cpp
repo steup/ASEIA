@@ -7,14 +7,12 @@ using Interface = MVBI::Interface;
 using Ptr       = MVBI::Ptr;
 using Data      = MVBI::Data;
 
-MVBI MVBI::sInstance;
-
 Interface& MVBI::operator=( Interface&& movee) { 
 	return *this; 
 }
 
 Ptr MVBI::copy() const {
-	return Ptr(&sInstance, MVBI::Deleter());
+	return Ptr(new MVBI());
 }
 
 Data MVBI::get( Attributes a ) const {
