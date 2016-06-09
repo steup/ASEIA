@@ -67,7 +67,7 @@ ostream& operator<<(ostream& o, const EventType& t) {
   return o;
 }
 
-ostream& operator<<(ostream& o, const FormatID& id) {
-  return o << id.node() << (id.direction()==FormatID::Direction::publisher?"P":"S") << id.nr();
-}
+//ostream& operator<<(ostream& o, const FormatID& id) {
+//  return o << id.node() << (id.direction()==FormatID::Direction::publisher?"P":"S") << id.nr();
+//}
 
