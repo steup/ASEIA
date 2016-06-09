@@ -11,8 +11,6 @@ GTEST_LDFLAGS  := -pthread
 GTEST_LDPATHS  := 
 GTEST          := $(addprefix ${LIB}/lib, $(addsuffix .a, ${GTEST_MODULES})) ${GTEST_HEADER}
 GTEST_LIBS     := $(addprefix -l, ${GTEST_MODULES})
-GTEST_DEPS     := ${BTEST}/gtest.d
-
 
 ${GTEST_HEADER}: | ${LOG}
 	@echo "Fetchin Dependancy GTest" | tee -a ${LOG}/gtest.log
@@ -28,5 +26,3 @@ ${LIB}/libgtest.a : ${BTEST}/gtest.o gtest.mk | ${LIB} ${LOG}
 	@echo "Linking Dependancy GTest $@ <- [$<]" | tee -a ${LOG}/gtest.log
 	@echo "$(AR) $(ARFLAGS) $@ $^" &>> ${LOG}/gtest.log
 	@$(AR) $(ARFLAGS) $@ $^ &>> ${LOG}/gtest.log
-
--include ${GTEST_DEPS}
