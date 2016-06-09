@@ -10,6 +10,7 @@
 #include <metaAttribute.cpp>
 #include <metaEvent.cpp>
 #include <event.cpp>
+#include <filter.cpp>
 #include <metaSerialization.cpp>
 #include <metaDeSerialization.cpp>
 

@@ -190,4 +190,28 @@ namespace id{
     template<> struct id2Type< Kilogram ::value > { using type = Kilogram ; };
     template<> struct id2Type< Meter    ::value > { using type = Meter    ; };
   }
+
+	namespace filterOp {
+		struct Tag{};
+
+		using ID = std::uint8_t;
+
+		template<ID id>
+		struct Base : public Tag, boost::mpl::int_<id> { };
+
+		using NOOP= Base< 0>;
+		using LE  = Base< 1>;
+		using GE  = Base< 2>;
+		using LT  = Base< 3>;
+		using GT  = Base< 4>;
+		using EQ  = Base< 5>;
+		using NE  = Base< 6>;
+		using AE  = Base< 7>;
+		using NA  = Base< 8>;
+		using AND = Base< 9>;
+		using OR  = Base<10>;
+		using NOT = Base<11>;
+
+		bool isLogical(ID id);
+	}
 }
