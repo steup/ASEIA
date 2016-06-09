@@ -13,6 +13,7 @@
 #include <filter.cpp>
 #include <metaSerialization.cpp>
 #include <metaDeSerialization.cpp>
+#include <formatID.cpp>
 
 /** \namespace tests
  *  \brief %Unit Test Suites
