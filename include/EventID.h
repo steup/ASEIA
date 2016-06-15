@@ -1,37 +1,36 @@
 #pragma once
 
 #include <Prime.h>
-
-#include <boost/mpl/for_each.hpp>
-#include <boost/ref.hpp>
+#include <EventType.h>
 
 class EventID {
 	public:
 		using IDType = uint32_t;
 	private:
 		const IDType mID;
-
-		struct IDGen {
-			IDType id = 1;
-			template<typename A>
-			void operator()(A a){
-				id*=PrimeGenerator::prime(A::IDType::value());
-			}
-			template<typename Event>
-			IDGen(const Event& e) {
-				using AttrList = typename Event::AttributeList;
-				boost::mpl::for_each<AttrList>(boost::ref(*this));
-			}
-		};
+    static uint32_t idGen(const EventType& eT) {
+      uint32_t id=1;
+      for(const AttributeType& aT : eT)
+        id *= PrimeGenerator::prime(aT.id());
+      return id;
+    }
 	public:
 		template<typename Event>
-		EventID(const Event& e) : mID(IDGen(e).id) {
+    EventID(const Event& e)
+      : mID(idGen(EventType(e)))
+    {}
 
-		}
+		EventID(const EventType& eT)
+      : mID(idGen(eT))
+    {}
 
 		IDType value() const {
 			return mID;
 		}
+
+    operator uint32_t() const {
+      return mID;
+    }
 
 		bool operator==(const EventID& b) const {
 			return value() == b.value();
