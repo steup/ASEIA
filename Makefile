@@ -73,6 +73,7 @@ PKG_LDPATHS := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --libs-only
 PKG_LDFLAGS := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --libs-only-other))
 
 
+SYMBOLS  := $(addprefix -D, ${SYMBOLS})
 EXAMPLES := $(notdir $(basename $(wildcard ${EXAMPLE}/*.cpp)))
 OBJECTS  := $(addprefix ${BLIB}/, $(addsuffix .o, $(notdir $(basename $(wildcard ${SRC}/*.cpp)))))
 LIBS     := $(addprefix -l, ${LIBS}) ${PKG_LIBS}
@@ -143,11 +144,11 @@ ${DIRS}: %:
 
 ${BLIB}/%.o: ${SRC}/%.cpp ${MAKEFILE} | ${BLIB}
 	@echo "Compiling lib file $@ <- $<"
-	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
+	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} ${SYMBOLS} $< -o $@ ${INCLUDES}
 
 ${BPROG}/%.o: ${EXAMPLE}/%.cpp ${MAKEFILE} | ${BPROG}
 	@echo "Compiling prog $@ <- $<"
-	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
+	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} ${SYMBOLS} $< -o $@ ${INCLUDES}
 
 ${BIN}/%: ${BPROG}/%.o ${MAKEFILE} | ${DYNLIB} ${BIN}
 	@echo "Linking prog $@ <- $<"
