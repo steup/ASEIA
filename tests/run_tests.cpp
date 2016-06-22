@@ -14,6 +14,7 @@
 #include <metaSerialization.cpp>
 #include <metaDeSerialization.cpp>
 #include <formatID.cpp>
+#include <typeRegistry.cpp>
 
 /** \namespace tests
  *  \brief %Unit Test Suites

@@ -6,7 +6,7 @@ CWD              := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 INCLUDES         :=
 LDPATHS          :=
-SYMBOLS          :=
+SYMBOLS          :=  HASHED_REGISTRY
 CXXFLAGS         := -std=gnu++11 -Wall
 LDFLAGS          := -O1 
 LIBS             :=
