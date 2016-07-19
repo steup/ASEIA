@@ -1,26 +1,25 @@
 #pragma once
 
-#include <Transformation>
-#include <stdint.h>
+#include <Transformation.h>
 
-class TransformationRegistryImpl;
+#include <cstdint>
 
 class TransformationFactory {
   public:
-    TransID = std::uint32_t;
-  private:
+    using TransID = std::uint32_t;
+    using TransPtr = Transformation::TransPtr;
     using EventTypes = Transformation::EventTypes;
-    using createFunc = TransPtr(*)(const EventType& out, const EventTypes& in);
-    static TransformationRegistryImpl* mImpl;
-    virtual TransID registerCreator(createFunc) =0
+  protected:
+    using createFunc = TransPtr (*)(const EventType& out, const EventTypes& in);
+    virtual TransID registerCreator(createFunc f) =0;
 
   public:
-    static TransformationFactory instance() { return mImpl; }
+    static TransformationFactory& instance();
     virtual TransPtr create(const EventType&out, const EventTypes& in, TransID trans) const =0;
 
     template<class T>
     TransID registerTransformation() {
     createFunc f = &Transformation::create<T>;
-      registerCreator(createFunc);
+      return registerCreator(f);
     }
 };
