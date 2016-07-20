@@ -19,7 +19,7 @@ struct ChannelTestSuite : public ::testing::Test{
       : Channel(out, in, trans)
     { }
 
-    MOCK_CONST_METHOD1(publishEvent, void(MetaEvent e));
+    MOCK_CONST_METHOD1(publishEvent, void(const MetaEvent& e));
     void handleEvent() { Channel::handleEvent(MetaEvent()); }
     Transformation* trans() { return mTrans.get(); }
   };
@@ -39,9 +39,28 @@ struct ChannelTestSuite : public ::testing::Test{
   }
 };
 
-TEST_F(ChannelTestSuite, singleTransformTest) {
+TEST_F(ChannelTestSuite, failedSingleTransformTest) {
   TestChannel c(out, inList, sET);
   ASSERT_TRUE(c.trans());
+	EXPECT_CALL(dynamic_cast<SingleEventTransform&>(*c.trans()), call(_))
+		.Times(0);
+  EXPECT_CALL(dynamic_cast<const SingleEventTransform&>(*c.trans()), check(_))
+    .Times(AtLeast(1))
+    .WillRepeatedly(Return(false));
+  EXPECT_CALL(c, publishEvent(_))
+    .Times(0);
+  c.handleEvent();
+}
+
+TEST_F(ChannelTestSuite, succededTransformTest) {
+	MetaEvent e;
+	MetaAttribute a;
+	e.add(a);
+  TestChannel c(out, inList, sET);
+  ASSERT_TRUE(c.trans());
+	EXPECT_CALL(dynamic_cast<SingleEventTransform&>(*c.trans()), call(_))
+		.Times(1)
+		.WillRepeatedly(Return(e));
   EXPECT_CALL(dynamic_cast<const SingleEventTransform&>(*c.trans()), check(_))
     .Times(AtLeast(1))
     .WillRepeatedly(Return(true));

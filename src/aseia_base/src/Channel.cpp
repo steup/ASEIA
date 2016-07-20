@@ -3,15 +3,15 @@
 Channel::Channel(const EventType& out, const Channel::EventTypes& in, TransID trans)
   : mOutType(out),
     mInTypes(in),
-    mTrans(TransformationFactory::instance().create(out, in, trans))
+    mTrans(TransformationFactory::instance().create(out, in, trans)),
+		mStore(mInTypes.size())
 { }
 
 void Channel::handleEvent(const MetaEvent& e) {
-  EventID eID(e);
-  if(mBuffer.find(eID)==mBuffer.end())
-    mBuffer.insert(std::make_pair(eID, std::vector<MetaEvent>()));
-  mBuffer[eID].push_back(e);
-  //TODO: check transform on all event combinations
+  mStore.addEvent(e);
+	MetaEvent newE = mStore.executeTransform(*mTrans);
+	if(newE != MetaEvent())
+		publishEvent(newE);
 }
 
 std::ostream& operator<<(std::ostream& o, const Channel& c) {
