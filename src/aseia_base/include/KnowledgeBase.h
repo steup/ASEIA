@@ -2,62 +2,55 @@
 
 #include <EventID.h>
 #include <Transformation.h>
+#include <Singleton.h>
 
 #include <cstdint>
 #include <list>
 
-template<typename T>
-class Singleton {
-  protected:
-    Singleton() = default;
-  private:
-    static bool sConstructed;
-    static std::uint8_t sBuffer[sizeof(T)];
-  public:
-    static T& instance() {
-      if(!sConstructed) {
-        new(sBuffer) T();
-        sConstructed = true;
-      }
-      return *reinterpret_cast<T*>(sBuffer);
-    }
-};
+class TransformGenerator;
 
 class TransformIterator
   : std::iterator<
     std::input_iterator_tag,
-    TransPtr>
+    Transformation::TransPtr>
 {
   friend class TransformGenerator;
   private:
+    using TransList = std::list<const Transformation*>;
     TransformGenerator& mGen;
-    std::list<const Transformation*> mTrans;
-    TransformIterator(TransformGenerator& tG) = default;
+    const TransList* mTrans;
+    TransformIterator(TransformGenerator& tG, bool end = false);
   public:
-    TransPtr operator*() const;
-    TransformIterator operator++() const;
+    Transformation::TransPtr operator*() const;
+    TransformIterator& operator++();
     bool operator==(const TransformIterator& b) const;
 };
 
-
 class TransformGenerator {
-  friend class KnowledgeBase;
+  friend class KnowledgeBaseImpl;
+  friend class TransformIterator;
   private:
-    using EventIDs = std::list<EventID>;
-    EventID out;
-    EventIDs in;
-    TransformGenerator(EventID out, const EventIDs& in);
+    using EventTypes = Transformer::EventTypes;
+    using TransList  = TransformIterator::TransList;
+    const EventType& mOut;
+    const EventTypes& mIn;
+    TransList mCurrTrans;
+    TransformGenerator(const EventType& out, const EventTypes& in)
+      : mOut(out),
+        mIn(in)
+    { }
+    const TransList* next();
   public:
-    TransformIterator begin();
-    TransformIterator end();
+    TransformIterator begin() { return TransformIterator(*this); }
+    TransformIterator end() { return TransformIterator(*this, true); }
 };
 
-class KnowledgeBase : public Singleton<KnowledgeBase> {
-  protected:
-    KnowledgeBase() = default;
+class KnowledgeBaseImpl {
   public:
-    using EventIDs = std::list<EventID>;
+    using EventTypes = Transformer::EventTypes;
     void registerTransformation(const Transformation& trans);
     void unregisterTransformation(const Transformation& trans);
-    TransformGenerator generate(EventID out, EventIDs in) const;
+    TransformGenerator generate(const EventType& out, const EventTypes& in) const;
 };
+
+using KnowledgeBase = Singleton<KnowledgeBaseImpl>;

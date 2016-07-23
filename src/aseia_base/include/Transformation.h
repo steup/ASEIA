@@ -53,7 +53,7 @@ class Transformation {
     const EventIDs mIn;
 
   public:
-    Transformation(const EventID& out, const EventIDs& in) : mOut(out), mIn(in) {}
+    Transformation(const EventID& out, const EventIDs& in);
     virtual ~Transformation() = delete;
     std::size_t arity() const { return mIn.size(); };
     const EventIDs& in() const { return mIn; }
