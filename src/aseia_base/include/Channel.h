@@ -1,32 +1,27 @@
 #pragma once
 
-#include <EventID.h>
+#include <Transformation.h>
 #include <EventStorage.h>
 
-#include <TransformationFactory.h>
-
 #include <iosfwd>
-#include <memory>
-#include <vector>
 
 class EventType;
 class MetaEvent;
 
 class Channel{
   public:
-    using TransID = TransformationFactory::TransID;
-    using TransPtr = TransformationFactory::TransPtr;
-    using EventTypes = TransformationFactory::EventTypes;
+    using TransPtr   = Transformation::TransPtr;
+    using EventTypes = Transformation::EventTypes;
   protected:
-    const EventType& mOutType;
-    const EventTypes mInTypes;
-    const TransPtr   mTrans;
-    EventStorage     mStore;
-		
+    const TransPtr    mTrans;
+    EventStorage      mStore;
+
     void handleEvent(const MetaEvent& e);
     virtual void publishEvent(const MetaEvent& e) const =0;
   public:
-    Channel(const EventType& out, const EventTypes& in, TransID trans);
+    Channel(TransPtr&& trans);
+
+  friend std::ostream& operator<<(std::ostream&, const Channel&);
 };
 
 std::ostream& operator<<(std::ostream& o, const Channel& c);

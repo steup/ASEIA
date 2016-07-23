@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <Transformation.h>
 #include <MetaEvent.h>
 
@@ -19,5 +18,5 @@ class EventStorage {
 		~EventStorage();
 		void addEvent(const MetaEvent& e);
 		void purge();
-		MetaEvent executeTransform(Transformation& t) const;
+		MetaEvent executeTransform(Transformer& t) const;
 };

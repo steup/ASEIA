@@ -1,10 +1,8 @@
 #include <Channel.h>
 
-Channel::Channel(const EventType& out, const Channel::EventTypes& in, TransID trans)
-  : mOutType(out),
-    mInTypes(in),
-    mTrans(TransformationFactory::instance().create(out, in, trans)),
-		mStore(mInTypes.size())
+Channel::Channel(Channel::TransPtr&& trans)
+  : mTrans(std::move(trans)),
+		mStore(mTrans->in().size())
 { }
 
 void Channel::handleEvent(const MetaEvent& e) {
@@ -14,6 +12,7 @@ void Channel::handleEvent(const MetaEvent& e) {
 		publishEvent(newE);
 }
 
+/* TODO: implement */
 std::ostream& operator<<(std::ostream& o, const Channel& c) {
   return o;
 }

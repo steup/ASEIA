@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "TransformationFactory.cpp"
 #include "Channel.cpp"
 
 int main(int argc, char** argv) {

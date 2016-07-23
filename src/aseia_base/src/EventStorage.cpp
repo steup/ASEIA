@@ -7,7 +7,7 @@ class EventStorageImpl {
 		virtual ~EventStorageImpl() = default;
 		virtual void addEvent(const MetaEvent& e) =0;
 		virtual void purge() =0;
-		virtual MetaEvent executeTransform(Transformation& t) const =0;
+		virtual MetaEvent executeTransform(Transformer& t) const =0;
 };
 
 class SimpleStorage : public EventStorageImpl {
@@ -23,7 +23,7 @@ class SimpleStorage : public EventStorageImpl {
 			mE = MetaEvent();
 		}
 
-		virtual MetaEvent executeTransform(Transformation& t) const {
+		virtual MetaEvent executeTransform(Transformer& t) const {
 			if(t.check({&mE}))
 				return t({&mE});
 			else
@@ -49,5 +49,5 @@ EventStorage::EventStorage(std::size_t inputSize, Policy policy) {
 EventStorage::~EventStorage() { if(mImpl) delete mImpl; }
 void EventStorage::addEvent(const MetaEvent& e) { mImpl->addEvent(e); }
 void EventStorage::purge() { mImpl->purge(); }
-MetaEvent EventStorage::executeTransform(Transformation& t) const { return mImpl->executeTransform(t); }
+MetaEvent EventStorage::executeTransform(Transformer& t) const { return mImpl->executeTransform(t); }
 
