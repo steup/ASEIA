@@ -24,6 +24,7 @@ class TransformIterator
     Transformation::TransPtr operator*() const;
     TransformIterator& operator++();
     bool operator==(const TransformIterator& b) const;
+    bool operator!=(const TransformIterator& b) const { return !(*this==b); }
 };
 
 class TransformGenerator {

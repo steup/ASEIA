@@ -22,7 +22,7 @@ class Transformer {
     using Events     = std::list<const MetaEvent*>;
   private:
     const EventType& mOut;
-    const EventTypes& mIn;
+    const EventTypes mIn;
   public:
     Transformer(const EventType& out, const EventTypes& in) : mOut(out), mIn(in) {}
     virtual ~Transformer() = default;

@@ -2,6 +2,7 @@
 #include <gmock/gmock.h>
 
 #include "Channel.cpp"
+#include "Transformation.cpp"
 
 int main(int argc, char** argv) {
 	::testing::InitGoogleTest(&argc, argv);

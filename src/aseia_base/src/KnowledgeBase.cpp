@@ -19,7 +19,7 @@ TransformGenerator KnowledgeBaseImpl::generate(const EventType& out, const Event
 
 /* TODO: Implement transformation list generation */
 const TransformGenerator::TransList* TransformGenerator::next() {
-  return &mCurrTrans;
+  return nullptr;
 }
 
 TransformIterator::TransformIterator(TransformGenerator& tG, bool end)

@@ -32,7 +32,7 @@ class SimpleStorage : public EventStorageImpl {
 };
 
 
-EventStorage::EventStorage(std::size_t inputSize, Policy policy) {
+EventStorage::EventStorage(std::size_t inputSize, Policy policy) : mImpl(nullptr) {
 	if(inputSize==1)
 		mImpl= new SimpleStorage();
 	/*if(inputSize>1)
@@ -46,8 +46,22 @@ EventStorage::EventStorage(std::size_t inputSize, Policy policy) {
 		}*/
 }
 
-EventStorage::~EventStorage() { if(mImpl) delete mImpl; }
-void EventStorage::addEvent(const MetaEvent& e) { mImpl->addEvent(e); }
-void EventStorage::purge() { mImpl->purge(); }
-MetaEvent EventStorage::executeTransform(Transformer& t) const { return mImpl->executeTransform(t); }
+EventStorage::~EventStorage() {
+  if(mImpl)
+    delete mImpl;
+}
 
+void EventStorage::addEvent(const MetaEvent& e) {
+  if(mImpl) mImpl->addEvent(e);
+}
+
+void EventStorage::purge() {
+  if(mImpl) mImpl->purge();
+}
+
+MetaEvent EventStorage::executeTransform(Transformer& t) const {
+  if(mImpl)
+    return mImpl->executeTransform(t);
+  else
+    return MetaEvent();
+}
