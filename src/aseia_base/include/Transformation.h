@@ -20,7 +20,7 @@ class Transformer {
   public:
     using EventTypes = std::list<const EventType*>;
     using Events     = std::list<const MetaEvent*>;
-  private:
+  protected:
     const EventType& mOut;
     const EventTypes mIn;
   public:
@@ -54,7 +54,7 @@ class Transformation {
 
   public:
     Transformation(const EventID& out, const EventIDs& in);
-    virtual ~Transformation() = delete;
+    virtual ~Transformation() = default;
     std::size_t arity() const { return mIn.size(); };
     const EventIDs& in() const { return mIn; }
     const EventID& out() const { return mOut; }
