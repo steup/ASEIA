@@ -28,6 +28,7 @@ class MetaAttribute {
     MetaAttribute& operator=(const MetaAttribute& copy);
     MetaAttribute& operator=(MetaAttribute&& movee);
     MetaAttribute& operator+=(const MetaAttribute& b);
+    MetaAttribute& operator*=(const MetaScale& scale);
     MetaAttribute operator*(const MetaScale& scale) const;
     bool operator==(const MetaAttribute& b) const;
     bool operator!=(const MetaAttribute& b) const { return !(*this==b); }
