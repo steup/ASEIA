@@ -14,7 +14,9 @@ class EventID {
         id *= PrimeGenerator::prime(aT.id());
       return id;
     }
+		constexpr EventID() : mID(0) {}
 	public:
+
 		template<typename Event>
     EventID(const Event& e)
       : mID(idGen(EventType(e)))
@@ -58,4 +60,6 @@ class EventID {
 		bool operator>=(const EventID& b) const {
 			return (*this)>b || (*this)==b;
 		}
+		
+		static const EventID any;
 };
