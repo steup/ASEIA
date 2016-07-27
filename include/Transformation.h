@@ -58,7 +58,7 @@ class Transformation {
     std::size_t arity() const { return mIn.size(); };
     const EventIDs& in() const { return mIn; }
     const EventID& out() const { return mOut; }
-    virtual bool check(const EventTypes& types) const =0;
+    virtual bool check(const EventType& out, const EventTypes& in) const =0;
     virtual TransPtr create(const EventType& out, const EventTypes& in) const =0;
     virtual void print(std::ostream& o) const = 0;
 };
