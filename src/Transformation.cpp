@@ -87,5 +87,5 @@ class ScaleTransformation : public Transformation {
 Transformation::Transformation(const EventID& out, const EventIDs& in)
   : mOut(out), mIn(in)
 {
-  KnowledgeBase::instance().registerTransformation(*this);
+  KnowledgeBase::registerTransformation(*this);
 }

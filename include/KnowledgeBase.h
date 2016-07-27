@@ -1,57 +1,58 @@
 #pragma once
 
-#include <EventID.h>
 #include <Transformation.h>
-#include <Singleton.h>
 
-#include <cstdint>
 #include <list>
+#include <iterator>
 
-class TransformGenerator;
-
-class TransformIterator
-  : std::iterator<
-    std::input_iterator_tag,
-    Transformation::TransPtr>
-{
-  friend class TransformGenerator;
-  private:
-    using TransList = std::list<const Transformation*>;
-    TransformGenerator& mGen;
-    const TransList* mTrans;
-    TransformIterator(TransformGenerator& tG, bool end = false);
-  public:
-    Transformation::TransPtr operator*() const;
-    TransformIterator& operator++();
-    bool operator==(const TransformIterator& b) const;
-    bool operator!=(const TransformIterator& b) const { return !(*this==b); }
-};
+class TransformGeneratorImpl;
 
 class TransformGenerator {
-  friend class KnowledgeBaseImpl;
-  friend class TransformIterator;
+  public:
+    using TransList = std::list<const Transformation*>;
+    using EventTypes = Transformer::EventTypes;
   private:
-    using EventTypes = Transformer::EventTypes;
-    using TransList  = TransformIterator::TransList;
+    TransformGeneratorImpl* mImpl;
     const EventType& mOut;
-    const EventTypes& mIn;
-    TransList mCurrTrans;
-    TransformGenerator(const EventType& out, const EventTypes& in)
-      : mOut(out),
-        mIn(in)
-    { }
-    const TransList* next();
+    const EventTypes mIn;
+    TransList next();
   public:
-    TransformIterator begin() { return TransformIterator(*this); }
-    TransformIterator end() { return TransformIterator(*this, true); }
+    TransformGenerator(const EventType& out, const EventTypes& in);
+    ~TransformGenerator();
+    class Iterator
+      : std::iterator<
+        std::input_iterator_tag,
+        Transformation::TransPtr>
+    {
+      private:
+        TransformGenerator& mGen;
+        TransList mTrans;
+        Iterator(TransformGenerator& tG, TransList l)
+          : mGen(tG), mTrans(l) { }
+      public:
+        /* TODO:implement compound Transformations */
+        Transformation::TransPtr operator*() const {
+          if(mTrans.size()==1 && mTrans.front())
+            return mTrans.front()->create(mGen.mOut, mGen.mIn);
+
+          return Transformation::TransPtr();
+        }
+        Iterator& operator++() {
+          mTrans = mGen.next();
+          return *this;
+        }
+        bool operator==(const Iterator& b) const;
+        bool operator!=(const Iterator& b) const { return !(*this==b); }
+       friend class TransformGenerator;
+    };
+    Iterator begin() { return Iterator(*this, next()); }
+    Iterator end() { return Iterator(*this, TransList()); }
 };
 
-class KnowledgeBaseImpl {
+class KnowledgeBase {
   public:
     using EventTypes = Transformer::EventTypes;
-    void registerTransformation(const Transformation& trans);
-    void unregisterTransformation(const Transformation& trans);
-    TransformGenerator generate(const EventType& out, const EventTypes& in) const;
+    static void registerTransformation(const Transformation& trans);
+    static void unregisterTransformation(const Transformation& trans);
 };
 
-using KnowledgeBase = Singleton<KnowledgeBaseImpl>;
