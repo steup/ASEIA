@@ -1,19 +1,15 @@
 #pragma once
 
-#include <Prime.h>
-#include <EventType.h>
+#include <cstdint>
+
+class EventType;
 
 class EventID {
 	public:
-		using IDType = uint32_t;
+		using IDType = std::uint32_t;
 	private:
 		const IDType mID;
-    static uint32_t idGen(const EventType& eT) {
-      uint32_t id=1;
-      for(const AttributeType& aT : eT)
-        id *= PrimeGenerator::prime(aT.id());
-      return id;
-    }
+    static IDType idGen(const EventType& eT);
 		constexpr EventID() : mID(0) {}
 	public:
 
@@ -30,7 +26,7 @@ class EventID {
 			return mID;
 		}
 
-    operator uint32_t() const {
+    operator IDType() const {
       return mID;
     }
 
@@ -40,7 +36,7 @@ class EventID {
 
 		/** \brief subset test **/
 		bool operator<=(const EventID& b) const {
-			return b.value() % value() == 0;
+			return value() && (b.value() % value() == 0);
 		}
 
 		bool operator!=(const EventID& b) const {
@@ -49,7 +45,7 @@ class EventID {
 
 		/** \brief strict superset test **/
 		bool operator>(const EventID& b) const {
-			return !((*this)<=b);
+			return !((*this)<=b) && b.value();
 		}
 
 		/** \brief strict subset test **/
@@ -60,6 +56,6 @@ class EventID {
 		bool operator>=(const EventID& b) const {
 			return (*this)>b || (*this)==b;
 		}
-		
+
 		static const EventID any;
 };
