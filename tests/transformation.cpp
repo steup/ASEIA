@@ -10,7 +10,6 @@ struct TransformTestSuite : public ::testing::Test{
 	using Events      = Transformer::Events;
 	using EventTypes  = Transformer::EventTypes;
 	MetaFactory&   f  = MetaFactory::instance();
-  KnowledgeBase& kb = KnowledgeBase::instance();
 	Events       in;
 	EventTypes   inT;
 	MetaEvent    out;
@@ -35,7 +34,7 @@ TEST_F(TransformTestSuite, scaleTransformBasicTest) {
   outT = (EventType)out;
   in   = { &inE };
   unsigned int i=0;
-  for(TransPtr p : KnowledgeBase::instance().generate(outT, {inT})) {
+  for(TransPtr p : TransformGenerator(outT, {inT})) {
     trans = std::move(p);
     i++;
   }
