@@ -24,7 +24,7 @@ class ScaleTransformer : public Transformer {
         const AttributeType* temp = b.attribute(aT.id());
         if(!temp || aT.scale() == temp->scale())
           continue;
-        
+
 				MetaScale mod=aT.scale();
 				mod/=temp->scale();
         mScaleDeltas.insert(std::make_pair(aT.id(), mod));
@@ -39,11 +39,12 @@ class ScaleTransformer : public Transformer {
       if (events.size() != 1 || !events.front())
         return MetaEvent();
       MetaEvent e = *events.front();
-      for(MetaAttribute a : e) {
+      for(MetaAttribute& a : e) {
         const auto& it = mScaleDeltas.find(a.id());
         if(it != mScaleDeltas.end())
           a*=it->second;
       }
+      return e;
     }
 
     virtual void print(std::ostream& o) const {
@@ -80,8 +81,7 @@ class ScaleTransformation : public Transformation {
     virtual void print(std::ostream& o) const {
 			o << "Rescale Transformation";
 		}
-		
-};
+} rescale;
 
 
 Transformation::Transformation(const EventID& out, const EventIDs& in)
