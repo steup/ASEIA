@@ -23,9 +23,9 @@ TEST_F(TypeRegistryTestSuite, notFoundTest) {
 }
 
 TEST_F(TypeRegistryTestSuite, retrieveTest) {
-	TypeRegistry::Key k(base, base);
-	ASSERT_NE(tR[k], nullptr) << "Stored EventType not found";
-	EXPECT_EQ(*tR[k], base) << "Stored EventType not found";
+	auto r=tR.find(base);
+	ASSERT_NE(r.begin(), r.end()) << "Stored EventType not found";
+	EXPECT_EQ(r.front(), base) << "Stored EventType not found";
 }
 
 }}
