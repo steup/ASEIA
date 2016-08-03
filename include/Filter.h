@@ -57,13 +57,13 @@ struct FilterPredicate {
   const Event& mE0;
   const Event* mE1 = nullptr;
   const Attr* mAttr = nullptr;
-  FilterPredicate(id::filterOp::ID op, Event e0, Event e1) : mE0(e0), mE1(&e1) {
+  FilterPredicate(id::filterOp::ID op, const Event& e0, const Event& e1) : mE0(e0), mE1(&e1) {
     mOp.code = op;
     mOp.constArg = 0;
     mS = e0.mS;
   }
 
-  FilterPredicate(id::filterOp::ID op, Event e0, const Attr& attr) : mE0(e0), mAttr(&attr) {
+  FilterPredicate(id::filterOp::ID op, const Event& e0, const Attr& attr) : mE0(e0), mAttr(&attr) {
     mOp.code = op;
     mOp.constArg = 1;
     mS = e0.mS;

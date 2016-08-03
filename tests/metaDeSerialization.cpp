@@ -59,6 +59,7 @@ class MetaDeSerializationSuite : public ::testing::Test {
       return true;
     }
 
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnarrowing"
     template<typename T>
     void test(T v, T u) {
