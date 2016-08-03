@@ -82,7 +82,7 @@ TEST_F(FilterTestSuite, compositeExpressionTest){
   EXPECT_FALSE(filter1(falseEvent, falseEvent)) << "False positive";
 }
 
-
+/** \todo Fails on clang++ **/
 TEST_F(FilterTestSuite, basicSerializationTest) {
 
   auto filter0 = e0[Time()] > c0;
@@ -145,6 +145,7 @@ TEST_F(FilterTestSuite, basicSerializationTest) {
 
 }
 
+/** \todo Fails on clang++ **/
 TEST_F(FilterTestSuite, extendedSerializationTest) {
   auto filter0 = e0[Time()] >  e1[Time()];
   auto filter1 = e0[Time()] <  e1[Time()];
@@ -210,6 +211,7 @@ TEST_F(FilterTestSuite, extendedSerializationTest) {
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 }
 
+/** \todo Fails on clang++ **/
 TEST_F(FilterTestSuite, compositeSerializationTest) {
   auto baseFilter0 = e0[Position()] != e1[Position()];
   auto baseFilter1 = e0[Time()] > e1[Time()];
