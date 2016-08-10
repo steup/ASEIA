@@ -13,13 +13,15 @@ class Channel{
     using TransPtr   = Transformation::TransPtr;
     using EventTypes = Transformation::EventTypes;
   protected:
-    const TransPtr    mTrans;
+    TransPtr    mTrans;
     EventStorage      mStore;
 
     void handleEvent(const MetaEvent& e);
     virtual void publishEvent(const MetaEvent& e) const =0;
   public:
+    Channel() = default;
     Channel(TransPtr&& trans);
+    Channel(Channel&& movee);
 
   friend std::ostream& operator<<(std::ostream&, const Channel&);
 };

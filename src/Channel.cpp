@@ -5,6 +5,11 @@ Channel::Channel(Channel::TransPtr&& trans)
 		mStore(mTrans->in().size())
 { }
 
+Channel::Channel(Channel&& movee)
+  : mTrans(std::move(movee.mTrans)),
+    mStore(movee.mStore)
+{}
+
 void Channel::handleEvent(const MetaEvent& e) {
   mStore.addEvent(e);
 	MetaEvent newE = mStore.executeTransform(*mTrans);

@@ -14,6 +14,7 @@ class EventStorage {
 			minimumUncertainty,
 			performance
 		};
+    EventStorage() = default;
 		EventStorage(std::size_t inputSize, Policy policy=Policy::recent);
 		~EventStorage();
 		void addEvent(const MetaEvent& e);
