@@ -12,10 +12,11 @@ class TransformGenerator {
     using TransList = std::list<const Transformation*>;
     using EventTypes = Transformer::EventTypes;
   private:
+		using IterData = std::pair<const Transformation*, std::list<const EventType*>>;
     TransformGeneratorImpl* mImpl;
     const EventType& mOut;
     const EventTypes mIn;
-    TransList next();
+    IterData next();
   public:
     TransformGenerator(const EventType& out, const EventTypes& in);
     ~TransformGenerator();
@@ -26,19 +27,16 @@ class TransformGenerator {
     {
       private:
         TransformGenerator& mGen;
-        TransList mTrans;
-        Iterator(TransformGenerator& tG, TransList l)
-          : mGen(tG), mTrans(l) { }
+				IterData mData;
+        Iterator(TransformGenerator& tG, IterData data)
+          : mGen(tG), mData(data) { }
       public:
         /* TODO:implement compound Transformations */
         Transformation::TransPtr operator*() const {
-          if(mTrans.size()==1 && mTrans.front())
-            return mTrans.front()->create(mGen.mOut, mGen.mIn);
-
-          return Transformation::TransPtr();
+        	return mData.first->create(mGen.mOut, mData.second);
         }
         Iterator& operator++() {
-          mTrans = mGen.next();
+          mData = mGen.next();
           return *this;
         }
         bool operator==(const Iterator& b) const;
@@ -46,7 +44,8 @@ class TransformGenerator {
        friend class TransformGenerator;
     };
     Iterator begin() { return Iterator(*this, next()); }
-    Iterator end() { return Iterator(*this, TransList()); }
+		Iterator end();
+	friend class TransformGeneratorImpl;
 };
 
 class KnowledgeBase {

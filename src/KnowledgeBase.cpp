@@ -10,75 +10,97 @@ using EventIDs = Transformation::EventIDs;
 
 using namespace std;
 
+class InvalidTransformation : public Transformation {
+	public:
+		InvalidTransformation() : Transformation(EventID::any, {}) {}
+    virtual bool check(const EventType& out, const EventTypes& in) const {
+			return false;
+		}
+    virtual TransPtr create(const EventType& out, const EventTypes& in) const {
+			return TransPtr();
+		}
+    virtual void print(std::ostream& o) const {
+			o << "invalid";
+		}
+};
+
+static InvalidTransformation invalidTrans;
+
+TransformGenerator::Iterator TransformGenerator::end() { 
+	return TransformGenerator::Iterator(*this, IterData(&invalidTrans, {}));
+}
+
 class KBImpl {
   public:
-    using UnaryStorage = std::list<const Transformation*>;
+    using GeneralTransformStorage = std::list<const Transformation*>;
   private:
-    UnaryStorage mUnary;
+    GeneralTransformStorage mGeneralTrans;
   public:
-    using UnaryIter = UnaryStorage::const_iterator;
+    using GeneralTransformIter = GeneralTransformStorage::const_iterator;
     /*TODO: Implement registering of Transformation */
     void regTrans(const Transformation& trans) {
-      if(trans.in().size()==1)
-        mUnary.push_back(&trans);
+      if(trans.out() == EventID::any)
+        mGeneralTrans.push_back(&trans);
     }
     /*TODO: Implement unregistering of Transformation */
     void unregTrans(const Transformation& trans) {
 
     }
-    const UnaryStorage& unaryTrans() const { return mUnary; }
+    const GeneralTransformStorage& generalTrans() const { return mGeneralTrans; }
 };
 
 using KB = Singleton<KBImpl>;
 
-using TransList = TransformGenerator::TransList;
 
 class TransformGeneratorImpl {
+	protected:
+		using IterData = TransformGenerator::IterData;
   public:
     virtual ~TransformGeneratorImpl() {}
-    virtual TransList next() =0;
+    virtual IterData next() =0;
 };
 
-class TransformGeneratorUnary : public TransformGeneratorImpl {
+class GeneralTransformGenerator : public TransformGeneratorImpl {
   private:
-    KB::UnaryIter mStart, mEnd;
+		using Iter = KB::GeneralTransformIter;
+    Iter mStart, mEnd;
     EventID mIn, mOut;
   public:
-    TransformGeneratorUnary(EventID out, EventID in)
+    GeneralTransformGenerator(EventID out, EventID in)
       : mIn(in), mOut(out)
     {
-      const KB::UnaryStorage& trans = KB::instance().unaryTrans();
+      const KB::GeneralTransformStorage& trans = KB::instance().generalTrans();
       mStart = trans.begin();
       mEnd = trans.end();
     }
-
-    virtual TransList next() {
+		/** \todo implement type search **/
+    virtual IterData next() {
       auto comp = [this](const Transformation* t){return t && t->out()>=mOut && t->in().front()>=mIn;};
-      KB::UnaryIter i = find_if(mStart, mEnd, comp);
+      Iter i = find_if(mStart, mEnd, comp);
       mStart = i;
       mStart++;
       if(i!=mEnd)
-        return {*i};
+        return IterData(*i, {});
       else
-        return TransList();
+        return IterData(&invalidTrans, {});
     }
 };
 
-class TransformGeneratorGen : public TransformGeneratorImpl {
+class GeneratorTransformGenerator : public TransformGeneratorImpl {
   public:
-    TransformGeneratorGen(EventID out) { }
+    GeneratorTransformGenerator(EventID out) { }
 
-    virtual TransList next() {
-      return TransList();
+    virtual IterData next() {
+      return IterData(&invalidTrans, {});
     }
 };
 
-class TransformGeneratorNary : public TransformGeneratorImpl {
+class SpecialTransformGenerator : public TransformGeneratorImpl {
   public:
-    TransformGeneratorNary(EventID out, EventIDs in) { }
+    SpecialTransformGenerator(EventID out, EventIDs in) { }
 
-    virtual TransList next() {
-      return TransList();
+    virtual IterData next() {
+      return IterData(&invalidTrans, {});
     }
 };
 
@@ -87,16 +109,16 @@ TransformGenerator::TransformGenerator(const EventType& out, const EventTypes& i
   mImpl(nullptr), mOut(out), mIn(in)
 {
   switch(in.size()) {
-    case(0): mImpl = new TransformGeneratorGen(out);
+    case(0): mImpl = new GeneratorTransformGenerator(out);
              break;
     case(1): if(in.front())
-              mImpl = new TransformGeneratorUnary(out, *in.front());
+              mImpl = new GeneralTransformGenerator(out, *in.front());
              break;
     default: if(!count(in.begin(), in.end(), nullptr)){
               EventIDs ids;
               auto cast = [](const EventType* t){return (EventID)(*t);};
               transform(in.begin(), in.end(), back_inserter(ids), cast);
-              mImpl = new TransformGeneratorNary(out, ids);
+              mImpl = new SpecialTransformGenerator(out, ids);
              }
   }
 }
@@ -107,15 +129,15 @@ TransformGenerator::~TransformGenerator() {
 }
 
 /* TODO: Implement transformation list generation */
-TransformGenerator::TransList TransformGenerator::next() {
+TransformGenerator::IterData TransformGenerator::next() {
   if(mImpl)
     return mImpl->next();
   else
-    return TransList();
+    return IterData(&invalidTrans, {});
 }
 
 bool TransformGenerator::Iterator::operator==(const TransformGenerator::Iterator& b) const {
-  return std::equal(mTrans.begin(), mTrans.end(), b.mTrans.begin());
+  return mData.first == b.mData.first && std::equal(mData.second.begin(), mData.second.end(), b.mData.second.begin());
 }
 
 
