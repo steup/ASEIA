@@ -1,5 +1,6 @@
 #include <KnowledgeBase.h>
 #include <MetaFactory.h>
+#include <TypeRegistry.h>
 
 namespace test {
 
@@ -10,6 +11,7 @@ struct TransformTestSuite : public ::testing::Test{
 	using Events      = Transformer::Events;
 	using EventTypes  = Transformer::EventTypes;
 	MetaFactory&   f  = MetaFactory::instance();
+	TypeRegistry&  t  = TypeRegistry::instance();
 	Events       in;
 	EventTypes   inT;
 	MetaEvent    out;
@@ -29,6 +31,7 @@ TEST_F(TransformTestSuite, scaleTransformBasicTest) {
   s.value() = f.create({{{1, 1}}});
   s.scale() = MetaScale();
   out.add(s);
+	t.registerType(inET);
   inET = (EventType)inE;
   inT  = { &inET };
   outT = (EventType)out;
