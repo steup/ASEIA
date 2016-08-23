@@ -35,8 +35,11 @@ class AbstractRegistry {
     Storage mStorage;
 
   public:
+    using value_type = typename Storage::mapped_type;
+
     template<typename It>
     struct AbstractValueIterator : public It {
+			AbstractValueIterator() = default;
       AbstractValueIterator(It t) : It(t) {}
       AbstractValueIterator& operator=(It t) {
         *this=t;
@@ -46,7 +49,12 @@ class AbstractRegistry {
       using value_type = typename It::value_type::second_type;
       const value_type& operator*() const { return static_cast<const It&>(*this)->second; }
       const value_type* operator->() const { return &static_cast<const It&>(*this)->second; }
+			operator const value_type*() const { return &static_cast<const It&>(*this)->second; }
       AbstractValueIterator& operator++() { static_cast<It&>(*this)++; return *this;}
+      AbstractValueIterator operator++(int) { 
+				AbstractValueIterator temp = *this;
+				++(*this);
+				return temp;}
     };
 
     using const_iterator = AbstractValueIterator<typename Storage::const_iterator>;
