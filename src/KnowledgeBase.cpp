@@ -1,4 +1,5 @@
 #include <KnowledgeBase.h>
+#include <TypeRegistry.h>
 
 #include <Singleton.h>
 
@@ -39,6 +40,8 @@ class KBImpl {
     using GeneralTransformIter = GeneralTransformStorage::const_iterator;
     /*TODO: Implement registering of Transformation */
     void regTrans(const Transformation& trans) {
+			if(&trans==&invalidTrans)
+				return;
       if(trans.out() == EventID::any)
         mGeneralTrans.push_back(&trans);
     }
@@ -62,27 +65,38 @@ class TransformGeneratorImpl {
 
 class GeneralTransformGenerator : public TransformGeneratorImpl {
   private:
-		using Iter = KB::GeneralTransformIter;
-    Iter mStart, mEnd;
+		using TransIter = KB::GeneralTransformIter;
+		using ETypeIter = TypeRegistry::const_iterator;
+    TransIter mTransStart, mTransEnd, i;
+		ETypeIter mETypeStart, mETypeEnd;
     EventID mIn, mOut;
   public:
     GeneralTransformGenerator(EventID out, EventID in)
       : mIn(in), mOut(out)
     {
       const KB::GeneralTransformStorage& trans = KB::instance().generalTrans();
-      mStart = trans.begin();
-      mEnd = trans.end();
+      mTransStart = trans.begin();
+      mTransEnd = trans.end();
+			mETypeStart = TypeRegistry::instance().begin();
+			mETypeEnd = TypeRegistry::instance().end();
     }
 		/** \todo implement type search **/
     virtual IterData next() {
-      auto comp = [this](const Transformation* t){return t && t->out()>=mOut && t->in().front()>=mIn;};
-      Iter i = find_if(mStart, mEnd, comp);
-      mStart = i;
-      mStart++;
-      if(i!=mEnd)
-        return IterData(*i, {});
-      else
+			if(mTransStart != mTransEnd && mETypeStart == mETypeEnd) {
+      	auto comp = [this](const Transformation* t){return t && t->out()>=mOut && t->in().front()>=mIn;};
+      	i = find_if(mTransStart, mTransEnd, comp);
+      	mTransStart = i;
+      	mTransStart++;
+				mETypeStart = TypeRegistry::instance().begin();
+			}
+
+      if(i==mTransEnd || mETypeStart == mETypeEnd)
         return IterData(&invalidTrans, {});
+			else {
+				std::list<const EventType*> list = {mETypeStart};
+				++mETypeStart;
+				return IterData(*i, list);
+			}
     }
 };
 
@@ -130,9 +144,13 @@ TransformGenerator::~TransformGenerator() {
 
 /* TODO: Implement transformation list generation */
 TransformGenerator::IterData TransformGenerator::next() {
-  if(mImpl)
-    return mImpl->next();
-  else
+  if(mImpl) {
+		IterData i;
+		do {
+			i = mImpl->next();
+		} while(i!=IterData(&invalidTrans, {}) && !(i.first->check(mOut, i.second)));
+    return i;
+  }else
     return IterData(&invalidTrans, {});
 }
 
