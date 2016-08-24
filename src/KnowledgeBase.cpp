@@ -12,23 +12,23 @@ using EventIDs = Transformation::EventIDs;
 using namespace std;
 
 class InvalidTransformation : public Transformation {
-	public:
-		InvalidTransformation() : Transformation(EventID::any, {}) {}
+  public:
+    InvalidTransformation() : Transformation(EventID::any, {}) {}
     virtual bool check(const EventType& out, const EventTypes& in) const {
-			return false;
-		}
+      return false;
+    }
     virtual TransPtr create(const EventType& out, const EventTypes& in) const {
-			return TransPtr();
-		}
+      return TransPtr();
+    }
     virtual void print(std::ostream& o) const {
-			o << "invalid";
-		}
+      o << "invalid";
+    }
 };
 
 static InvalidTransformation invalidTrans;
 
 TransformGenerator::Iterator TransformGenerator::end() { 
-	return TransformGenerator::Iterator(*this, IterData(&invalidTrans, {}));
+  return TransformGenerator::Iterator(*this, IterData(&invalidTrans, {}));
 }
 
 class KBImpl {
@@ -40,8 +40,8 @@ class KBImpl {
     using GeneralTransformIter = GeneralTransformStorage::const_iterator;
     /*TODO: Implement registering of Transformation */
     void regTrans(const Transformation& trans) {
-			if(&trans==&invalidTrans)
-				return;
+      if(&trans==&invalidTrans)
+        return;
       if(trans.out() == EventID::any)
         mGeneralTrans.push_back(&trans);
     }
@@ -56,85 +56,63 @@ using KB = Singleton<KBImpl>;
 
 
 class TransformGeneratorImpl {
-	protected:
-		using IterData = TransformGenerator::IterData;
   public:
+    using ImplData = TransformGenerator::ImplData;
+    using EventIDs = ImplData::second_type;
+    const EventID  mOut;
+    const EventIDs mIn;
+    TransformGeneratorImpl(EventID out, EventIDs in) : mOut(out), mIn(in) {}
     virtual ~TransformGeneratorImpl() {}
-    virtual IterData next() =0;
+    virtual ImplData next() =0;
 };
 
 class GeneralTransformGenerator : public TransformGeneratorImpl {
   private:
-		using TransIter = KB::GeneralTransformIter;
-		using ETypeIter = TypeRegistry::const_iterator;
-    TransIter mTransStart, mTransEnd, i;
-		ETypeIter mETypeStart, mETypeEnd;
-    EventID mIn, mOut;
+    using TransIter = KB::GeneralTransformIter;
+    using EventIter = EventIDs::const_iterator;
+    const TransIter mTransEnd = KB::instance().generalTrans().end();
+    TransIter mTrans = KB::instance().generalTrans().begin();
+    EventIDs mCompatibleIn;
+    EventIter mEvent;
   public:
-    GeneralTransformGenerator(EventID out, EventID in)
-      : mIn(in), mOut(out)
-    {
-      const KB::GeneralTransformStorage& trans = KB::instance().generalTrans();
-      mTransStart = trans.begin();
-      mTransEnd = trans.end();
-			mETypeStart = TypeRegistry::instance().begin();
-			mETypeEnd = TypeRegistry::instance().end();
-    }
-		/** \todo implement type search **/
-    virtual IterData next() {
-			if(mTransStart != mTransEnd && mETypeStart == mETypeEnd) {
-      	auto comp = [this](const Transformation* t){return t && t->out()>=mOut && t->in().front()>=mIn;};
-      	i = find_if(mTransStart, mTransEnd, comp);
-      	mTransStart = i;
-      	mTransStart++;
-				mETypeStart = TypeRegistry::instance().begin();
-			}
+    GeneralTransformGenerator(EventID out, EventIDs in)
+      : TransformGeneratorImpl(out, in), mEvent(mCompatibleIn.begin())
+    {}
 
-      if(i==mTransEnd || mETypeStart == mETypeEnd)
-        return IterData(&invalidTrans, {});
-			else {
-				std::list<const EventType*> list = {mETypeStart};
-				++mETypeStart;
-				return IterData(*i, list);
-			}
+    virtual ImplData next() {
+      if(mEvent == mCompatibleIn.end())
+        mTrans = find_if(mTrans, mTransEnd, [this](const Transformation* t){return t->out()>=mOut;});
+
+      if(mTrans == mTransEnd)
+        return ImplData(&invalidTrans, {});
+
+      if(mEvent == mCompatibleIn.end()) {
+        copy_if(mIn.begin(), mIn.end(), std::back_inserter(mCompatibleIn),
+          [this](EventID id){return mOut <= id;}
+        );
+        mEvent = mCompatibleIn.begin();
+      }
+
+      if(mEvent == mCompatibleIn.end())
+        return ImplData(&invalidTrans, {});
+
+      ImplData res(*mTrans, {*mEvent++});
+
+      if(mEvent == mCompatibleIn.end())
+        mTrans++;
+
+      return res;
     }
 };
 
-class GeneratorTransformGenerator : public TransformGeneratorImpl {
-  public:
-    GeneratorTransformGenerator(EventID out) { }
-
-    virtual IterData next() {
-      return IterData(&invalidTrans, {});
-    }
-};
-
-class SpecialTransformGenerator : public TransformGeneratorImpl {
-  public:
-    SpecialTransformGenerator(EventID out, EventIDs in) { }
-
-    virtual IterData next() {
-      return IterData(&invalidTrans, {});
-    }
-};
-
-
-TransformGenerator::TransformGenerator(const EventType& out, const EventTypes& in) :
-  mImpl(nullptr), mOut(out), mIn(in)
+TransformGenerator::TransformGenerator(const EventType& out, const EventTypes& in)
+  :  mImpl(nullptr), mOut(out), mIn(in)
 {
-  switch(in.size()) {
-    case(0): mImpl = new GeneratorTransformGenerator(out);
-             break;
-    case(1): if(in.front())
-              mImpl = new GeneralTransformGenerator(out, *in.front());
-             break;
-    default: if(!count(in.begin(), in.end(), nullptr)){
-              EventIDs ids;
-              auto cast = [](const EventType* t){return (EventID)(*t);};
-              transform(in.begin(), in.end(), back_inserter(ids), cast);
-              mImpl = new SpecialTransformGenerator(out, ids);
-             }
-  }
+  ImplData::second_type ids;
+  std::transform(in.begin(), in.end(), std::back_inserter(ids), [](const EventType& e){return (EventID)e;});
+  std::sort(ids.begin(), ids.end());
+  ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
+  mImpl= new GeneralTransformGenerator(out, ids);
 }
 
 TransformGenerator::~TransformGenerator() {
@@ -142,13 +120,23 @@ TransformGenerator::~TransformGenerator() {
     delete mImpl;
 }
 
-/* TODO: Implement transformation list generation */
 TransformGenerator::IterData TransformGenerator::next() {
   if(mImpl) {
-		IterData i;
-		do {
-			i = mImpl->next();
-		} while(i!=IterData(&invalidTrans, {}) && !(i.first->check(mOut, i.second)));
+    IterData i;
+    do {
+      //TODO hack for singular transforms
+      if(i.first == nullptr || mType != mTypeEnd) {
+        mImplData = mImpl->next();
+        i.first = mImplData.first;
+        if(mImplData.second.empty())
+          continue;
+        auto range = mIn.find(mImplData.second.front());
+        mType = range.begin();
+        mTypeEnd = range.end();
+      }
+      i.first = mImplData.first;
+      i.second.push_back(mType++);
+    } while(i.first != &invalidTrans && !(i.first->check(mOut, i.second)));
     return i;
   }else
     return IterData(&invalidTrans, {});
