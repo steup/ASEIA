@@ -8,6 +8,44 @@
 
 class EventType;
 
+template<typename It>
+struct RegistryIterator : public std::iterator< std::forward_iterator_tag,
+                                  typename It::value_type::second_type> {
+  private:
+    It mIt;
+  public:
+    using value_type = typename std::iterator<std::forward_iterator_tag, typename It::value_type::second_type>::value_type;
+
+    RegistryIterator() = default;
+    RegistryIterator(It t) : mIt(t) {}
+    RegistryIterator& operator=(It t) {
+      mIt=t;
+      return *this;
+    }
+    const value_type& operator*() const { return mIt->second; }
+    const value_type* operator->() const { return &mIt->second; }
+    operator const value_type*() const { return &mIt->second; }
+    RegistryIterator& operator++() { mIt++; return *this;}
+    RegistryIterator operator++(int) {
+      RegistryIterator temp = *this;
+      mIt++;
+      return temp;
+    }
+};
+
+template<typename It>
+struct RegistryRange : public std::pair<It, It> {
+  using value_type = typename It::value_type;
+  RegistryRange() = default;
+  RegistryRange(It begin, It end)
+    : std::pair<It, It>(begin, end)
+  {}
+  It begin() const {return this->first; }
+  It end() const {return this->second; }
+  bool empty() const { return this->first==this->second; }
+  typename It::value_type front() { return *this->first; }
+};
+
 template<typename T>
 class AbstractRegistry {
   protected:
@@ -37,42 +75,11 @@ class AbstractRegistry {
   public:
     using value_type = typename Storage::mapped_type;
 
-    template<typename It>
-    struct AbstractValueIterator : public It {
-			AbstractValueIterator() = default;
-      AbstractValueIterator(It t) : It(t) {}
-      AbstractValueIterator& operator=(It t) {
-        *this=t;
-        return *this;
-      }
+    using const_iterator = RegistryIterator<typename Storage::const_iterator>;
+    using const_local_iterator = RegistryIterator<typename Storage::const_local_iterator>;
 
-      using value_type = typename It::value_type::second_type;
-      const value_type& operator*() const { return static_cast<const It&>(*this)->second; }
-      const value_type* operator->() const { return &static_cast<const It&>(*this)->second; }
-			operator const value_type*() const { return &static_cast<const It&>(*this)->second; }
-      AbstractValueIterator& operator++() { static_cast<It&>(*this)++; return *this;}
-      AbstractValueIterator operator++(int) { 
-				AbstractValueIterator temp = *this;
-				++(*this);
-				return temp;}
-    };
-
-    using const_iterator = AbstractValueIterator<typename Storage::const_iterator>;
-    using const_local_iterator = AbstractValueIterator<typename Storage::const_local_iterator>;
-
-    template<typename It>
-    struct AbstractRange : public std::pair<It, It> {
-      AbstractRange(It begin, It end)
-        : std::pair<It, It>(begin, end)
-      {}
-      It begin() const {return this->first; }
-      It end() const {return this->second; }
-      bool empty() const { return this->first==this->second; }
-      typename It::value_type front() { return *this->first; }
-    };
-
-    using Range = AbstractRange<const_iterator>;
-    using LocalRange = AbstractRange<const_local_iterator>;
+    using Range = RegistryRange<const_iterator>;
+    using LocalRange = RegistryRange<const_local_iterator>;
 
 		void registerType(const EventType& eT, const T& t) {
       mStorage.insert(std::make_pair(Key(eT, eT), t));
@@ -94,16 +101,10 @@ class AbstractRegistry {
       return find(eT, eT);
     }
 
-    const_local_iterator end(EventID id) const {
-      Key k(id);
-      std::size_t b=mStorage.bucket(k);
-      return mStorage.end(b);
-    }
-
     LocalRange find(EventID id) const {
       Key k(id);
       std::size_t b=mStorage.bucket(k);
-      return LocalRange(mStorage.begin(b), end(id));
+      return LocalRange(mStorage.begin(b), mStorage.end(b));
     }
 
 		bool contains(EventID id) const {
