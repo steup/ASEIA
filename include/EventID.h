@@ -8,7 +8,7 @@ class EventID {
 	public:
 		using IDType = std::uint32_t;
 	private:
-		const IDType mID;
+		IDType mID;
     static IDType idGen(const EventType& eT);
 		constexpr EventID() : mID(0) {}
 	public:
