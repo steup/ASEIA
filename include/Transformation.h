@@ -33,6 +33,11 @@ class Transformer {
     virtual void print(std::ostream& o) const = 0;
 };
 
+std::ostream& operator<<(std::ostream& o, const Transformer& t) {
+  t.print(o);
+  return o;
+}
+
 /** \brief Interface of generic Event Transformation
   *
   * Subclasses implement Transformations as content of the KnowledgeBase. The
@@ -62,3 +67,8 @@ class Transformation {
     virtual TransPtr create(const EventType& out, const EventTypes& in) const =0;
     virtual void print(std::ostream& o) const = 0;
 };
+
+std::ostream& operator<<(std::ostream& o, const Transformation& t) {
+  t.print(o);
+  return o;
+}
