@@ -6,12 +6,13 @@ namespace test {
 
 using namespace ::id::attribute;
 
+using TransPtr    = Transformation::TransPtr;
+using Events      = Transformer::Events;
+using EventTypes  = Transformer::EventTypes;
+
 struct TransformTestSuite : public ::testing::Test{
-	using TransPtr    = Transformation::TransPtr;
-	using Events      = Transformer::Events;
-	using EventTypes  = Transformer::EventTypes;
 	MetaFactory&   f  = MetaFactory::instance();
-	TypeRegistry&  t  = TypeRegistry::instance();
+	AbstractRegistry<EventType> t;
 	Events       in;
 	EventTypes   inT;
 	MetaEvent    out;
@@ -31,20 +32,20 @@ TEST_F(TransformTestSuite, scaleTransformBasicTest) {
   s.value() = f.create({{{1, 1}}});
   s.scale() = MetaScale();
   out.add(s);
-	t.registerType(inET);
   inET = (EventType)inE;
-  inT  = { &inET };
+	t.registerType(inET, inET);
   outT = (EventType)out;
   in   = { &inE };
-  unsigned int i=0;
-  for(TransPtr p : TransformGenerator(outT, {inT})) {
-    trans = std::move(p);
-    i++;
-  }
-  ASSERT_GT(i, 0) << "No Transform found!";
-  ASSERT_LT(i, 2) << "Too many Transforms found!";
-	EXPECT_TRUE(trans->check(in)) << "MetaValue is not supported by ScaleTransform";
-	MetaEvent temp = (*trans)(in);
+  std::list<TransPtr> transList;
+  TransformGenerator g(outT, t);
+  std::move(g.begin(), g.end(), std::back_inserter(transList));
+  ASSERT_GT(transList.size(), 0) << "No Transform found!";
+  std::ostringstream os;
+  for(const TransPtr& ptr : transList)
+    ptr->print(os);
+  ASSERT_LT(transList.size(), 2) << "Too many Transforms found: " << os.str();
+	EXPECT_TRUE(transList.front()->check(in)) << "MetaValue is not supported by ScaleTransform";
+	MetaEvent temp = (*transList.front())(in);
 	EXPECT_EQ(temp, out) << "Events not transformed correctly";
 }
 
