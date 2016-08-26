@@ -4,6 +4,9 @@
 #include <MetaValue.h>
 #include <MetaFactory.h>
 #include <DeSerializer.h>
+#include <Serializer.h>
+
+#include <iterator>
 
 namespace tests {
 
@@ -18,6 +21,7 @@ class MetaDeSerializationSuite : public ::testing::Test {
     using Buffer = vector<uint8_t>;
     using Iter   = Buffer::const_iterator;
     using D      = DeSerializer<Iter>;
+    using S      = Serializer<std::back_insert_iterator<Buffer>>;
     Buffer buffer;
     MetaFactory& f = MetaFactory::instance();
 
@@ -161,4 +165,22 @@ TEST_F(MetaDeSerializationSuite, eventTest) {
   EXPECT_TRUE(compare(e, ref));
 }
 
+TEST_F(MetaDeSerializationSuite, networkTest) {
+	BaseEvent<> e;
+	EventType eT=(EventType)e;
+	MetaEvent ref(eT);
+	MetaEvent mE(eT);
+	MetaAttribute* posPtr  = ref.attribute(Position::value());
+	MetaAttribute* timePtr = ref.attribute(Time::value());
+	MetaAttribute* pubPtr  = ref.attribute(PublisherID::value());
+	ASSERT_TRUE(posPtr)  << "No position attribute in BaseEvent<>";
+	ASSERT_TRUE(timePtr) << "No time attribute in BaseEvent<>";
+	ASSERT_TRUE(pubPtr)  << "No publisher id in BaseEvent<>";
+	EXPECT_EQ(eT, (EventType)ref) << "Referenz MetaEvent does not fit StaticEvent!";
+	S s(back_inserter(buffer));
+	s << e;
+  D d(buffer.begin(), buffer.end());
+  d >> mE;
+  EXPECT_TRUE(compare(mE, ref)) << mE << " != " << ref;
+}
 }}
