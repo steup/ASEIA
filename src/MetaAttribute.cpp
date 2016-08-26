@@ -1,4 +1,5 @@
 #include <MetaAttribute.h>
+#include <MetaFactory.h>
 #include <AttributeType.h>
 #include <IDIO.h>
 #include <IO.h>
@@ -9,6 +10,13 @@
 using namespace std;
 
 using std::move;
+
+MetaAttribute::MetaAttribute(const AttributeType& at) {
+	mValue = MetaFactory::instance().create(at.value());
+	mUnit = at.unit();
+	mScale = at.scale();
+	mID = at.id();
+}
 
 MetaAttribute::MetaAttribute(const MetaAttribute& copy) {
 	*this = copy;

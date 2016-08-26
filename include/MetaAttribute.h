@@ -23,6 +23,7 @@ class MetaAttribute {
     //MetaAttribute() = default;
 
     MetaAttribute(ID id = id::attribute::Base::value()) : mID(id) {}
+    MetaAttribute(const AttributeType& at);
     MetaAttribute(const MetaAttribute& copy);
     MetaAttribute(MetaAttribute&& movee);
     MetaAttribute& operator=(const MetaAttribute& copy);
