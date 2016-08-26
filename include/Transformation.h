@@ -33,7 +33,7 @@ class Transformer {
     virtual void print(std::ostream& o) const = 0;
 };
 
-std::ostream& operator<<(std::ostream& o, const Transformer& t) {
+inline std::ostream& operator<<(std::ostream& o, const Transformer& t) {
   t.print(o);
   return o;
 }
@@ -68,7 +68,7 @@ class Transformation {
     virtual void print(std::ostream& o) const = 0;
 };
 
-std::ostream& operator<<(std::ostream& o, const Transformation& t) {
+inline std::ostream& operator<<(std::ostream& o, const Transformation& t) {
   t.print(o);
   return o;
 }
