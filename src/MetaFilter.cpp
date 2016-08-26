@@ -46,7 +46,7 @@ std::ostream& operator<<(std::ostream& o, const MetaPredicate& p){
 }
 
 bool MetaFilter::operator()(const std::vector<MetaEvent>& events) const {
-	bool result;
+	bool result=true;
 	ID op = NOOP::value;
 	for(const auto& subExpr : mExpr) {
 		bool temp = subExpr.first(events);
