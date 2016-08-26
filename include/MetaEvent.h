@@ -29,6 +29,8 @@ class MetaEvent{
 		};
 
   public:
+		MetaEvent() = default;
+		MetaEvent(const EventType& eT);
 		MetaAttribute* attribute(ID id);
 		const MetaAttribute* attribute(ID id) const;
     bool add(const MetaAttribute&);
