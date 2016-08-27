@@ -162,7 +162,9 @@ Interface& MetaValueImplementation<T>::binaryOp( BinaryOp op, const Interface& b
 													 break;
 			case(BinaryOp::Mul): /** \todo handle scalar multiplication and eWise product; */
 													 break;
-			case(BinaryOp::Div): /** \todo handle scalar division */
+			case(BinaryOp::Div): if(b.get(Interface::Attributes::Rows).rows == 1 &&
+                              b.get(Interface::Attributes::Cols).cols == 1)
+                            mData /= reinterpret_cast<const Impl&>(b).mData(0,0);
                            break;
 			default            : return Interface::binaryOp(op, b);
 	}
