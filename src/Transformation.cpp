@@ -37,10 +37,10 @@ class ScaleTransformer : public Transformer {
 
     virtual MetaEvent operator()(const Events& events) {
       if (events.size() != 1 || !events.front())
-        return MetaEvent();
+        return MetaEvent(mOut);
       MetaEvent e = *events.front();
       for(MetaAttribute& a : e) {
-        const auto& it = mScaleDeltas.find(a.id());
+        auto it = mScaleDeltas.find(a.id());
         if(it != mScaleDeltas.end())
           a*=it->second;
       }
@@ -50,7 +50,7 @@ class ScaleTransformer : public Transformer {
     virtual void print(std::ostream& o) const {
       o << "Rescale " << EventID(mOut) << ": \n";
       for(const Storage::value_type& scaleOp : mScaleDeltas)
-        o << "\t" << /*id::attribute::name*/(scaleOp.first) << ": " << scaleOp.second << "\n";
+        o << "\t" << id::attribute::name(scaleOp.first) << ": " << scaleOp.second << "\n";
     }
 
 };
