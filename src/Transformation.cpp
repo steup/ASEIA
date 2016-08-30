@@ -89,3 +89,7 @@ Transformation::Transformation(const EventID& out, const EventIDs& in)
 {
   KnowledgeBase::registerTransformation(*this);
 }
+
+bool Transformer::operator==(const Transformer& b) const {
+  return mOut == b.mOut && std::equal(mIn.begin(), mIn.begin(), b.mIn.begin());
+}

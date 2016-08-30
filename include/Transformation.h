@@ -31,6 +31,7 @@ class Transformer {
     virtual bool check(const Events& events) const =0;
     virtual MetaEvent operator()(const Events& events) =0;
     virtual void print(std::ostream& o) const = 0;
+    bool operator==(const Transformer& b) const;
 };
 
 inline std::ostream& operator<<(std::ostream& o, const Transformer& t) {
