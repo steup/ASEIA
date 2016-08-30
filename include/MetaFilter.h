@@ -4,7 +4,9 @@
 #include <DeSerializer.h>
 #include <MetaEvent.h>
 #include <MetaFactory.h>
+
 #include <stdexcept>
+#include <vector>
 
 /** \brief Dynamic filter error class
  *  \todo add cause enumeration
