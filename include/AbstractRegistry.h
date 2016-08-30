@@ -82,7 +82,11 @@ class AbstractRegistry {
     using LocalRange = RegistryRange<const_local_iterator>;
 
 		void registerType(const EventType& eT, const T& t) {
-      mStorage.insert(std::make_pair(Key(eT, eT), t));
+      mStorage.emplace(Key(eT, eT), t);
+    }
+
+    void registerType(const EventType& eT, T&& t) {
+      mStorage.emplace(Key(eT, eT), std::move(t));
     }
 
     const_iterator begin() const {
