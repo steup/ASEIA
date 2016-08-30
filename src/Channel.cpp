@@ -3,20 +3,24 @@
 #include <FormatID.h>
 
 Channel::Channel(Channel::TransPtr&& trans)
-  : mTrans(std::move(trans)),
-		mStore(mTrans->in().size())
-{ }
+  : mTrans(std::move(trans))
+{
+  if(mTrans && mTrans->in().size() == 1)
+    mStore = EventStorage::create(EventStorage::Type::simple, EventStorage::Policy::recent);
+}
 
 Channel::Channel(Channel&& movee)
   : mTrans(std::move(movee.mTrans)),
-    mStore(movee.mStore)
+    mStore(std::move(movee.mStore))
 {}
 
 void Channel::handleEvent(const MetaEvent& e) {
-  mStore.addEvent(e);
-	MetaEvent newE = mStore.executeTransform(*mTrans);
-	if(newE != MetaEvent())
-		publishEvent(newE);
+  if(mTrans && mStore) {
+    mStore->addEvent(e);
+	  MetaEvent newE = mStore->executeTransform(*mTrans);
+	  if(newE != MetaEvent())
+		  publishEvent(newE);
+  }
 }
 
 /* TODO: implement */

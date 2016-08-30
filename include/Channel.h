@@ -12,9 +12,10 @@ class Channel{
   public:
     using TransPtr   = Transformation::TransPtr;
     using EventTypes = Transformation::EventTypes;
+    using StoragePtr = EventStorage::Ptr;
   protected:
-    TransPtr    mTrans;
-    EventStorage      mStore;
+    TransPtr   mTrans;
+    StoragePtr mStore;
 
     void handleEvent(const MetaEvent& e);
     virtual void publishEvent(const MetaEvent& e) const =0;
@@ -22,7 +23,7 @@ class Channel{
     Channel() = default;
     Channel(TransPtr&& trans);
     Channel(Channel&& movee);
-
+    const Transformer* trans() const {return mTrans.get();}
   friend std::ostream& operator<<(std::ostream&, const Channel&);
 };
 

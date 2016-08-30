@@ -2,15 +2,7 @@
 
 #include <MetaEvent.h>
 
-class EventStorageImpl {
-	public:
-		virtual ~EventStorageImpl() = default;
-		virtual void addEvent(const MetaEvent& e) =0;
-		virtual void purge() =0;
-		virtual MetaEvent executeTransform(Transformer& t) const =0;
-};
-
-class SimpleStorage : public EventStorageImpl {
+class SimpleStorage : public EventStorage {
 	private:
 		MetaEvent mE;
 
@@ -31,37 +23,8 @@ class SimpleStorage : public EventStorageImpl {
 		}
 };
 
-
-EventStorage::EventStorage(std::size_t inputSize, Policy policy) : mImpl(nullptr) {
-	if(inputSize==1)
-		mImpl= new SimpleStorage();
-	/*if(inputSize>1)
-		switch(policy) {
-			case(Policy::recent):             mImpl.reset(new RecentStorage(inputSize));
-													            	break;
-			case(Policy::minimalUncertainty): mImpl.reset(new MinimalUncertaintyStorage(inputSize));
-														            break;
-			case(Policy::performance):        mImpl.reset(new PerformanceStorage(inputSize));
-																				break;
-		}*/
-}
-
-EventStorage::~EventStorage() {
-  if(mImpl)
-    delete mImpl;
-}
-
-void EventStorage::addEvent(const MetaEvent& e) {
-  if(mImpl) mImpl->addEvent(e);
-}
-
-void EventStorage::purge() {
-  if(mImpl) mImpl->purge();
-}
-
-MetaEvent EventStorage::executeTransform(Transformer& t) const {
-  if(mImpl)
-    return mImpl->executeTransform(t);
-  else
-    return MetaEvent();
+EventStorage::Ptr EventStorage::create(Type type, Policy policy) {
+  if(type == Type::simple)
+    return Ptr(new SimpleStorage());
+  return Ptr();
 }

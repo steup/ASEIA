@@ -2,22 +2,22 @@
 
 #include <Transformation.h>
 #include <MetaEvent.h>
-
-class EventStorageImpl;
+#include <memory>
 
 class EventStorage {
-	private:
-		EventStorageImpl* mImpl;
 	public:
+    using Ptr = std::unique_ptr<EventStorage>;
 		enum class Policy {
 			recent,
 			minimumUncertainty,
 			performance
 		};
-    EventStorage() = default;
-		EventStorage(std::size_t inputSize, Policy policy=Policy::recent);
-		~EventStorage();
-		void addEvent(const MetaEvent& e);
-		void purge();
-		MetaEvent executeTransform(Transformer& t) const;
+    enum class Type {
+      simple
+    };
+    static Ptr create(Type type, Policy policy);
+		virtual ~EventStorage() {}
+		virtual void addEvent(const MetaEvent& e) = 0;
+		virtual void purge() = 0;
+		virtual MetaEvent executeTransform(Transformer& t) const =0;
 };
