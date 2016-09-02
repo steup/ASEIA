@@ -1,37 +1,34 @@
 #pragma once
 
-#include <Prime.h>
+#include <cstdint>
 
-#include <boost/mpl/for_each.hpp>
-#include <boost/ref.hpp>
+class EventType;
 
 class EventID {
 	public:
-		using IDType = uint32_t;
+		using IDType = std::uint32_t;
 	private:
-		const IDType mID;
-
-		struct IDGen {
-			IDType id = 1;
-			template<typename A>
-			void operator()(A a){
-				id*=PrimeGenerator::prime(A::IDType::value());
-			}
-			template<typename Event>
-			IDGen(const Event& e) {
-				using AttrList = typename Event::AttributeList;
-				boost::mpl::for_each<AttrList>(boost::ref(*this));
-			}
-		};
+		IDType mID;
+    static IDType idGen(const EventType& eT);
+		constexpr EventID() : mID(0) {}
 	public:
-		template<typename Event>
-		EventID(const Event& e) : mID(IDGen(e).id) {
 
-		}
+		template<typename Event>
+    EventID(const Event& e)
+      : mID(idGen(EventType(e)))
+    {}
+
+		EventID(const EventType& eT)
+      : mID(idGen(eT))
+    {}
 
 		IDType value() const {
 			return mID;
 		}
+
+    operator IDType() const {
+      return mID;
+    }
 
 		bool operator==(const EventID& b) const {
 			return value() == b.value();
@@ -39,7 +36,7 @@ class EventID {
 
 		/** \brief subset test **/
 		bool operator<=(const EventID& b) const {
-			return b.value() % value() == 0;
+			return value() && (b.value() % value() == 0);
 		}
 
 		bool operator!=(const EventID& b) const {
@@ -48,7 +45,7 @@ class EventID {
 
 		/** \brief strict superset test **/
 		bool operator>(const EventID& b) const {
-			return !((*this)<=b);
+			return !((*this)<=b) && b.value();
 		}
 
 		/** \brief strict subset test **/
@@ -59,4 +56,6 @@ class EventID {
 		bool operator>=(const EventID& b) const {
 			return (*this)>b || (*this)==b;
 		}
+
+		static const EventID any;
 };

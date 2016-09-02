@@ -25,6 +25,11 @@ const MetaAttribute* MetaEvent::attribute(id::attribute::ID id) const {
     return nullptr;
 }
 
+MetaEvent::MetaEvent(const EventType& eT) {
+	for(const AttributeType& aT: eT)
+		add(MetaAttribute(aT));
+}
+
 MetaAttribute* MetaEvent::attribute(id::attribute::ID id){
 	Storage::iterator iter = mStorage.find(id);
 	if(iter != mStorage.end())

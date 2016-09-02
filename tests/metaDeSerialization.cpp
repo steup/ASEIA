@@ -4,6 +4,9 @@
 #include <MetaValue.h>
 #include <MetaFactory.h>
 #include <DeSerializer.h>
+#include <Serializer.h>
+
+#include <iterator>
 
 namespace tests {
 
@@ -18,6 +21,7 @@ class MetaDeSerializationSuite : public ::testing::Test {
     using Buffer = vector<uint8_t>;
     using Iter   = Buffer::const_iterator;
     using D      = DeSerializer<Iter>;
+    using S      = Serializer<std::back_insert_iterator<Buffer>>;
     Buffer buffer;
     MetaFactory& f = MetaFactory::instance();
 
@@ -143,7 +147,7 @@ TEST_F(MetaDeSerializationSuite, attributeTest) {
   buffer ={1,2};
   D d(buffer.begin(), buffer.end());
   d >> attr;
-  EXPECT_TRUE(compare(attr, ref));
+  EXPECT_TRUE(compare(attr, ref)) << attr << " != " << ref;
 }
 
 TEST_F(MetaDeSerializationSuite, eventTest) {
@@ -158,7 +162,63 @@ TEST_F(MetaDeSerializationSuite, eventTest) {
   buffer={1,2};
   D d(buffer.begin(), buffer.end());
   d >> e;
-  EXPECT_TRUE(compare(e, ref));
+  EXPECT_TRUE(compare(e, ref)) << e << " != " << ref;
 }
 
+TEST_F(MetaDeSerializationSuite, simpleNetworkTest) {
+  struct EventConfig : public BaseConfig{
+    using PositionValueType    = Value<uint8_t, 1, 1, true>;
+    using TimeValueType        = Value<uint8_t, 1, 1, true>;
+    using PublisherIDValueType = Value<uint8_t, 1, 1, true>;
+  };
+	BaseEvent<EventConfig> e;
+  e.attribute(Position()).value() = {{{0U, 0U}}};
+  e.attribute(Time()).value() = {{{0U, 0U}}};
+  e.attribute(PublisherID()).value() = {{{0U, 0U}}};
+	EventType eT=(EventType)e;
+	MetaEvent ref(eT);
+	MetaEvent mE(eT);
+	MetaAttribute* posPtr  = ref.attribute(Position::value());
+	MetaAttribute* timePtr = ref.attribute(Time::value());
+	MetaAttribute* pubPtr  = ref.attribute(PublisherID::value());
+	ASSERT_TRUE(posPtr)  << "No position attribute in BaseEvent<>";
+	ASSERT_TRUE(timePtr) << "No time attribute in BaseEvent<>";
+	ASSERT_TRUE(pubPtr)  << "No publisher id in BaseEvent<>";
+  posPtr->value() = f.create({{{0U, 0U}}}, UInt8::value());
+  timePtr->value() = f.create({{{0U, 0U}}}, UInt8::value());
+  pubPtr->value() = f.create({{{0U, 0U}}}, UInt8::value());
+	EXPECT_EQ(eT, (EventType)ref) << "Referenz MetaEvent does not fit StaticEvent!";
+	S s(back_inserter(buffer));
+	s << e;
+  EXPECT_EQ(buffer.size(), e.size());
+  D d(buffer.begin(), buffer.end());
+  d >> mE;
+  EXPECT_TRUE(compare(mE, ref)) << mE << " != " << ref;
+}
+
+TEST_F(MetaDeSerializationSuite, complexNetworkTest) {
+	BaseEvent<> e;
+  e.attribute(Position()).value() = {{{0.0, 1.0}}, {{2.0, 3.0}}, {{4.0, 5.0}}};
+  e.attribute(Time()).value() = {{{128U, 256U}}};
+  e.attribute(PublisherID()).value() = {{{1024U}}};
+	EventType eT=(EventType)e;
+	MetaEvent ref(eT);
+	MetaEvent mE(eT);
+	MetaAttribute* posPtr  = ref.attribute(Position::value());
+	MetaAttribute* timePtr = ref.attribute(Time::value());
+	MetaAttribute* pubPtr  = ref.attribute(PublisherID::value());
+	ASSERT_TRUE(posPtr)  << "No position attribute in BaseEvent<>";
+	ASSERT_TRUE(timePtr) << "No time attribute in BaseEvent<>";
+	ASSERT_TRUE(pubPtr)  << "No publisher id in BaseEvent<>";
+  posPtr->value() = f.create({{{0.0, 1.0}}, {{2.0, 3.0}}, {{4.0, 5.0}}}, Float::value());
+  timePtr->value() = f.create({{{128U, 256U}}}, UInt64::value());
+  pubPtr->value() = f.create({{{1024U}}}, UInt64::value());
+	EXPECT_EQ(eT, (EventType)ref) << "Referenz MetaEvent does not fit StaticEvent!";
+	S s(back_inserter(buffer));
+	s << e;
+  EXPECT_EQ(buffer.size(), e.size());
+  D d(buffer.begin(), buffer.end());
+  d >> mE;
+  EXPECT_TRUE(compare(mE, ref)) << mE << " != " << ref;
+}
 }}
