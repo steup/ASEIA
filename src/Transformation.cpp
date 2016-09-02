@@ -67,6 +67,8 @@ class ScaleTransformation : public Transformation {
       const EventType& b = *in.front();
       if(EventID(out)!=EventID(b))
         return false;
+      if(FormatID(out)==FormatID(b))
+        return false;
       //TODO: check data types
       return true;
     }
