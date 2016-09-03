@@ -7,14 +7,12 @@ using Interface = MVBI::Interface;
 using Ptr       = MVBI::Ptr;
 using Data      = MVBI::Data;
 
-MVBI MVBI::sInstance;
-
 Interface& MVBI::operator=( Interface&& movee) { 
 	return *this; 
 }
 
 Ptr MVBI::copy() const {
-	return Ptr(&sInstance, MVBI::Deleter());
+	return Ptr(new MVBI());
 }
 
 Data MVBI::get( Attributes a ) const {
@@ -49,6 +47,10 @@ bool MetaValueBaseImplementation::set(std::size_t row, std::size_t col, const Va
 Interface& MVBI::unaryOp( UnaryOp op) {
 	return *this; 
 }
+
+Ptr MVBI::unaryConstOp( UnaryConstOp op ) const { 
+	return copy();
+} 
 
 Interface& MVBI::binaryOp( BinaryOp op, const Interface& b) { 
 	return *this;	

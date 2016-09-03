@@ -1,10 +1,21 @@
 #include <EventType.h>
 
 EventType::const_iterator::const_iterator(StorageType::const_iterator i)
-  : StorageType::const_iterator(i) {}
+  : mI(i) {}
 
 const EventType::ValueType& EventType::const_iterator::operator*() const { 
-  return this->StorageType::const_iterator::operator*().second;
+  return mI->second;
+}
+
+EventType::const_iterator& EventType::const_iterator::operator++() {
+	++mI;
+	return *this;
+}
+
+EventType::const_iterator EventType::const_iterator::operator++(int) {
+	const_iterator temp = *this;
+	mI++;
+	return temp;
 }
 
 EventType::const_iterator EventType::begin() const { 
@@ -13,6 +24,14 @@ EventType::const_iterator EventType::begin() const {
 
 EventType::const_iterator EventType::end() const { 
   return const_iterator(mStorage.cend()); 
+}
+
+bool EventType::const_iterator::operator==(const const_iterator& b){
+	return mI==b.mI;
+}
+
+bool EventType::const_iterator::operator!=(const const_iterator& b) {
+	return mI!=b.mI;
 }
 
 const AttributeType* EventType::attribute(KeyType key) const{

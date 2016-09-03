@@ -25,6 +25,7 @@ class DeSerializer{
     const Iterator& iterator() const{return mI;}
     bool error() const{return mError;}
 
+
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, std::uint8_t& value);
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, std::uint16_t& value);
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, std::uint32_t& value);

@@ -20,14 +20,16 @@ class MetaAttribute {
     MetaScale  mScale ;
 
   public:
-    MetaAttribute() = default;
+    //MetaAttribute() = default;
 
     MetaAttribute(ID id = id::attribute::Base::value()) : mID(id) {}
+    MetaAttribute(const AttributeType& at);
     MetaAttribute(const MetaAttribute& copy);
     MetaAttribute(MetaAttribute&& movee);
     MetaAttribute& operator=(const MetaAttribute& copy);
     MetaAttribute& operator=(MetaAttribute&& movee);
     MetaAttribute& operator+=(const MetaAttribute& b);
+    MetaAttribute& operator*=(const MetaScale& scale);
     MetaAttribute operator*(const MetaScale& scale) const;
     bool operator==(const MetaAttribute& b) const;
     bool operator!=(const MetaAttribute& b) const { return !(*this==b); }
@@ -45,18 +47,20 @@ class MetaAttribute {
 
     explicit operator AttributeType() const;
 
-
+	//friend class MetaFactory;
   template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, const MetaValue&);
 };
 
 std::ostream& operator<<(std::ostream& o, const MetaAttribute& ma);
 
+/** \todo insert serialization code */
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, const MetaAttribute& me){
-  return s;
+	return s << me.value();
 }
 
+/** \todo insert serialization code */
 template<typename PB>
-DeSerializer<PB>& operator>>(DeSerializer<PB>& d, const MetaAttribute& me){
-  return d;
+DeSerializer<PB>& operator>>(DeSerializer<PB>& d, MetaAttribute& me){
+	return d >> me.value();
 }

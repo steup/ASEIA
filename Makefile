@@ -1,3 +1,4 @@
+
 PROFILING        ?= 0
 DEBUG            ?= 1
 
@@ -5,7 +6,7 @@ CWD              := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 INCLUDES         := 
 LDPATHS          :=
-SYMBOLS          :=
+SYMBOLS          :=  HASHED_REGISTRY
 CXXFLAGS         := -std=gnu++11 -Wall
 LDFLAGS          := -O1 
 LIBS             :=
@@ -63,9 +64,15 @@ DYNLIB   := ${LIB}/lib${LIBNAME}.so
 STATLIB  := ${LIB}/lib${LIBNAME}.a
 TARGETS  := ${DYNLIB} ${STATLIB}
 
-LIBS     += ${LIBNAME} boost_graph boost_program_options
+.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% tests run_tests doc akgs
+
+all: ${DYNLIB} ${STATLIB}
+
+include smhasher.mk
+
+LIBS     += ${LIBNAME} ${SMHASHER_LIBS} boost_graph boost_program_options
 LDPATHS  += ${LIB}
-LDFLAGS  += -Wl,--rpath=$(abspath ${LIB})
+LDFLAGS  += -Wl,--as-needed -Wl,--rpath=$(abspath ${LIB})
 
 PKG_INCLUDE := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --cflags-only-I))
 PKG_CFLAGS  := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --cflags-only-other))
@@ -76,33 +83,32 @@ PKG_LDFLAGS := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --libs-only
 -include misc/exampleBlackList.mk
 
 EXAMPLES := $(filter-out ${BAD_EXAMPLES}, $(notdir $(basename $(wildcard ${EXAMPLE}/*.cpp))))
+SYMBOLS  := $(addprefix -D, ${SYMBOLS})
 OBJECTS  := $(addprefix ${BLIB}/, $(addsuffix .o, $(notdir $(basename $(wildcard ${SRC}/*.cpp)))))
 LIBS     := $(addprefix -l, ${LIBS}) ${PKG_LIBS}
 LDPATHS  := $(addprefix -L, ${LDPATHS}) ${PKG_LDPATHS}
-INCLUDES := $(addprefix -I, ${INCLUDES} ${INC}) ${PKG_INCLUDE}
+INCLUDES := $(addprefix -I, ${INCLUDES} ${INC} ${SMHASHER_INCLUDES}) ${PKG_INCLUDE}
 CXXFLAGS := ${CXXFLAGS} ${PKG_CFLAGS}
 LDFLAGS  := ${LDFLAGS} ${PKG_LDFLAGS}
-DEPS     := $(wildcard ${BUILD}/*/*.d)
+DEPS     := $(wildcard ${BUILD}/*/*.o.d)
 
+OBJECTS  := ${OBJECTS} ${SMHASHER_OBJECTS}
 
-.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% tests run_tests doc akgs
 .PRECIOUS: ${BPROG}/%.o ${BLIB}/%.o
 
-all: ${DYNLIB} ${STATLIB} 
-	
+include gtest.mk
+
 akgs:
 	${MAKE} -C misc all
-
-include gtest.mk
 
 tests: ${BIN}/${RUN_TESTS}
 
 run_tests: ${BIN}/${RUN_TESTS}
 	@./$<
 
-${BTEST}/${RUN_TESTS}.o: ${TESTS}/${RUN_TESTS}.cpp ${MAKEFILE} ${GTEST} | ${BTEST} 
+${BTEST}/${RUN_TESTS}.o: ${TESTS}/${RUN_TESTS}.cpp ${MAKEFILE} ${GTEST} | ${BTEST}
 	@echo "Building unit tests $@ <- $<"
-	@${CXX} -MMD -c ${CXXFLAGS} -I${TESTS} ${GTEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES} ${GTEST_INCLUDES}
+	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} -I${TESTS} ${GTEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES} ${GTEST_INCLUDES}
 
 ${BIN}/${RUN_TESTS}: ${BTEST}/${RUN_TESTS}.o ${MAKEFILE} ${GTEST} | ${BIN} ${DYNLIB}
 	@echo "Linking unit tests $@ <- $<"
@@ -146,15 +152,15 @@ ${DIRS}: %:
 	@echo "Creating $@"
 	@mkdir -p $@
 
-${BLIB}/%.o: ${SRC}/%.cpp ${MAKEFILE} | ${BLIB}
+${BLIB}/%.o: ${SRC}/%.cpp ${MAKEFILE_LIST} | ${BLIB}
 	@echo "Compiling lib file $@ <- $<"
-	@${CXX} -MMD -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
+	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} ${SYMBOLS} $< -o $@ ${INCLUDES}
 
-${BPROG}/%.o: ${EXAMPLE}/%.cpp ${MAKEFILE} | ${BPROG}
+${BPROG}/%.o: ${EXAMPLE}/%.cpp ${MAKEFILE_LIST} | ${BPROG}
 	@echo "Compiling prog $@ <- $<"
-	@${CXX} -MMD -c ${CXXFLAGS} $< -o $@ ${INCLUDES}
+	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} ${SYMBOLS} $< -o $@ ${INCLUDES}
 
-${BIN}/%: ${BPROG}/%.o ${MAKEFILE} | ${DYNLIB} ${BIN}
+${BIN}/%: ${BPROG}/%.o | ${DYNLIB} ${BIN}
 	@echo "Linking prog $@ <- $<"
 	@${CXX} $< ${LDFLAGS} ${LDPATHS} ${LIBS} -o $@
 

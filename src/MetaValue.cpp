@@ -6,18 +6,19 @@ using MVB           = MetaValueBaseImplementation;
 using Data          = MVB::Data;
 using Attributes    = MVB::Attributes;
 using UnaryOp       = MVB::UnaryOp;
+using UnaryConstOp  = MVB::UnaryConstOp;
 using BinaryOp      = MVB::BinaryOp;
 using BinaryConstOp = MVB::BinaryConstOp;
 using Ptr           = MetaValue::Ptr;
 using ID            = MetaValue::ID;
 
-MetaValue::MetaValue() : mImpl(MVB::sInstance.copy()) {}
+MetaValue::MetaValue() : mImpl(new MVB()) {}
 
 MetaValue::MetaValue(MetaValue::Ptr&& ptr){
 		mImpl = move(ptr);
 }
 
-MetaValue::MetaValue(const MetaValue& copy) : mImpl(MetaValueBaseImplementation::sInstance.copy()){
+MetaValue::MetaValue(const MetaValue& copy) : mImpl(new MVB()){
 	mImpl = copy.mImpl->copy();
 }
 
@@ -78,6 +79,34 @@ MetaValue MetaValue::operator!=(const MetaValue& b) const {
     return MetaValue();
 }
 
+MetaValue MetaValue::operator<=(const MetaValue& b) const {
+  if(compatible(b))
+    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::SmallEqual, *b.mImpl));
+  else
+    return MetaValue();
+}
+
+MetaValue MetaValue::operator>=(const MetaValue& b) const {
+  if(compatible(b))
+    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::GreatEqual, *b.mImpl));
+  else
+    return MetaValue();
+}
+
+MetaValue MetaValue::operator<(const MetaValue& b) const {
+  if(compatible(b))
+    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::Smaller, *b.mImpl));
+  else
+    return MetaValue();
+}
+
+MetaValue MetaValue::operator>(const MetaValue& b) const {
+  if(compatible(b))
+    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::Greater, *b.mImpl));
+  else
+    return MetaValue();
+}
+
 MetaValue& MetaValue::operator*=(const MetaScale& b) { 
 	mImpl->scale(b);
 	return *this;
@@ -88,23 +117,31 @@ MetaValue& MetaValue::operator/=(const MetaScale& b) {
 	return *this;
 }
 
+MetaValue MetaValue::prod() const {
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Prod));
+}
+
+MetaValue MetaValue::sum() const {
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Sum));
+}
+
 size_t MetaValue::size() const {
 	return mImpl->get(Attributes::Size).size;
 }
 
-size_t MetaValue::cols() const { 
+size_t MetaValue::cols() const {
 	return mImpl->get(Attributes::Cols).cols;
 }
 
-size_t MetaValue::rows() const { 
+size_t MetaValue::rows() const {
 	return mImpl->get(Attributes::Rows).rows;
 }
 
-ID MetaValue::typeId() const { 
+ID MetaValue::typeId() const {
 	return mImpl->get(Attributes::TypeID).typeID;
 }
-    
-bool MetaValue::hasUncertainty() const { 
+
+bool MetaValue::hasUncertainty() const {
 	return mImpl->get(Attributes::HasUncertainty).hasUncertainty;
 }
 
@@ -118,7 +155,7 @@ bool MetaValue::compatible(const MetaValue& b) const {
 MetaValue::operator ValueType() const {
   return ValueType(typeId(), rows(), cols(), hasUncertainty());
 }
-    
+
 ostream& MetaValue::print(ostream& o) const {
 	return mImpl->print(o);
 }

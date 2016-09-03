@@ -134,4 +134,43 @@ MetaValue MetaFactoryImplementation::create(
    return temp;
 }
 
+MetaAttribute MetaFactoryImplementation::create(const AttributeType& type) const {
+	MetaAttribute attr(type.id());
+	attr.scale() = type.scale();
+	attr.unit()  = type.unit();
+	attr.value() = create(type.value());
+	return attr;
+}
+
+MetaEvent MetaFactoryImplementation::create(const EventType& type) const {
+	MetaEvent event;
+	for(const auto& attrType : type)
+		event.add(create(attrType));
+	return event;
+}
+
+MetaAttribute MetaFactoryImplementation::convert(const AttributeType& type, const MetaAttribute& attr) const {
+	if(type.unit() != attr.unit() || type.id() != attr.id())
+		return MetaAttribute();
+	MetaAttribute newAttr(attr.id());
+	newAttr.unit()  = attr.unit();
+	newAttr.value() = convert(type.value(), attr.value());
+	newAttr.scale() = type.scale();
+	newAttr.value() *= newAttr.scale() / attr.scale();
+	return newAttr;
+}
+
+MetaEvent MetaFactoryImplementation::convert(const EventType& type, const MetaEvent& event) const {
+	MetaEvent newEvent;
+	EventType::const_iterator typeIter = type.begin();
+	for(const MetaAttribute& attr : event) {
+		MetaAttribute newAttr = convert(*typeIter++, attr);
+		if(newAttr != MetaAttribute())
+			newEvent.add(newAttr);
+		else
+			return MetaEvent();
+	}
+	return newEvent;
+}
+
 template class Singleton<MetaFactoryImplementation>;

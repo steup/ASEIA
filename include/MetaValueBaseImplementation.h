@@ -12,7 +12,7 @@ class MetaScale;
 class MetaValueBaseImplementation {
 	public:
     using Interface = MetaValueBaseImplementation;
-		
+
 		enum class Attributes {
 			HasUncertainty,
 			Size,
@@ -33,6 +33,11 @@ class MetaValueBaseImplementation {
 			Neg
     };
 
+    enum class UnaryConstOp {
+			Prod,
+      Sum
+    };
+
 		enum class BinaryOp {
 			Add,
 			Sub,
@@ -50,33 +55,27 @@ class MetaValueBaseImplementation {
 			ApproxEqual
 		};
 
-  protected:
-    struct Deleter{
-      void operator()(Interface* ptr){
-        if( ptr != &sInstance )
-          delete ptr;
-      }
-    };
-
 	public:
-    using Ptr = std::unique_ptr<Interface, Deleter>;
+    using Ptr = std::unique_ptr<Interface>;
 
 	protected:
 
-    static Interface sInstance;
-
-    MetaValueBaseImplementation() = default;
-		
 		MetaValueBaseImplementation(const Interface& copy) = default;
 
+		virtual const uint8_t* begin() const { return nullptr;}
+		virtual uint8_t* begin() { return nullptr;}
+		virtual const uint8_t* end() const {return nullptr;}
+		virtual uint8_t* end() {return nullptr;}
+
   public:
+    MetaValueBaseImplementation() = default;
 
     virtual ~MetaValueBaseImplementation() = default;
 
 		Interface& operator=(const Interface& copy) = delete;
 
 		virtual Interface& operator=( Interface&& movee);
-	
+
 		virtual Ptr copy() const;
 
     virtual Data get( Attributes a ) const;
@@ -85,20 +84,40 @@ class MetaValueBaseImplementation {
 
 		virtual bool set(Attributes a, Data d);
 
-    virtual bool set(std::size_t row, std::size_t col, const ValueElement<double, true>& v); 
+    virtual bool set(std::size_t row, std::size_t col, const ValueElement<double, true>& v);
 
 		virtual Interface& unaryOp( UnaryOp op);
+
+    virtual Ptr unaryConstOp( UnaryConstOp op) const;
 
 		virtual Interface& binaryOp( BinaryOp op, const Interface& b);
 
 		virtual Ptr binaryConstOp( BinaryConstOp op, const Interface& b ) const;
 
 		virtual Interface& scale(const MetaScale& scale, bool invert = false);
-		
+
     virtual std::ostream& print( std::ostream& o ) const;
+
+    virtual explicit operator bool() const { return false; }
 
 	friend class MetaFactoryImplementation;
   friend class MetaValue;
+  template<typename T> friend Serializer<T> operator<<(Serializer<T>&, const MetaValueBaseImplementation&);
+  template<typename T> friend DeSerializer<T> operator>>(DeSerializer<T>&, MetaValueBaseImplementation&);
 };
 
 std::ostream& operator<<(std::ostream& o, const MetaValueBaseImplementation& mvbi);
+
+template<typename T>
+Serializer<T> operator<<(Serializer<T>& s, const MetaValueBaseImplementation& mvbi) {
+  for(const uint8_t dataElement: mvbi)
+    s << dataElement;
+  return s;
+}
+
+template<typename T>
+DeSerializer<T> operator>>(DeSerializer<T>& d, MetaValueBaseImplementation& mvbi) {
+  for(uint8_t& dataElement: mvbi)
+    d >> dataElement;
+  return d;
+}

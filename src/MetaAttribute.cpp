@@ -1,4 +1,5 @@
 #include <MetaAttribute.h>
+#include <MetaFactory.h>
 #include <AttributeType.h>
 #include <IDIO.h>
 #include <IO.h>
@@ -10,6 +11,13 @@ using namespace std;
 
 using std::move;
 
+MetaAttribute::MetaAttribute(const AttributeType& at) {
+	mValue = MetaFactory::instance().create(at.value());
+	mUnit = at.unit();
+	mScale = at.scale();
+	mID = at.id();
+}
+
 MetaAttribute::MetaAttribute(const MetaAttribute& copy) {
 	*this = copy;
 }
@@ -18,6 +26,7 @@ MetaAttribute::MetaAttribute(MetaAttribute&& movee) {
 	*this = movee;
 }
 MetaAttribute& MetaAttribute::operator=(const MetaAttribute& copy) {
+  mID = copy.mID;
 	mUnit = copy.mUnit;
   mScale = copy.mScale;
 	mValue = copy.mValue;
@@ -26,6 +35,7 @@ MetaAttribute& MetaAttribute::operator=(const MetaAttribute& copy) {
 
 MetaAttribute& MetaAttribute::operator=(MetaAttribute&& copy) {
 	if(&copy != this) {
+    mID = move(copy.mID);
 	  mUnit = move(copy.mUnit);
 	  mScale = move(copy.mScale);
 	  mValue = move(copy.mValue);
@@ -46,12 +56,15 @@ MetaAttribute& MetaAttribute::operator+=(const MetaAttribute& b) {
 		mValue = mValue + b.value();
 	return *this;
 }
-    
+ 
+MetaAttribute& MetaAttribute::operator*=(const MetaScale& scale){
+  this->scale() *= scale;
+  this->value() /= scale;
+  return *this;
+}   
 MetaAttribute MetaAttribute::operator*(const MetaScale& scale) const {
   MetaAttribute temp(*this);
-  temp.scale() *= scale;
-  temp.value() /= scale;
-  return temp;
+  return temp*=scale;
 }
 
 bool MetaAttribute::operator==(const MetaAttribute& b) const { 
