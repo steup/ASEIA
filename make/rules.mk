@@ -62,6 +62,7 @@ DYNLIB    := ${LIB}/lib${LIBNAME}.${DLIBEXT}
 STATLIB   := ${LIB}/lib${LIBNAME}.${SLIBEXT}
 TARGETS   := ${DYNLIB} ${STATLIB}
 
+vpath %.mk ${BASEDIR}/make
 
 .PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% tests run_tests doc
 .PRECIOUS: ${BPROG}/%.o ${BLIB}/%.o
