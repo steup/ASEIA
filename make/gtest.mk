@@ -19,17 +19,17 @@ ${GTEST_HEADER}: | ${LOG}
 	@echo "git submodule update --init ${GTEST_DIR}" &>> ${LOG}/gtest.log
 	@git submodule update --init ${GTEST_DIR} &>> ${LOG}/gtest.log
 
-${BTEST}/gtest.o : ${GTEST_HEADER} gtest.mk | ${BTEST} ${LOG}
+${BTEST}/gtest.o : ${GTEST_HEADER} ${MAKEFILE_LIST} | ${BTEST} ${LOG}
 	@echo "Building Dependancy GTest $@ <- $< "| tee -a ${LOG}/gtest.log
 	@echo "$(CXX) -MMD -MF $@.d -I${GTEST_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GTEST_CODE} -o $@" &>>  ${LOG}/gtest.log
 	@$(CXX) -MMD -MT $@ -MF $@.d -I${GTEST_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GTEST_CODE} -o $@ &>>  ${LOG}/gtest.log
 
-${BTEST}/gmock.o : ${GTEST_HEADER} gtest.mk | ${BTEST} ${LOG}
+${BTEST}/gmock.o : ${GTEST_HEADER} ${MAKEFILE_LIST} | ${BTEST} ${LOG}
 	@echo "Building Dependancy GMock $@ <- $< "| tee -a ${LOG}/gtest.log
 	@echo "$(CXX) -MMD -MF $@.d -I${GMOCK_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GMOCK_CODE} -o $@" &>>  ${LOG}/gtest.log
 	@$(CXX) -MMD -MT $@ -MF $@.d -I${GMOCK_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GMOCK_CODE} -o $@ &>>  ${LOG}/gtest.log
 
-${LIB}/libgtest.a : ${BTEST}/gtest.o ${BTEST}/gmock.o gtest.mk | ${LIB} ${LOG}
+${LIB}/libgtest.a : ${BTEST}/gtest.o ${BTEST}/gmock.o ${MAKEFILE_LIST} | ${LIB} ${LOG}
 	@echo "Linking Dependancy GTest and GMock $@ <- [$<]" | tee -a ${LOG}/gtest.log
 	@echo "$(AR) $(ARFLAGS) $@ $^" &>> ${LOG}/gtest.log
 	@$(AR) $(ARFLAGS) $@ $^ &>> ${LOG}/gtest.log
