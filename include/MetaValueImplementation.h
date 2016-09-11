@@ -4,11 +4,11 @@
 #include <MetaFactory.h>
 #include <Value.h>
 
-template<typename T>
+template<typename T, bool U>
 class MetaValueImplementation : public MetaValueBaseImplementation {
   private:
     using Impl = MetaValueImplementation;
-		using Base = Value<T, Eigen::Dynamic, Eigen::Dynamic>;
+		using Base = Value<T, Eigen::Dynamic, Eigen::Dynamic, U>;
 		using Elem = typename Base::BaseType;
 
     Base mData;
@@ -56,27 +56,38 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
 		std::ostream& print(std::ostream& o) const;
 
     friend class MetaFactoryImplementation;
-    template<typename T0>  friend class MetaValueImplementation;
-    template<typename T1, typename T2> friend struct Converter;
+    template<typename T0, bool U0>  friend class MetaValueImplementation;
+    template<typename T1, bool U1, typename T2, bool U2> friend struct Converter;
 };
 
-extern template class MetaValueImplementation<uint8_t>;
-extern template class MetaValueImplementation<uint16_t>;
-extern template class MetaValueImplementation<uint32_t>;
-extern template class MetaValueImplementation<uint64_t>;
-extern template class MetaValueImplementation<int8_t>;
-extern template class MetaValueImplementation<int16_t>;
-extern template class MetaValueImplementation<int32_t>;
-extern template class MetaValueImplementation<int64_t>;
-extern template class MetaValueImplementation<float>;
-extern template class MetaValueImplementation<double>;
-extern template class MetaValueImplementation<bool>;
+extern template class MetaValueImplementation<uint8_t, true>;
+extern template class MetaValueImplementation<uint16_t, true>;
+extern template class MetaValueImplementation<uint32_t, true>;
+extern template class MetaValueImplementation<uint64_t, true>;
+extern template class MetaValueImplementation<int8_t, true>;
+extern template class MetaValueImplementation<int16_t, true>;
+extern template class MetaValueImplementation<int32_t, true>;
+extern template class MetaValueImplementation<int64_t, true>;
+extern template class MetaValueImplementation<float, true>;
+extern template class MetaValueImplementation<double, true>;
+extern template class MetaValueImplementation<bool, true>;
+extern template class MetaValueImplementation<uint8_t, false>;
+extern template class MetaValueImplementation<uint16_t, false>;
+extern template class MetaValueImplementation<uint32_t, false>;
+extern template class MetaValueImplementation<uint64_t, false>;
+extern template class MetaValueImplementation<int8_t, false>;
+extern template class MetaValueImplementation<int16_t, false>;
+extern template class MetaValueImplementation<int32_t, false>;
+extern template class MetaValueImplementation<int64_t, false>;
+extern template class MetaValueImplementation<float, false>;
+extern template class MetaValueImplementation<double, false>;
+extern template class MetaValueImplementation<bool, false>;
 
-template<typename T0, typename T1>
+template<typename T0, bool U0, typename T1, bool U1>
 struct Converter{
   using Base = MetaValueBaseImplementation;
-  using T0Impl = MetaValueImplementation<T0>;
-  using T1Impl = MetaValueImplementation<T1>;
+  using T0Impl = MetaValueImplementation<T0, U0>;
+  using T1Impl = MetaValueImplementation<T1, U1>;
 
   static void convert(const Base& in, Base& out){
     const T0Impl& inC = reinterpret_cast<const T0Impl&>(in);
