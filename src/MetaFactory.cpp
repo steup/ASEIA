@@ -7,12 +7,28 @@
 #include <boost/mpl/push_front.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/mpl/for_each.hpp>
+#include <boost/functional/hash.hpp>
 #include <type_traits>
 #include <utility>
 
 using namespace std;
 
-template<typename... Types>
+size_t std::hash<ValueType>::operator()(ValueType v) const {
+	size_t seed=1337;
+	boost::hash_combine(seed, v.typeId());
+	boost::hash_combine(seed, v.hasUncertainty());
+	return seed;
+}
+
+size_t std::hash<std::pair<ValueType, ValueType>>::operator()(std::pair<ValueType, ValueType> v) const {
+	hash<ValueType> h;
+	size_t seed=1337;
+	boost::hash_combine(seed, h(v.first));
+	boost::hash_combine(seed, h(v.second));
+	return seed;
+}
+
+/*template<typename... Types>
 class Conversions {
   private:
     template<typename A>
@@ -84,31 +100,33 @@ MetaFactoryImplementation::MetaFactoryImplementation() :
                 int64_t,
                 float,
                 double>::insert(*this);
-}
-
-MetaFactoryImplementation::~MetaFactoryImplementation() {
-}
+}*/
 
 MetaValue MetaFactoryImplementation::create(const ValueType& type) const {
-  auto iter = creators.find(type.typeId());
+	ValueType temp = type;
+	temp.cols(0);
+	temp.rows(0);
+  auto iter = creators.find(temp);
   if(iter!=creators.end())
-    return MetaValue(iter->second(type.rows(), type.cols(), type.hasUncertainty()));
+    return MetaValue(iter->second(type.rows(), type.cols()));
   else
     return MetaValue();
 }
 
 MetaValue MetaFactoryImplementation::create(id::type::ID id, std::size_t rows, std::size_t cols, bool u) const {
-  auto iter = creators.find(id);
-  if(iter!=creators.end())
-    return MetaValue(iter->second(rows, cols, u));
-  else
-    return MetaValue();
+  return create(ValueType(id, rows, cols, u));
 }
 
 MetaValue MetaFactoryImplementation::convert(const ValueType& type, const MetaValue& value) const {
   if(value.typeId() == type.typeId())
     return value;
-  ConverterKey key = {value.typeId(), type.typeId()};
+	ValueType dst = type;
+	ValueType src = (ValueType)value;
+	dst.cols(0);
+	dst.rows(0);
+	src.rows(0);
+	src.cols(0);
+  ConverterKey key = make_pair(src, dst);
   auto converter = converters.find(key);
   if(converter==converters.end())
     return MetaValue();
@@ -118,11 +136,11 @@ MetaValue MetaFactoryImplementation::convert(const ValueType& type, const MetaVa
 }
 
 MetaValue MetaFactoryImplementation::create(
-	initializer_list<initializer_list<ValueElement<double>>> l, id::type::ID id) const{
+	initializer_list<initializer_list<ValueElement<double>>> l, id::type::ID id, bool u) const{
 	if(l.size()==0 || l.begin()->size()==0)
 		return MetaValue();
 
-  MetaValue temp = create(id, l.size(), l.begin()->size(), true);
+  MetaValue temp = create(id, l.size(), l.begin()->size(), u);
   
 	unsigned int i=0;
   for(const auto& col : l) {
