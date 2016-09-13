@@ -16,7 +16,8 @@ using BinaryConstOp = MetaValueBaseImplementation::BinaryConstOp;
 template<typename T, bool U>
 using MVI = MetaValueImplementation<T, U>;
 
-using Bool = MetaValueImplementation<bool, true>;
+template<bool U>
+using Bool = MetaValueImplementation<bool, U>;
 
 template<typename T, bool U>
 const uint8_t* MetaValueImplementation<T, U>::begin() const{
@@ -171,36 +172,19 @@ Interface& MetaValueImplementation<T, U>::binaryOp( BinaryOp op, const Interface
 	return *this;
 }
 
-template<typename T>
-Ptr MetaValueImplementation<T, true>::binaryConstOp( BinaryConstOp op, const Interface& b ) const {
+template<typename T, bool U>
+Ptr MetaValueImplementation<T, U>::binaryConstOp( BinaryConstOp op, const Interface& b ) const {
   const Impl& typedB = reinterpret_cast<const Impl&>(b);
 	switch(op) {
-   case(BinaryConstOp::Equal)      : return Ptr(new Bool(mData == typedB.mData));
-   case(BinaryConstOp::NotEqual)   : return Ptr(new Bool(mData != typedB.mData));
-   case(BinaryConstOp::ApproxEqual): return Ptr(new Bool(approxEqual(mData, typedB.mData)));
-	 case(BinaryConstOp::Smaller)    : return Ptr(new Bool(mData < typedB.mData));
-	 case(BinaryConstOp::Greater)    : return Ptr(new Bool(mData > typedB.mData));
-	 case(BinaryConstOp::SmallEqual) : return Ptr(new Bool(mData <= typedB.mData));
-	 case(BinaryConstOp::GreatEqual) : return Ptr(new Bool(mData >= typedB.mData));
+   case(BinaryConstOp::Equal)      : return Ptr(new Bool<U>(mData == typedB.mData));
+   case(BinaryConstOp::NotEqual)   : return Ptr(new Bool<U>(mData != typedB.mData));
+   case(BinaryConstOp::ApproxEqual): return Ptr(new Bool<U>(approxEqual(mData, typedB.mData)));
+	 case(BinaryConstOp::Smaller)    : return Ptr(new Bool<U>(mData < typedB.mData));
+	 case(BinaryConstOp::Greater)    : return Ptr(new Bool<U>(mData > typedB.mData));
+	 case(BinaryConstOp::SmallEqual) : return Ptr(new Bool<U>(mData <= typedB.mData));
+	 case(BinaryConstOp::GreatEqual) : return Ptr(new Bool<U>(mData >= typedB.mData));
 	 default          							 : return Interface::binaryConstOp(op, b);
 	}
-}
-
-template<typename T>
-Ptr MetaValueImplementation<T, false>::binaryConstOp( BinaryConstOp op, const Interface& b ) const {
-  const Impl& typedB = reinterpret_cast<const Impl&>(b);
-  MVI<bool, false> res;
-	switch(op) {
-   case(BinaryConstOp::Equal)      : res = mData == typedB.mData;
-   case(BinaryConstOp::NotEqual)   : res = mData != typedB.mData;
-   case(BinaryConstOp::ApproxEqual): res = approxEqual(mData, typedB.mData);
-	 case(BinaryConstOp::Smaller)    : res = mData < typedB.mData;
-	 case(BinaryConstOp::Greater)    : res = mData > typedB.mData;
-	 case(BinaryConstOp::SmallEqual) : res = mData <= typedB.mData;
-	 case(BinaryConstOp::GreatEqual) : res = mData >= typedB.mData;
-	 default          							 : return Interface::binaryConstOp(op, b);
-	}
-  return Ptr(new Bool(res.template cast<Bool>());
 }
 
 template<typename T, bool U>

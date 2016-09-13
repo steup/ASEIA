@@ -15,6 +15,7 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
 
     static Ptr factoryCreate(std::size_t rows, std::size_t cols, bool u);
 		
+    MetaValueImplementation() = default;
 		MetaValueImplementation(const MetaValueImplementation& copy) = default;
 		MetaValueImplementation(const Base& copy);
 		virtual const uint8_t* begin() const;
