@@ -1,6 +1,12 @@
 #include <MetaValueImplementation.h>
 #include <MetaScale.h>
+#include <MetaFactory.h>
 #include <IO.h>
+
+#include <boost/mpl/range_c.hpp>
+#include <boost/mpl/transform.hpp>
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/back_inserter.hpp>
 
 #include <memory>
 #include <ostream>
@@ -226,3 +232,51 @@ template class MetaValueImplementation<int64_t, false>;
 template class MetaValueImplementation<float, false>;
 template class MetaValueImplementation<double, false>;
 template class MetaValueImplementation<bool, false>;
+
+
+
+class MetaValueRegisterer {
+
+  using Creator   = MetaFactory::Creator;
+  using Converter = MetaFactory::Converter;
+  using UInt8 = id::type::UInt8;
+  using Bool  =  id::type::Bool;
+
+  struct insertCreator {
+
+    MetaFactory& f = MetaFactory::instance();
+
+    template<typename T>
+    void operator()(const T& t) {
+      using Type = typename id::type::id2Type<T::value>::type::Type;
+      ValueType vT(T::value, 0, 0, false);
+      auto create = [](std::size_t rows, std::size_t cols){
+        return Ptr(new MVI<Type,  false>(rows, cols));
+      };
+
+      f.insert(Creator(vT, create));
+
+      ValueType vTu(T::value, 0, 0, true);
+      auto createU = [](std::size_t rows, std::size_t cols){
+        return Ptr(new MVI<Type,  true>(rows, cols));
+      };
+
+      f.insert(Creator(vTu, createU));
+    }
+  };
+  struct toType {
+    template<typename ID>
+    struct apply {
+      using type = typename id::type::id2Type<ID::value>::type;
+    };
+  };
+  public:
+  MetaValueRegisterer() {
+    using ids = boost::mpl::range_c<id::type::ID, UInt8::value(),  Bool::value()+1>;
+    insertCreator i;
+    foreach<ids>(i);
+    //todo register converters
+  }
+};
+
+static MetaValueRegisterer registerer;
