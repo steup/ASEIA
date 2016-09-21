@@ -52,6 +52,7 @@ class MetaFactoryImplementation {
     MetaAttribute convert(const AttributeType& type, const MetaAttribute& value) const;
     MetaEvent convert(const EventType& type, const MetaEvent& value) const;
     void insert(const Converter& c) {converters.insert(c);}
+    void insert(const Creator& c) {creators.insert(c);}
 };
 
 using MetaFactory = Singleton<MetaFactoryImplementation>;
