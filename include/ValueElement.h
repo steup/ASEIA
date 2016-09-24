@@ -151,7 +151,10 @@ namespace {
 
   template<>
   inline double modifyU(double u, float dummy){
-    return std::numeric_limits<float>::epsilon();
+    if ((float)u != u)
+      return std::numeric_limits<float>::epsilon();
+    else
+      return 0;
   }
 
 
