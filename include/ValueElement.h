@@ -151,7 +151,10 @@ namespace {
 
   template<>
   inline double modifyU(double u, float dummy){
-    return std::numeric_limits<float>::epsilon();
+    if ((float)u != u)
+      return std::numeric_limits<float>::epsilon();
+    else
+      return 0;
   }
 
 
@@ -321,6 +324,7 @@ class ValueElementBase {
 		operator T() const {
 			return mValue;
 		}
+    template<typename, bool> friend class ValueElement;
 };
 template<>
 class ValueElementBase<bool> {
@@ -375,6 +379,7 @@ class ValueElementBase<bool> {
 		operator T() const {
 			return mValue;
 		}
+    template<typename, bool> friend class ValueElement;
 };
 
 template<typename T, bool U =true>
@@ -396,11 +401,9 @@ class ValueElement<bool, false> : public ValueElementBase<bool>{
 		ValueElement(const T v) : Base(v) {}
 		ValueElement(const InitType& init)  : Base(init) {}
 
-    template<typename T2>
-    ValueElement(const ValueElement<T2, false>& data){
-      T2 v = data.value();
-      checkBounds(v, 0, T());
-      value(v);
+    template<typename T2, bool U>
+    ValueElement(const ValueElement<T2, U>& data){
+      this->mValue = data.mValue;
     }
 
 		Bool operator<(const ValueElement& a) const{
@@ -473,8 +476,14 @@ class ValueElement<bool, true> : public ValueElementBase<bool>{
 
     template<typename T2>
     ValueElement(const ValueElement<T2, true>& data){
-      mValue = data.value();
-			mUncertainty = data.uncertainty();
+      this->mValue = data.value();
+			this->mUncertainty = data.uncertainty()>abs(data.mValue);
+    }
+    
+    template<typename T2>
+    ValueElement(const ValueElement<T2, false>& data){
+      this->mValue = data.value();
+			this->mUncertainty = true;
     }
 
     UType uncertainty() const{ return mUncertainty; }
@@ -519,6 +528,7 @@ class ValueElement<bool, true> : public ValueElementBase<bool>{
 
     constexpr const static std::size_t size() noexcept {return sizeof(VType)+sizeof(UType);}
     constexpr const bool hasUncertainty() const    noexcept {return U::value;}
+    template<typename, bool> friend class ValueElement;
 };
 
 template<typename T>
@@ -537,13 +547,11 @@ class ValueElement<T, false> : public ValueElementBase<T>{
 		ValueElement(const T v) : Base(v) {}
 		ValueElement(const InitType& init)  : Base(init) {}
 
-    template<typename T2>
-    ValueElement(const ValueElement<T2, false>& data){
-      T2 v = data.value();
-      checkBounds(v, 0, T());
-      value(v);
+    template<typename T2, bool U>
+    ValueElement(const ValueElement<T2, U>& data){
+      checkBounds(data.mValue, this->mValue);
     }
-
+    
 		Bool operator<(const ValueElement& a) const{
 			return this->mValue < a.mValue;
 		}
@@ -617,9 +625,14 @@ class ValueElement<T, true> : public ValueElementBase<T>{
 
     template<typename T2>
     ValueElement(const ValueElement<T2, true>& data){
-      typename ValueElement<T2>::UType u = checkBounds(data.value(), this->mValue);
+      typename ValueElement<T2>::UType u = checkBounds(data.mValue, this->mValue);
       satAdd(u, data.uncertainty());
       checkBounds(u, this->mUncertainty);
+    }
+    
+    template<typename T2>
+    ValueElement(const ValueElement<T2, false>& data) : ValueElement() {
+      checkBounds(data.mValue, this->mValue);
     }
 
     UType uncertainty() const{ return mUncertainty; }
