@@ -5,6 +5,7 @@
 
 #include <utility>
 #include <unordered_map>
+#include <vector>
 
 class EventType;
 
@@ -69,7 +70,7 @@ class AbstractRegistry {
         return k.first;
       }
     };
-    using Storage = std::unordered_multimap<Key, T, Hash>;
+    using Storage = std::unordered_map<Key, T, Hash>;
     Storage mStorage;
 
   public:
@@ -80,6 +81,7 @@ class AbstractRegistry {
 
     using Range = RegistryRange<const_iterator>;
     using LocalRange = RegistryRange<const_local_iterator>;
+    using EventIDs = std::vector<EventID>;
 
 		void registerType(const EventType& eT, const T& t) {
       mStorage.emplace(Key(eT, eT), t);
@@ -87,6 +89,10 @@ class AbstractRegistry {
 
     void registerType(const EventType& eT, T&& t) {
       mStorage.emplace(Key(eT, eT), std::move(t));
+    }
+
+    void unregisterType(const EventType& eT) {
+      mStorage.erase(Key(eT, eT));
     }
 
     const_iterator begin() const {
@@ -121,5 +127,13 @@ class AbstractRegistry {
 
     bool contains(const EventType& eT) const {
       return contains(eT, eT);
+    }
+
+    EventIDs ids() const {
+      EventIDs temp;
+      for(std::size_t i=0; i<mStorage.bucket_count(); i++)
+        if(mStorage.begin(i)!=mStorage.end(i))
+          temp.push_back(mStorage.begin(i)->first.eventID());
+      return temp;
     }
 };
