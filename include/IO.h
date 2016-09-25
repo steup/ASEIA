@@ -3,6 +3,8 @@
 #include <IDIO.h>
 
 #include <Event.h>
+#include <EventID.h>
+#include <FormatID.h>
 #include <Attribute.h>
 #include <ValueElement.h>
 #include <Value.h>
@@ -16,7 +18,6 @@ class AttributeType;
 class UnitType;
 class ScaleType;
 class EventType;
-class FormatID;
 class MetaValueBaseImplementation;
 class MetaAttribute;
 
@@ -141,3 +142,11 @@ std::ostream& operator<<(std::ostream& o, const UnitType& t);
 std::ostream& operator<<(std::ostream& o, const AttributeType& t);
 
 std::ostream& operator<<(std::ostream& o, const EventType& t);
+
+inline std::ostream& operator<<(std::ostream& o, EventID eID) {
+  return o << eID.value();
+}
+
+inline std::ostream& operator<<(std::ostream& o, FormatID fID) {
+  return o << fID.value();
+}
