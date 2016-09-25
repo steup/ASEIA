@@ -43,10 +43,11 @@ TEST_F(TransformationTestSuite, scaleTransformBasicTest) {
   std::ostringstream os;
   for(const ConfiguredTransformation& t : transList)
     os << t;
-  ASSERT_LT(transList.size(), 2) << "Too many Transforms found: " << os.str();
+  ASSERT_LE(transList.size(), 1) << "Too many Transforms found: " << os.str();
   TransPtr scaleT = transList.front().create();
 	EXPECT_TRUE(scaleT->check(inL)) << "MetaValue is not supported by ScaleTransform";
 	EXPECT_EQ((*scaleT)(inL), out) << "Events not transformed correctly";
+  KnowledgeBase::unregisterEventType((EventType)in);
 }
 
 TEST_F(TransformationTestSuite, typeTransformBasicTest) {
@@ -60,10 +61,11 @@ TEST_F(TransformationTestSuite, typeTransformBasicTest) {
   std::ostringstream os;
   for(const ConfiguredTransformation& t : transList)
     os << t;
-  ASSERT_LT(transList.size(), 2) << "Too many Transforms found: " << os.str();
+  ASSERT_LE(transList.size(), 1) << "Too many Transforms found: " << os.str();
   TransPtr typeT = transList.front().create();
 	EXPECT_TRUE(typeT->check(inL)) << "MetaValue is not supported by TypeTransform";
 	EXPECT_EQ((*typeT)(inL), out) << "Events not transformed correctly";
+  KnowledgeBase::unregisterEventType((EventType)in);
 }
 
 }
