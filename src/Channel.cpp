@@ -1,6 +1,7 @@
 #include <Channel.h>
 
 #include <FormatID.h>
+#include <IO.h>
 
 Channel::Channel(Channel::TransPtr&& trans)
   : mTrans(std::move(trans))
