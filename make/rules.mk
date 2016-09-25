@@ -23,8 +23,7 @@ endif
 
 ifeq (${DEBUG},1)
 	CXXFLAGS :=${CXXFLAGS} -O2 -ggdb
-else
-	CXXFLAGS :=${CXXFLAGS} -Os
+	LDFLAGS  += -ggdb
 endif
 
 ifeq (${PROFILING},1)
