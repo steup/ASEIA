@@ -10,31 +10,34 @@ using TransPtr    = Transformation::TransPtr;
 using Events      = Transformer::Events;
 using EventTypes  = Transformer::EventTypes;
 
-struct TransformTestSuite : public ::testing::Test{
-	MetaFactory&   f  = MetaFactory::instance();
-	Events       in;
-	EventTypes   inT;
-	MetaEvent    out;
-	EventType    outT;
-	TransPtr     trans;
+struct TransformationTestSuite : public ::testing::Test{
+	MetaFactory& f  = MetaFactory::instance();
+  MetaEvent    in, out;
+	Events       inL = { &in };
+	EventType    inT, outT;
+
+  TransformationTestSuite()  {
+    MetaAttribute s(Time::value());
+    s.unit() = Second();
+    in.add(s);
+    out.add(s);
+  }
+
+  void registerTypes() {
+    inT = (EventType)in;
+    outT = (EventType)out;
+    for(const MetaEvent* ePtr : inL)
+      KnowledgeBase::registerEventType((EventType)*ePtr);
+  }
 };
 
-TEST_F(TransformTestSuite, scaleTransformBasicTest) {
-  MetaEvent inE;
-  EventType  inET;
-  MetaAttribute ms(Time::value());
-  ms.scale() = MetaScale(std::ratio<1, 1000>());
-  ms.unit() = Second();
-  ms.value() = f.create({{{1234, 0}}});
-  inE.add(ms);
-  MetaAttribute s = ms;
-  s.value() = f.create({{{1, 1}}});
-  s.scale() = MetaScale();
-  out.add(s);
-  inET = (EventType)inE;
-	KnowledgeBase::registerEventType(inET);
-  outT = (EventType)out;
-  in   = { &inE };
+TEST_F(TransformationTestSuite, scaleTransformBasicTest) {
+  MetaAttribute& inA  = *in.attribute(Time::value());
+  MetaAttribute& outA = *out.attribute(Time::value());
+  inA.scale() = MetaScale(std::ratio<1, 1000>());
+  inA.value() = f.create({{{1234, 0}}});
+  outA.value() = f.create({{{1, 1}}});
+  registerTypes();
   auto transList=KnowledgeBase::findTransforms(outT);
   ASSERT_GT(transList.size(), 0) << "No Transform found!";
   std::ostringstream os;
@@ -42,26 +45,16 @@ TEST_F(TransformTestSuite, scaleTransformBasicTest) {
     os << t;
   ASSERT_LT(transList.size(), 2) << "Too many Transforms found: " << os.str();
   TransPtr scaleT = transList.front().create();
-	EXPECT_TRUE(scaleT->check(in)) << "MetaValue is not supported by ScaleTransform";
-	MetaEvent temp = (*scaleT)(in);
-	EXPECT_EQ(temp, out) << "Events not transformed correctly";
+	EXPECT_TRUE(scaleT->check(inL)) << "MetaValue is not supported by ScaleTransform";
+	EXPECT_EQ((*scaleT)(inL), out) << "Events not transformed correctly";
 }
 
-TEST_F(TransformTestSuite, typeTransformBasicTest) {
-  MetaEvent inE;
-  EventType  inET;
-  MetaAttribute fs(Time::value());
-  fs.unit() = Second();
-  fs.value() = f.create({{{1234.5, 0}}}, Float::value());
-  inE.add(fs);
-  MetaAttribute us64 = fs;
-  us64.value() = f.create({{{1234, 1}}}, UInt64::value());
-  us64.scale() = MetaScale();
-  out.add(us64);
-  inET = (EventType)inE;
-	KnowledgeBase::registerEventType(inET);
-  outT = (EventType)out;
-  in   = { &inE };
+TEST_F(TransformationTestSuite, typeTransformBasicTest) {
+  MetaAttribute& inA  = *in.attribute(Time::value());
+  MetaAttribute& outA = *out.attribute(Time::value());
+  inA.value() = f.create({{{1234.5, 0}}}, Float::value());
+  outA.value() = f.create({{{1234, 1}}}, UInt64::value());
+  registerTypes();
   auto transList = KnowledgeBase::findTransforms(outT);
   ASSERT_GT(transList.size(), 0) << "No Transform found!";
   std::ostringstream os;
@@ -69,9 +62,8 @@ TEST_F(TransformTestSuite, typeTransformBasicTest) {
     os << t;
   ASSERT_LT(transList.size(), 2) << "Too many Transforms found: " << os.str();
   TransPtr typeT = transList.front().create();
-	EXPECT_TRUE(typeT->check(in)) << "MetaValue is not supported by TypeTransform";
-	MetaEvent temp = (*typeT)(in);
-	EXPECT_EQ(temp, out) << "Events not transformed correctly";
+	EXPECT_TRUE(typeT->check(inL)) << "MetaValue is not supported by TypeTransform";
+	EXPECT_EQ((*typeT)(inL), out) << "Events not transformed correctly";
 }
 
 }
