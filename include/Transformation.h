@@ -3,9 +3,8 @@
 #include <EventID.h>
 
 #include <iosfwd>
-#include <list>
+#include <vector>
 #include <memory>
-#include <initializer_list>
 
 class MetaEvent;
 class EventType;
@@ -18,8 +17,8 @@ class EventType;
   **/
 class Transformer {
   public:
-    using EventTypes = std::list<const EventType*>;
-    using Events     = std::list<const MetaEvent*>;
+    using EventTypes = std::vector<const EventType*>;
+    using Events     = std::vector<const MetaEvent*>;
   protected:
     const EventType& mOut;
     const EventTypes mIn;
@@ -31,7 +30,7 @@ class Transformer {
     virtual bool check(const Events& events) const =0;
     virtual MetaEvent operator()(const Events& events) =0;
     virtual void print(std::ostream& o) const = 0;
-    bool operator==(const Transformer& b) const;
+    bool operator==(const Transformer& b) const { return this == &b; }
 };
 
 inline std::ostream& operator<<(std::ostream& o, const Transformer& t) {
@@ -51,25 +50,49 @@ inline std::ostream& operator<<(std::ostream& o, const Transformer& t) {
 class Transformation {
   public:
     using EventTypes = Transformer::EventTypes;
-    using EventIDs   = std::list<EventID>;
+    using EventIDs   = std::vector<EventID>;
     using TransPtr   = std::unique_ptr<Transformer>;
-
+    static const Transformation& invalid;
   private:
     const EventID mOut;
-    const EventIDs mIn;
 
   public:
-    Transformation(const EventID& out, const EventIDs& in);
+    Transformation(const EventID& out);
     virtual ~Transformation() = default;
-    std::size_t arity() const { return mIn.size(); };
-    const EventIDs& in() const { return mIn; }
+    virtual std::size_t arity() const = 0;
+    virtual EventIDs in(EventID goal) const = 0;
     const EventID& out() const { return mOut; }
     virtual bool check(const EventType& out, const EventTypes& in) const =0;
     virtual TransPtr create(const EventType& out, const EventTypes& in) const =0;
     virtual void print(std::ostream& o) const = 0;
+    bool operator==(const Transformation& b) const { return this == &b; }
+    bool operator!=(const Transformation& b) const { return this != &b; }
 };
 
 inline std::ostream& operator<<(std::ostream& o, const Transformation& t) {
   t.print(o);
   return o;
 }
+
+class ConfiguredTransformation {
+  public:
+  using EventTypes = Transformer::EventTypes;
+  using TransPtr   = std::unique_ptr<Transformer>;
+  private:
+  const Transformation* mTrans = nullptr;
+  const EventType* mOut = nullptr;
+  EventTypes mIn;
+  public:
+  ConfiguredTransformation() = default;
+  ConfiguredTransformation(const Transformation& t, const EventType& out, const EventTypes in)
+    : mTrans(&t), mOut(&out), mIn(in)
+  {}
+  TransPtr create() const { return (mTrans&&mOut)?mTrans->create(*mOut, mIn):TransPtr(); }
+  bool     check() const { return mTrans && mOut && mTrans->check(*mOut, mIn); }
+  const Transformation& trans() const { return *mTrans; }
+  const EventType& out() const { return *mOut; }
+  const EventTypes& in() const { return mIn; }
+  friend std::ostream& operator<<(std::ostream&, const ConfiguredTransformation&);
+};
+
+std::ostream& operator<<(std::ostream& o, const ConfiguredTransformation& t);
