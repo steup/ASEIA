@@ -6,8 +6,6 @@
 #include <vector>
 #include <algorithm>
 
-#include <iostream>
-
 using namespace std;
 
 class KBImpl {
@@ -113,21 +111,16 @@ class KBImpl {
       EventIDs ids = mTypes.ids(); //<< Get EventIDs currently registered
       sort(ids.begin(), ids.end());//<< Sort EventIDs ascending
 
-      cout << "EventIDs: " << ids.size() << endl;
       EventID out = (EventID)goal; //<< Get goal EventID
       std::vector<const Transformation*> trans(mTrans); //<< Copy list of transformations
-      cout << "Trans: " << trans.size() << endl;
 
       filter(trans, out, ids); //<< Remove all transformation not leading to the goal EventID or with unfullfilled dependancies
 
-      cout << "Filtered Trans: " << trans.size() << endl;
       Transformations result = generate(trans, goal, ids); //<< Generate all configurations
-      cout << "Configs: " << result.size() << endl;
       auto resultEnd = remove_if(result.begin(), result.end(),
         [](const ConfiguredTransformation& t){ return !t.check();}
       ); //<< Remove invalid configurations
       result.erase(resultEnd, result.end());
-      cout << "Filtered Configs: " << result.size() << endl;
       return result;
     }
 };
