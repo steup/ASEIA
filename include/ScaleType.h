@@ -21,6 +21,7 @@ class ScaleType{
     bool operator==(const ScaleType& b) const {
       return mNum == b.mNum && mDenom == b.mDenom;
     }
+    bool operator!=(const ScaleType& b) const { return !(*this==b); }
 
     constexpr static std::size_t size() noexcept {return sizeof(mNum) + sizeof(mDenom);}
 
