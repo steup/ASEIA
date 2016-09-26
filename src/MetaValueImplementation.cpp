@@ -18,6 +18,7 @@ using Data = MetaValueBaseImplementation::Data;
 using UnaryOp = MetaValueBaseImplementation::UnaryOp;
 using BinaryOp = MetaValueBaseImplementation::BinaryOp;
 using BinaryConstOp = MetaValueBaseImplementation::BinaryConstOp;
+using MVBI = MetaValueBaseImplementation;
 
 template<typename T, bool U>
 using MVI = MetaValueImplementation<T, U>;
@@ -264,18 +265,64 @@ class MetaValueRegisterer {
       f.insert(Creator(vTu, createU));
     }
   };
-  struct toType {
-    template<typename ID>
-    struct apply {
-      using type = typename id::type::id2Type<ID::value>::type;
+  template<typename IDList>
+  struct insertConverter {
+    template<typename InID>
+    struct helper {
+      MetaFactory& f = MetaFactory::instance();
+      template<typename OutID>
+      void operator()(const OutID&) {
+        using In = typename id::type::id2Type<InID::value>::type::Type;
+        using Out = typename id::type::id2Type<OutID::value>::type::Type;
+        auto convertUU = [](const MVBI& from, MVBI& to){
+          using InT = MVI<In, true>;
+          using OutT = MVI<Out, true>;
+          const InT&  in  = reinterpret_cast<const InT&>(from);
+          OutT& out = reinterpret_cast<OutT&>(to);
+          out.mData=in.mData.template cast<typename OutT::Base::BaseType>();
+        };
+        auto convertUC = [](const MVBI& from, MVBI& to){
+          using InT = MVI<In, true>;
+          using OutT = MVI<Out, false>;
+          const InT&  in  = reinterpret_cast<const InT&>(from);
+          OutT& out = reinterpret_cast<OutT&>(to);
+          out.mData=in.mData.template cast<typename OutT::Base::BaseType>();
+        };
+        auto convertCU = [](const MVBI& from, MVBI& to){
+          using InT = MVI<In, false>;
+          using OutT = MVI<Out, true>;
+          const InT&  in  = reinterpret_cast<const InT&>(from);
+          OutT& out = reinterpret_cast<OutT&>(to);
+          out.mData=in.mData.template cast<typename OutT::Base::BaseType>();
+        };
+        auto convertCC = [](const MVBI& from, MVBI& to){
+          using InT = MVI<In, false>;
+          using OutT = MVI<Out, false>;
+          const InT&  in  = reinterpret_cast<const InT&>(from);
+          OutT& out = reinterpret_cast<OutT&>(to);
+          out.mData=in.mData.template cast<typename OutT::Base::BaseType>();
+        };
+
+        f.insert(Converter(make_pair(ValueType(InID::value, 0, 0, false), ValueType(OutID::value, 0, 0, false)), convertCC));
+        f.insert(Converter(make_pair(ValueType(InID::value, 0, 0, true), ValueType(OutID::value, 0, 0, false)), convertUC));
+        f.insert(Converter(make_pair(ValueType(InID::value, 0, 0, false), ValueType(OutID::value, 0, 0, true)), convertCU));
+        f.insert(Converter(make_pair(ValueType(InID::value, 0, 0, true), ValueType(OutID::value, 0, 0, true)), convertUU));
+      }
     };
+
+    template<typename T>
+    void operator()(const T& t) {
+      helper<T> h;
+      foreach<IDList>(h);
+    }
   };
   public:
   MetaValueRegisterer() {
     using ids = boost::mpl::range_c<id::type::ID, UInt8::value(),  Bool::value()+1>;
-    insertCreator i;
-    foreach<ids>(i);
-    //todo register converters
+    insertCreator creat;
+    insertConverter<ids> conv;
+    foreach<ids>(creat);
+    foreach<ids>(conv);
   }
 };
 

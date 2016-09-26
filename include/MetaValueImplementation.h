@@ -57,6 +57,7 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
 		std::ostream& print(std::ostream& o) const;
 
     friend class MetaFactoryImplementation;
+    friend class MetaValueRegisterer;
     template<typename T0, bool U0>  friend class MetaValueImplementation;
     template<typename T1, bool U1, typename T2, bool U2> friend struct Converter;
 };
