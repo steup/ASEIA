@@ -12,6 +12,10 @@ Transformation::Transformation(const EventID& out) : mOut(out) {
   KnowledgeBase::registerTransformation(*this);
 }
 
+bool Transformer::operator==(const ConfiguredTransformation& t) const {
+  return mTrans == &t.trans() && mOut == t.out() && mIn == t.in();
+}
+
 ostream& operator<<(ostream& o, const ConfiguredTransformation& t) {
   if(!t.mTrans || !t.mOut)
     return o << "invalid configured transformation";

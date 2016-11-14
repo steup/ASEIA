@@ -13,8 +13,8 @@ class ScaleTransformer : public Transformer {
     Storage mScaleDeltas;
 
 	public:
-    ScaleTransformer(const EventType& out, const EventTypes& in)
-			: Transformer(out, in)
+    ScaleTransformer(const Transformation* t, const EventType& out, const EventTypes& in)
+			: Transformer(t, out, in)
 		{
       if(in.size()!=1 || !in.front())
         return;
@@ -73,7 +73,7 @@ class ScaleTransformation : public Transformation {
       }
       return false;
     }
-    
+
     virtual EventIDs in(EventID goal) const {
       return EventIDs({goal});
     }
@@ -84,7 +84,7 @@ class ScaleTransformation : public Transformation {
 
     virtual TransPtr create(const EventType& out, const EventTypes& in) const {
 			if(check(out, in))
-				return TransPtr(new ScaleTransformer(out, in));
+				return TransPtr(new ScaleTransformer(this, out, in));
 			else
 				return TransPtr();
 		}

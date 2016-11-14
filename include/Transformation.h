@@ -8,6 +8,8 @@
 
 class MetaEvent;
 class EventType;
+class ConfiguredTransformation;
+class Transformation;
 
 /** \brief Interface of a state-full execution of a Transformation
   *
@@ -22,15 +24,19 @@ class Transformer {
   protected:
     const EventType& mOut;
     const EventTypes mIn;
+    const Transformation* mTrans;
   public:
-    Transformer(const EventType& out, const EventTypes& in) : mOut(out), mIn(in) {}
+    Transformer(const Transformation* t, const EventType& out, const EventTypes& in)
+      : mOut(out), mIn(in), mTrans(t) {}
     virtual ~Transformer() = default;
     const EventType& out() const { return mOut; }
     const EventTypes& in() const { return mIn; }
     virtual bool check(const Events& events) const =0;
     virtual MetaEvent operator()(const Events& events) =0;
     virtual void print(std::ostream& o) const = 0;
+    const Transformation* transformation() const { return mTrans; }
     bool operator==(const Transformer& b) const { return this == &b; }
+    bool operator==(const ConfiguredTransformation& t) const;
 };
 
 inline std::ostream& operator<<(std::ostream& o, const Transformer& t) {
@@ -92,6 +98,7 @@ class ConfiguredTransformation {
   const Transformation& trans() const { return *mTrans; }
   const EventType& out() const { return *mOut; }
   const EventTypes& in() const { return mIn; }
+  bool operator==(const Transformer& t) const { return t==*this; }
   friend std::ostream& operator<<(std::ostream&, const ConfiguredTransformation&);
 };
 

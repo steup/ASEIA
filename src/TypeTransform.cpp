@@ -17,8 +17,8 @@ class TypeTransformer : public Transformer {
     Storage mTypeDeltas;
 
 	public:
-    TypeTransformer(const EventType& out, const EventTypes& in)
-			: Transformer(out, in)
+    TypeTransformer(const Transformation* t, const EventType& out, const EventTypes& in)
+			: Transformer(t, out, in)
 		{
       if(in.size()!=1 || !in.front())
         return;
@@ -86,7 +86,7 @@ class TypeTransformation : public Transformation {
 
     virtual TransPtr create(const EventType& out, const EventTypes& in) const {
 			if(check(out, in))
-				return TransPtr(new TypeTransformer(out, in));
+				return TransPtr(new TypeTransformer(this, out, in));
 			else
 				return TransPtr();
 		}
