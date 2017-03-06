@@ -150,3 +150,14 @@ inline std::ostream& operator<<(std::ostream& o, EventID eID) {
 inline std::ostream& operator<<(std::ostream& o, FormatID fID) {
   return o << fID.value();
 }
+
+template<typename T, int32_t R, int32_t C, bool U>
+std::ostream& operator<<(std::ostream& o, const Value<T, R, C, U>& v) {
+  for(std::size_t r = 0; r<v.rows(); r++) {
+    o << "(";
+    for(std::size_t c = 0; c<v.cols(); c++)
+      o << "\t" << v(r, c);
+    o << ")";
+  }
+  return o;
+}
