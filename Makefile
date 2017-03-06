@@ -5,8 +5,10 @@ EMBEDDED         := 0
 INCLUDES         :=
 LDPATHS          :=
 SYMBOLS          :=
-CXXFLAGS         := -O3 -Wall
-LDFLAGS          := -O1
+CXXFLAGS         := -O3 -Wall -flto=4 -fuse-linker-plugin
+LDFLAGS          := -O1 -flto=4 -fuse-linker-plugin
+AR               := gcc-ar
+RANLIB           := gcc-ranlib
 LIBS             :=
 PACKAGES         :=
 

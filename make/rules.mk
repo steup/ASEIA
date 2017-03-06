@@ -118,8 +118,8 @@ ${DYNLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
 
 ${STATLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
 	@echo "Building static library: $@ <- [$^]"
-	@ar r $@ $^
-	@ranlib $@
+	@${AR} r $@ $^
+	@${RANLIB} $@
 
 ${CMAKEFILE}: ${MAKEFILE_LIST}  | ${CMAKE}
 	@echo 'set(aseia_BASE_DIR ${BASEDIR})' > $@
