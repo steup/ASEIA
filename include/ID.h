@@ -46,6 +46,10 @@ namespace id{
       static constexpr const ID value(){return 8;}
     };
 
+    struct Object : public Base{
+      static constexpr const ID value(){return 9; }
+    };
+
     template<ID id>
     struct attribute;
 
