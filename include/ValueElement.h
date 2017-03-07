@@ -477,7 +477,7 @@ class ValueElement<bool, true> : public ValueElementBase<bool>{
     template<typename T2>
     ValueElement(const ValueElement<T2, true>& data){
       this->mValue = data.value();
-			this->mUncertainty = data.uncertainty()>abs(data.mValue);
+			this->mUncertainty = data.uncertainty()>(typename std::make_unsigned<T2>::type)(abs(data.mValue));
     }
     
     template<typename T2>
