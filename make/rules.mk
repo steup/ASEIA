@@ -102,7 +102,7 @@ run_tests: ${BIN}/${RUN_TESTS}
 
 ${BTEST}/${RUN_TESTS}.o: ${TESTS}/${RUN_TESTS}.cpp ${MAKEFILE_LIST} ${GTEST} | ${BTEST}
 	@echo "Building unit tests $@ <- $<"
-	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} -I${TESTS} ${GTEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES} ${GTEST_INCLUDES}
+	@${CXX} -MP -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} -I${TESTS} ${GTEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES} ${GTEST_INCLUDES}
 
 ${BIN}/${RUN_TESTS}: ${BTEST}/${RUN_TESTS}.o ${MAKEFILE_LIST} ${GTEST} | ${BIN} ${DYNLIB}
 	@echo "Linking unit tests $@ <- $<"
