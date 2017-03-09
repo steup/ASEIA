@@ -9,7 +9,7 @@ using namespace std;
 
 using Vector3iu=Value<float,3,1,true>;
 
-using Position=Attribute<id::attribute::Position, Vector3iu, Meter, std::ratio<1,10>>;
+using Position=Attribute<id::attribute::Position, Vector3iu, Meter, Scale<std::deci>>;
 
 int main()
 {

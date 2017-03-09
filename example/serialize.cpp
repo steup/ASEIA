@@ -61,7 +61,7 @@ void valueOut(){
 
 void attributeOut(){
   using Val=Value<double, 3, true>;
-  using Attr=Attribute<id::attribute::Position, Val, Meter, std::ratio<1,1000>>;
+  using Attr=Attribute<id::attribute::Position, Val, Meter, Scale<std::milli>>;
   V v;
   S s(back_inserter(v));
   Attr value = {{{1.1, 0.2}},

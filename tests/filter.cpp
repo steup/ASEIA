@@ -175,7 +175,7 @@ TEST_F(FilterTestSuite, extendedSerializationTest) {
 	EXPECT_EQ(buffer[0], e0Time) << "Placeholder event 0 time serialized wrongly";
 	EXPECT_EQ(buffer[count+1], gt) << "Operation > with event argument serialized wrongly";
 	EXPECT_EQ(buffer[2], e1Time) << "Placeholder event 1 time serialized wrongly";
-	EXPECT_EQ(buffer.size(), 3) << "Wrong length of serialized packet";
+	EXPECT_EQ(buffer.size(), 3U) << "Wrong length of serialized packet";
 
 	count+=3;
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
@@ -254,7 +254,7 @@ TEST_F(FilterTestSuite, compositeSerializationTest) {
 	EXPECT_EQ(buffer[count+4], e0Time) << "Placeholder event 0 time serialized wrongly";
 	EXPECT_EQ(buffer[count+5], gt) << "Operation > with event argument serialized wrongly";
 	EXPECT_EQ(buffer[count+6], e1Time) << "Placeholder event 1 time serialized wrongly";
-	EXPECT_EQ(buffer.size(), count+7) << "Wrong length of serialized packet";
+	EXPECT_EQ(buffer.size(), count+7U) << "Wrong length of serialized packet";
 }
 
 TEST_F(FilterTestSuite, metaFilterBasicTest) {

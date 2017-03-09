@@ -12,9 +12,9 @@ struct BaseConfig
   using PositionValueType    = Value<float   , 3       >;
   using TimeValueType        = Value<uint64_t, 1       >;
   using PublisherIDValueType = Value<uint64_t, 1, 1, false>;
-  using PositionScale        = std::ratio<1>;
-  using TimeScale            = std::ratio<1>;
-  using PublisherIDScale     = std::ratio<1>;
+  using PositionScale        = Scale<>;
+  using TimeScale            = Scale<>;
+  using PublisherIDScale     = Scale<>;
 };
 
 template<typename Config = BaseConfig>

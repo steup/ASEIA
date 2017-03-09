@@ -15,7 +15,7 @@ int main(){
   cout << "a  : " << endl << a             << endl;
   cout << "b  : " << endl << b             << endl;
   cout << "a+1: " << endl << (a+V::Ones()) << endl;
-  cout << "2a : " << endl << (a*2)         << endl;
+  cout << "2a : " << endl << (a*2.0f)         << endl;
   cout << "a+b: " << endl << (a+b)         << endl;
   //cout << "a*b: " << (a*b) << endl;
   return 0;

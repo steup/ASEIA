@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Unit.h>
+#include <Scale.h>
 #include <Value.h>
 #include <Serializer.h>
 #include <DeSerializer.h>
@@ -8,21 +9,25 @@
 
 #include <ratio>
 
-template<typename AttributeID, typename Value, typename Unit=Dimensionless, typename Scale=std::ratio<1>>
+template<typename AttributeID, typename Value, typename Unit=Dimensionless, typename S=Scale<std::ratio<1>, 0>>
 class Attribute
 {
   public:
     using ValueType = Value;
     using IDType    = AttributeID;
-    using ScaleType = Scale;
+    using ScaleType = S;
     using UnitType  = Unit;
     using InitType  = typename Value::InitType;
 
   private:
     ValueType v;
 
-    template<typename NewScale>
-    using mult = Attribute<AttributeID, Value, Unit, std::ratio_multiply<Scale, NewScale>>;
+    template<typename ratio>
+    struct mult {
+      using newRatio = typename std::ratio_multiply<typename ScaleType::Ratio, ratio>::type;
+      using newScale = Scale<newRatio, ScaleType().reference()>;
+      using type = Attribute<AttributeID, Value, Unit, newScale>;
+    };
 
   public:
     Attribute(){}
@@ -32,11 +37,11 @@ class Attribute
     ValueType& value(){return v;}
     void value(const ValueType& v){this->v=v;}
 
-    template<typename ScaleArg>
-    auto operator*(ScaleArg dummy)
-      -> mult<ScaleArg> {
-      mult<ScaleArg> temp;
-      temp.value() = value() / ScaleArg();
+    template<typename ratio>
+    auto operator*(Scale<ratio, ScaleType::Reference::value> dummy) const
+      -> typename mult<ratio>::type {
+      typename mult<ratio>::type temp;
+      temp.value() = this->value() / ratio();
       return temp;
     }
 

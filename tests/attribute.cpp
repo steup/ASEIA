@@ -24,14 +24,14 @@ TEST(AttributeTestSuite, scaleTest) {
    using AttrID       = ::id::attribute::Position;
    using AttrValue    = Value<float, 3, 1, true>;
    using AttrUnit     = Meter;
-   using AttrScale    = std::milli;
-   using AttrNewScale = std::ratio<1,1>;
+   using AttrScale    = Scale<std::milli>;
+   using AttrNewScale = Scale<>;
    using Attr         = Attribute<AttrID, AttrValue, AttrUnit, AttrScale>;
    using NewAttr      = Attribute<AttrID, AttrValue, AttrUnit, AttrNewScale>;
    Attr attr({{{0, 1000}}, {{1000, 1000}}, {{2000, 1000}}});
    NewAttr newAttr({{{0, 1}}, {{1, 1}}, {{2, 1}}});
 
-   auto result = attr * std::kilo();
+   auto result = attr * Scale<std::kilo>();
    StaticAssertTypeEq<decltype(result), NewAttr>();
    exactlyEqual(result.value(), newAttr.value());
 }

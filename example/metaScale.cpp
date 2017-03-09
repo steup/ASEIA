@@ -7,8 +7,8 @@ using namespace std;
 
 int main() {
   MetaScale one;
-  MetaScale milli = ratio<1, 1000>();
-  MetaScale kilo  = ratio<1000>();
+  MetaScale milli = Scale<std::milli>();
+  MetaScale kilo  = Scale<std::kilo>();
   MetaScale mega  = kilo * kilo;
   cout << "one   = " << one << endl;
   cout << "milli = " << milli << endl;

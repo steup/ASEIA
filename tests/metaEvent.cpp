@@ -1,7 +1,7 @@
 #include <MetaEvent.h>
 #include <MetaFactory.h>
 #include <ID.h>
-#include <ratio>
+#include <Scale.h>
 
 namespace tests {
 
@@ -19,7 +19,7 @@ using namespace std;
 				MetaAttribute position = posID;
 				position.value() = f.create({{{0,1}, {1,1}, {2,1}}});
 				position.unit()  = Meter();
-				position.scale() = ratio<1, 1000>();
+				position.scale() = Scale<std::milli>();
         e.add(position);
 			}
 	};
@@ -28,7 +28,7 @@ using namespace std;
 		MetaAttribute test = posID;
 		test.value() = f.create({{{0,1}, {1,1}, {2,1}}});
 		test.unit()  = Meter();
-		test.scale() = ratio<1, 1000>();
+		test.scale() = Scale<std::milli>();
     const MetaAttribute* posPtr = e.attribute(posID);
     ASSERT_NE(posPtr, nullptr) << "Position attribute could not be retrieved";
     const MetaAttribute& pos = *posPtr;
@@ -37,7 +37,7 @@ using namespace std;
 	
 	TEST_F(MetaEventSuite, typeTest) {
 		EventType eT;
-		eT.add(AttributeType(posID, ValueType(id::type::Double::value(), 1, 3, true), ratio<1,1000>(), Meter()));
+		eT.add(AttributeType(posID, ValueType(id::type::Double::value(), 1, 3, true), Scale<std::milli>(), Meter()));
 		EXPECT_EQ((EventType)e, eT) << "Inferred MetaEvent-Type is wrong";
 	}
 }}

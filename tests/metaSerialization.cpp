@@ -65,7 +65,7 @@ TEST_F(MetaSerializationSuite, attributeTest) {
   MetaAttribute attr(Position::value());
   attr.value() = f.create({{{0,0}}}, UInt8::value());
   attr.unit() = Meter();
-  attr.scale() = ratio<1, 1000>();
+  attr.scale() = Scale<std::milli>();
   Buffer comp={0,0};
   s << attr;
   check(comp);

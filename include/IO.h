@@ -93,6 +93,11 @@ std::ostream& operator<<(std::ostream& o, const std::ratio<N,D>& r) {
   return o << r.num << "/" << r.den << " ";
 }
 
+template<typename ratio, uint32_t ref>
+std::ostream& operator<<(std::ostream& o, const Scale<ratio, ref>& s) {
+  return o << s.ratio() << "(" << s.reference() << ")";  
+}
+
 inline std::ostream& operator<<(std::ostream& o, const Dimensionless& u) {
   return o;
 }

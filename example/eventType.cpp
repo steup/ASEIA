@@ -14,10 +14,10 @@ struct EventConfig : public BaseConfig
 {
   using PositionValueType    = Value<int16_t, 2>;
   using PublisherIDValueType = Value<uint16_t, 1, 1, false>;
-  using PositionScale        = std::ratio<1,1000>;
+  using PositionScale        = Scale<std::milli>;
 };
 
-using DistanceAttribute    = Attribute<Distance, Value<int16_t, 1>, Meter, std::ratio<1,1000>>;
+using DistanceAttribute    = Attribute<Distance, Value<int16_t, 1>, Meter, Scale<std::milli>>;
 using DistanceEvent        = BaseEvent<EventConfig>::append<DistanceAttribute>::type;
 
 void printV(const vector<uint8_t>& v){

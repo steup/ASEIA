@@ -7,7 +7,7 @@ using namespace std;
 
 int main() {
   {
-		cout << "Size of metavalue: " << sizeof(MetaValueImplementation<int>) << endl;
+		cout << "Size of metavalue: " << sizeof(MetaValueImplementation<int ,true>) << endl;
     MetaFactory& instance = MetaFactory::instance();
     MetaValue a = instance.create({{-5.1},  {2.2}, {3.3}});
 		MetaValue b = instance.create({{1}, {6}, {-3}}, id::type::Int32::value());

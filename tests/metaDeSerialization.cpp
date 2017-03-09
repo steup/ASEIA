@@ -141,7 +141,7 @@ TEST_F(MetaDeSerializationSuite, attributeTest) {
   MetaAttribute ref(Position::value());
   ref.value() = f.create({{{1,2}}}, UInt8::value());
   ref.unit() = Meter();
-  ref.scale() = ratio<1, 1000>();
+  ref.scale() = Scale<std::milli>();
   MetaAttribute attr = ref;
   attr.value() = f.create(ValueType(UInt8::value(), 1, 1, true));
   buffer ={1,2};
