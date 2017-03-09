@@ -51,6 +51,7 @@ class Value {
 		using RowInitType   = std::initializer_list<BaseType>;
 		using InitType      = std::initializer_list<RowInitType>;
 		using TypeID        = typename BaseType::TypeID;
+    using DataType      = Eigen::Matrix<BaseType, R, C>;
 		using Bool          = Eigen::Matrix<ValueElement<bool, U>, R, C>;
     using Iterator      = BaseType*;
     using ConstIterator = const BaseType*;
@@ -79,6 +80,9 @@ class Value {
         i++;
 			}
     }
+    
+    static Value Ones() { return Value(DataType::Ones()); }
+    static Value Zeros() { return Value(DataType::Zeros()); }
 
     std::size_t rows() const { return R==-1?mData.rows():R; }
     std::size_t cols() const { return C==-1?mData.cols():C; }
@@ -104,7 +108,7 @@ class Value {
     }
 
     template<std::intmax_t num, std::intmax_t den>
-    Value operator/(std::ratio<num, den> r) {
+    Value operator/(std::ratio<num, den> r) const {
       Value res = *this;
       res *= BaseType(r.den);
       res /= BaseType(r.num);
@@ -159,9 +163,9 @@ class Value {
     }
 
 		explicit operator ValueType() const {
-			return ValueType(TypeID::value(),
-											 mData.rows(), mData.cols(),
-											 U);
+			return ValueType(BaseType::TypeID::value(),
+											 rows(), cols(),
+											 hasUncertainty());
 		}
 
 		Bool operator<( const Value& b ) const {
@@ -227,7 +231,7 @@ class Value {
       return Value<typename VE::VType, R, C, VE::U::value>(mData.cast<VE>());
     }
 
-		constexpr const bool hasUncertainty() const noexcept {return U;}
+		constexpr const bool hasUncertainty() const noexcept {return BaseType().hasUncertainty();}
 
     static constexpr const std::size_t staticSize() { return R * C * BaseType::size(); }
     std::size_t dynamicSize() const { return mData.rows() * mData.cols() * BaseType::size(); }
@@ -250,6 +254,11 @@ Value<T, R, C, U> operator-(const Value<T, R, C, U>& a, const Value<T, R, C, U>&
 }
 
 template<typename T, int32_t R, int32_t C, bool U>
+Value<T, R, C, U> operator*(T a, const Value<T, R, C, U>& b) {
+  return b*a;
+}
+
+template<typename T, int32_t R, int32_t C, bool U>
 Value<T, R, C, U> operator*(const ValueElement<T, U>& a, const Value<T, R, C, U>& b) {
   Value<T, R, C, U> temp=b;
   return temp*=a;
@@ -257,7 +266,12 @@ Value<T, R, C, U> operator*(const ValueElement<T, U>& a, const Value<T, R, C, U>
 
 template<typename T, int32_t R, int32_t C, bool U>
 Value<T, R, C, U> operator*(const Value<T, R, C, U>& a, const ValueElement<T, U>& b) {
-  return b.mData*a.mData;
+  return b*a;
+}
+
+template<typename T, int32_t R, int32_t C, bool U>
+Value<T, R, C, U> operator*(const Value<T, R, C, U>& a, T b) {
+  return ValueElement<T,U>(b)*a;
 }
 
 template<typename T, int32_t R, int32_t C, bool U, int32_t C2>
