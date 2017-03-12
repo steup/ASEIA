@@ -42,6 +42,7 @@ class EventType{
     }
 
     const AttributeType* attribute(KeyType key) const;
+    AttributeType* attribute(KeyType key);
     
     bool operator==(const EventType& b) const;
     bool operator!=(const EventType& b) const { return !(*this==b); }

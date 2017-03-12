@@ -42,6 +42,14 @@ const AttributeType* EventType::attribute(KeyType key) const{
     return &i->second;
 }
 
+AttributeType* EventType::attribute(KeyType key) {
+  auto i = mStorage.find(key);
+  if(i == mStorage.end())
+    return NULL;
+  else
+    return &i->second;
+}
+
 bool EventType::operator==(const EventType& b) const{
   if(mStorage.size() != b.mStorage.size())
     return false;

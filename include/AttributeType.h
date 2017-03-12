@@ -25,6 +25,9 @@ class AttributeType{
     const UnitType&   unit() const;
     const ScaleType& scale() const;
     const ValueType& value() const;
+          UnitType&   unit();
+          ScaleType& scale();
+          ValueType& value();
 
     constexpr static std::size_t size() noexcept {
       return sizeof(id::attribute::ID) +
