@@ -18,6 +18,7 @@
 #include <typeRegistry.cpp>
 #include <transformation.cpp>
 #include <channel.cpp>
+#include <scale.cpp>
 
 /** \namespace tests
  *  \brief %Unit Test Suites
