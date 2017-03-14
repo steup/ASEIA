@@ -19,6 +19,7 @@
 #include <transformation.cpp>
 #include <channel.cpp>
 #include <scale.cpp>
+#include <knowledgeBase.cpp>
 
 /** \namespace tests
  *  \brief %Unit Test Suites
