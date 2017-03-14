@@ -1,16 +1,18 @@
 #pragma once
 
 #include <cstdint>
+#include <initializer_list>
 
 class EventType;
 
 class EventID {
 	public:
 		using IDType = std::uint32_t;
+    using InitType = std::initializer_list<uint8_t>;
 	private:
 		IDType mID;
     static IDType idGen(const EventType& eT);
-    static IDType idGen(const std::initializer_list<uint8_t>& attrs);
+    static IDType idGen(const InitType& attrs);
 		constexpr EventID() : mID(0) {}
 	public:
 
@@ -23,7 +25,7 @@ class EventID {
       : mID(idGen(eT))
     {}
 
-    EventID(std::initializer_list<uint8_t> attrs)
+    EventID(const InitType& attrs)
       : mID(idGen(attrs))
     {}
 
