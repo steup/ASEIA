@@ -10,6 +10,7 @@ class EventID {
 	private:
 		IDType mID;
     static IDType idGen(const EventType& eT);
+    static IDType idGen(const std::initializer_list<uint8_t>& attrs);
 		constexpr EventID() : mID(0) {}
 	public:
 
@@ -20,6 +21,10 @@ class EventID {
 
 		EventID(const EventType& eT)
       : mID(idGen(eT))
+    {}
+
+    EventID(std::initializer_list<uint8_t> attrs)
+      : mID(idGen(attrs))
     {}
 
 		IDType value() const {
