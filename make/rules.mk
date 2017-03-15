@@ -22,7 +22,7 @@ else
 endif
 
 ifeq (${DEBUG},1)
-	CXXFLAGS :=${CXXFLAGS} -O2 -ggdb
+	CXXFLAGS :=${CXXFLAGS} -O0 -ggdb
 	LDFLAGS  += -ggdb
 endif
 
