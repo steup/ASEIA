@@ -23,7 +23,7 @@ class KBImpl {
     void filter(vector<const Transformation*>& trans, EventID goal, const EventIDs& ids) const {
       auto useless = [&goal, &ids](const Transformation* t){
         const auto& tIn = t->in(goal);
-        return goal>=t->out();// || !includes(tIn.begin(), tIn.end(), ids.begin(), ids.end());
+        return goal>t->out();// || !includes(tIn.begin(), tIn.end(), ids.begin(), ids.end());
       };
       auto endIt = remove_if(trans.begin(), trans.end(), useless);
       trans.erase(endIt, trans.end());
@@ -77,26 +77,16 @@ class KBImpl {
     }
   public:
     void regTrans(const Transformation& trans) {
-      auto comp = [&trans](const Transformation* t){
-        return *t == trans;
-      };
       if(trans==Transformation::invalid)
         return;
-      if(any_of(mTrans.begin(), mTrans.end(), comp))
+      if(count(mTrans.begin(), mTrans.end(), &trans))
         return;
-      if(trans.out() == EventID::any)
-        mTrans.push_back(&trans);
+      mTrans.push_back(&trans);
     }
 
     void unregTrans(const Transformation& trans) {
-      auto comp = [&trans](const Transformation* t){
-        return *t == trans;
-      };
-      auto it = find_if(mTrans.begin(), mTrans.end(), comp);
-      if(it == mTrans.end())
-        return;
-      iter_swap(it, mTrans.end()-1);
-      mTrans.erase(mTrans.end()-1);
+      auto it = remove(mTrans.begin(), mTrans.end(), &trans);
+      mTrans.erase(it, mTrans.end());
     }
 
     void regType(const EventType& eT) {
@@ -115,13 +105,16 @@ class KBImpl {
       std::vector<const Transformation*> trans(mTrans); //<< Copy list of transformations
 
       filter(trans, out, ids); //<< Remove all transformation not leading to the goal EventID or with unfullfilled dependancies
-
       Transformations result = generate(trans, goal, ids); //<< Generate all configurations
       auto resultEnd = remove_if(result.begin(), result.end(),
         [](const ConfiguredTransformation& t){ return !t.check();}
       ); //<< Remove invalid configurations
       result.erase(resultEnd, result.end());
       return result;
+    }
+
+    void clear() {
+      mTypes.clear();
     }
 };
 
@@ -145,4 +138,8 @@ void KnowledgeBase::unregisterEventType(const EventType& trans) {
 
 KnowledgeBase::Transformations KnowledgeBase::findTransforms(const EventType& goal) {
   return KB::instance().find(goal);
+}
+
+void KnowledgeBase::clear() {
+  KB::instance().clear();
 }

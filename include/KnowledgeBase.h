@@ -3,6 +3,7 @@
 #include <Transformation.h>
 
 #include <vector>
+#include <iosfwd>
 
 class EventType;
 
@@ -16,4 +17,5 @@ class KnowledgeBase {
     static void unregisterEventType(const EventType& eT);
     //TODO: query functions
     static Transformations findTransforms(const EventType& goal);
+    static void clear();
 };

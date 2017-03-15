@@ -1,29 +1,32 @@
 #include <KnowledgeBase.h>
+#include <AttributeType.h>
+#include <ratio>
 
 namespace test {
 
  using namespace ::id::attribute;
+ using std::ratio;
 
   struct KnowledgeBaseTestSuite : public ::testing::Test {
 
     struct Test0: public ::id::attribute::Base {
-      static constexpr const ID value()  { return 251; }
+      static constexpr const ::id::attribute::ID value()  { return 251; }
     };
 
     struct Test1 : public ::id::attribute::Base {
-      static constexpr const ID value()  { return 252; }
+      static constexpr const ::id::attribute::ID value()  { return 252; }
     };
 
     struct Test2 : public ::id::attribute::Base {
-      static constexpr const ID value()  { return 253; }
+      static constexpr const ::id::attribute::ID value()  { return 253; }
     };
 
     struct Test3 : public ::id::attribute::Base {
-      static constexpr const ID value()  { return 254; }
+      static constexpr const ::id::attribute::ID value()  { return 254; }
     };
 
     struct Test4 : public ::id::attribute::Base {
-      static constexpr const ID value() { return 255; }
+      static constexpr const ::id::attribute::ID value() { return 255; }
     };
 
     struct HetTrans1 : public Transformation {
@@ -91,11 +94,23 @@ namespace test {
       virtual void print(std::ostream& o) const { o << "Homogeneus Transform 2"; }
     } hom1;
 
+    EventType eT0, eT1, eT2, eT3, eT4, eT5, eT6;
+
     KnowledgeBaseTestSuite() {
+      ValueType v(id::type::Float::value(), 1, 1, false);
+      KnowledgeBase::clear();
       KnowledgeBase::registerTransformation(het0);
       KnowledgeBase::registerTransformation(het1);
       KnowledgeBase::registerTransformation(hom0);
       KnowledgeBase::registerTransformation(hom1);
+      eT0.add(AttributeType(Test0::value(), v, Scale<>(), Dimensionless()));
+      eT1.add(AttributeType(Test1::value(), v, Scale<>(), Dimensionless()));
+      eT2.add(AttributeType(Test2::value(), v, Scale<>(), Dimensionless()));
+      eT3.add(AttributeType(Test3::value(), v, Scale<>(), Dimensionless()));
+      eT4.add(AttributeType(Test3::value(), v, Scale<ratio<1, 1000>>(), Dimensionless()));
+      eT5.add(AttributeType(Test1::value(), v, Scale<ratio<1, 1>, 1>(), Dimensionless()));
+      eT6.add(AttributeType(Test1::value(), v, Scale<ratio<1, 1>, 0>(), Dimensionless()));
+      eT6.add(AttributeType(Test4::value(), v, Scale<ratio<1, 1>, 1>(), Dimensionless()));
     }
 
     ~KnowledgeBaseTestSuite() {
@@ -104,5 +119,58 @@ namespace test {
       KnowledgeBase::unregisterTransformation(hom0);
       KnowledgeBase::unregisterTransformation(hom1);
     }
+
+    using  Transformations = KnowledgeBase::Transformations;
+
+    bool checkResult(const Transformations& ts, const Transformation & t) {
+      auto pred = [&t](const ConfiguredTransformation& cT) {
+        return cT.trans() == t;
+      };
+      return any_of(ts.begin(), ts.end(), pred);
+    }
   };
+
+  TEST_F(KnowledgeBaseTestSuite, singleHeterogeneusTransform) {
+    EXPECT_EQ(EventID(eT2), het0.out()) << "Wrong Output ID";
+    EXPECT_EQ(het0.arity(), 1U) << "Wrong arity";
+    ASSERT_EQ(het0.in(eT3).size(), 1U) << "Wrong number of inputs";
+    EXPECT_EQ(EventID(eT3), het0.in(eT2).front()) << "Wrong input ID";
+  }
+  
+  TEST_F(KnowledgeBaseTestSuite, singleHomogeneusTransform) {
+    EXPECT_EQ(EventID::any, hom0.out()) << "Wrong Output ID";
+    EXPECT_EQ(hom0.arity(), 1U) << "Wrong arity";
+    ASSERT_EQ(hom0.in(eT3).size(), 1U) << "Wrong number of inputs";
+    EXPECT_EQ(EventID(eT4), hom0.in(eT3).front()) << "Wrong input ID";
+  }
+
+  TEST_F(KnowledgeBaseTestSuite, findSingleHeterogeneusTransform) {
+    KnowledgeBase::registerEventType(eT3);
+    Transformations ts = KnowledgeBase::findTransforms(eT2);
+    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
+    EXPECT_TRUE(checkResult(ts, het0)) << "Searched Transform not found";
+  }
+  
+  TEST_F(KnowledgeBaseTestSuite, findSingleHomogeneusTransform) {
+    KnowledgeBase::registerEventType(eT4);
+    Transformations ts = KnowledgeBase::findTransforms(eT3);
+    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
+    EXPECT_TRUE(checkResult(ts, hom0)) << "Searched Transform not found";
+  }
+  
+  TEST_F(KnowledgeBaseTestSuite, findMultiHeterogeneusTransform) {
+    KnowledgeBase::registerEventType(eT1);
+    KnowledgeBase::registerEventType(eT2);
+    Transformations ts = KnowledgeBase::findTransforms(eT0);
+    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
+    EXPECT_TRUE(checkResult(ts, het1)) << "Searched Transform not found";
+  }
+
+  TEST_F(KnowledgeBaseTestSuite, findMultiHomogeneusTransform) {
+    KnowledgeBase::registerEventType(eT5);
+    KnowledgeBase::registerEventType(eT6);
+    Transformations ts = KnowledgeBase::findTransforms(eT1);
+    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
+    EXPECT_TRUE(checkResult(ts, hom1)) << "Searched Transform not found";
+  }
 }

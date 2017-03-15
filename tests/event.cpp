@@ -17,9 +17,9 @@ TEST(EventTestSuite, idTest) {
 	EventA a;
 	EventB b;
 	EventC c;
-	EXPECT_EQ(a.id().value(), 3U*5U*7U);
-	EXPECT_EQ(b.id().value(), 3U*5U*7U*13U);
-	EXPECT_EQ(c.id().value(), 3U*5U*7U*19U);
+	EXPECT_EQ(a.id().value(), 2U*3U*5U);
+	EXPECT_EQ(b.id().value(), 2U*3U*5U*11U);
+	EXPECT_EQ(c.id().value(), 2U*3U*5U*17U);
 	EXPECT_TRUE(a.id()<=b.id());
 	EXPECT_TRUE(a.id()<b.id());
 	EXPECT_TRUE(a.id()!=b.id());

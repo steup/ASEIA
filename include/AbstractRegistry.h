@@ -136,4 +136,8 @@ class AbstractRegistry {
           temp.push_back(mStorage.begin(i)->first.eventID());
       return temp;
     }
+
+    void clear() {
+      mStorage.clear();
+    }
 };
