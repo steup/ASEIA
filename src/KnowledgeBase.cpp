@@ -38,6 +38,7 @@ class KBImpl {
     }
 
     vector<EventTypes> generateTypeLists(const EventIDs& in, const EventIDs& ids) const{
+      //Extract IDs
       vector<EventTypes> result(in.size());
       for(unsigned int i=0; i < in.size(); i++) {
         addValidTypes(in[i], back_inserter(result[i]));
@@ -67,7 +68,7 @@ class KBImpl {
           for(size_t j=0; j < typeLists[i].size(); j++) {
             currSize /= typeLists[i].size();
             for(size_t k=0; k < currSize; k++)
-              result[i][j*currSize+k] = typeLists[j][i];
+              result[j*currSize+k][i] = typeLists[i][j];
           }
         oldSize = typeLists[i].size();
       }
@@ -116,12 +117,9 @@ class KBImpl {
       EventIDs comp = extractIDs(EventID(goal), ids);
       if(!comp.size())
         return;
-
-      for( EventID id : comp)
-        for( const EventType& type : mTypes.find(id)) {
-          auto toConfTrans = [&type](const Transformation* t){ return ConfiguredTransformation(*t, type); };
-          transform(mAttrTrans.begin(), mAttrTrans.end(), it, toConfTrans);
-      }
+      
+      auto toConfTrans = [&goal](const Transformation* t){ return ConfiguredTransformation(*t, goal); };
+      transform(mAttrTrans.begin(), mAttrTrans.end(), it, toConfTrans);
     }
 
   public:
