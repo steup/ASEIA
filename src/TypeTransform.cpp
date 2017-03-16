@@ -61,7 +61,7 @@ class TypeTransformation : public Transformation {
 		TypeTransformation()
 			: Transformation(EventID::any)
 		{	}
-
+    /** \todo fix lenient check for other subtypes **/
     virtual bool check(const EventType& out, const EventTypes& in) const {
       if(in.size()!=1 || !in.front())
         return false;

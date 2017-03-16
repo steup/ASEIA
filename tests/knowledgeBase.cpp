@@ -6,6 +6,8 @@ namespace test {
 
  using namespace ::id::attribute;
  using std::ratio;
+ using std::cout;
+ using std::endl;
 
   struct KnowledgeBaseTestSuite : public ::testing::Test {
 
@@ -70,6 +72,8 @@ namespace test {
       virtual void print(std::ostream& o) const { o << "Homogeneus Transform 1"; }
     } hom0;
 
+
+
     struct HomTrans2 : public Transformation {
       HomTrans2() : Transformation(EventID::any) {}
       virtual std::size_t arity() const  { return 2; }
@@ -94,15 +98,38 @@ namespace test {
       virtual void print(std::ostream& o) const { o << "Homogeneus Transform 2"; }
     } hom1;
 
-    EventType eT0, eT1, eT2, eT3, eT4, eT5, eT6;
+    struct HomTrans3 : public Transformation {
+      HomTrans3() : Transformation(EventID::any) {}
+      virtual std::size_t arity() const  { return 1; }
+      virtual EventIDs in(EventID goal) const  {
+        return EventIDs({ goal });
+      }
+      virtual bool check(const EventType& out, const EventTypes& in) const  {
+        for(const auto& a : out) {
+          const AttributeType* b = in[0]->attribute(a.id());
+          if(!b) return false;
+          if(a.value().cols() != b->value().cols() || a.value().rows() != b->value().rows() ||
+             a.unit() != b->unit() || a.scale() !=b->scale())
+            return false;
+        }
+        return true;
+      }
+      virtual TransPtr create(const EventType& out, const EventTypes& in) const { return TransPtr(); }
+      virtual void print(std::ostream& o) const { o << "Homogeneus Transform 3"; }
+    } hom2;
+
+
+    EventType eT0, eT1, eT2, eT3, eT4, eT5, eT6, eT7;
 
     KnowledgeBaseTestSuite() {
       ValueType v(id::type::Float::value(), 1, 1, false);
+      ValueType v2(id::type::UInt64::value(), 1, 1, false);
       KnowledgeBase::clear();
       KnowledgeBase::registerTransformation(het0);
       KnowledgeBase::registerTransformation(het1);
       KnowledgeBase::registerTransformation(hom0);
       KnowledgeBase::registerTransformation(hom1);
+      KnowledgeBase::registerTransformation(hom2);
       eT0.add(AttributeType(Test0::value(), v, Scale<>(), Dimensionless()));
       eT1.add(AttributeType(Test1::value(), v, Scale<>(), Dimensionless()));
       eT2.add(AttributeType(Test2::value(), v, Scale<>(), Dimensionless()));
@@ -111,6 +138,7 @@ namespace test {
       eT5.add(AttributeType(Test1::value(), v, Scale<ratio<1, 1>, 1>(), Dimensionless()));
       eT6.add(AttributeType(Test1::value(), v, Scale<ratio<1, 1>, 0>(), Dimensionless()));
       eT6.add(AttributeType(Test4::value(), v, Scale<ratio<1, 1>, 1>(), Dimensionless()));
+      eT7.add(AttributeType(Test3::value(), v2, Scale<ratio<1, 1000>>(), Dimensionless()));
     }
 
     ~KnowledgeBaseTestSuite() {
@@ -136,7 +164,7 @@ namespace test {
     ASSERT_EQ(het0.in(eT3).size(), 1U) << "Wrong number of inputs";
     EXPECT_EQ(EventID(eT3), het0.in(eT2).front()) << "Wrong input ID";
   }
-  
+
   TEST_F(KnowledgeBaseTestSuite, singleHomogeneusTransform) {
     EXPECT_EQ(EventID::any, hom0.out()) << "Wrong Output ID";
     EXPECT_EQ(hom0.arity(), 1U) << "Wrong arity";
@@ -150,14 +178,14 @@ namespace test {
     ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
     EXPECT_TRUE(checkResult(ts, het0)) << "Searched Transform not found";
   }
-  
+
   TEST_F(KnowledgeBaseTestSuite, findSingleHomogeneusTransform) {
     KnowledgeBase::registerEventType(eT4);
     Transformations ts = KnowledgeBase::findTransforms(eT3);
     ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
     EXPECT_TRUE(checkResult(ts, hom0)) << "Searched Transform not found";
   }
-  
+
   TEST_F(KnowledgeBaseTestSuite, findMultiHeterogeneusTransform) {
     KnowledgeBase::registerEventType(eT1);
     KnowledgeBase::registerEventType(eT2);
@@ -172,5 +200,24 @@ namespace test {
     Transformations ts = KnowledgeBase::findTransforms(eT1);
     ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
     EXPECT_TRUE(checkResult(ts, hom1)) << "Searched Transform not found";
+  }
+
+  TEST_F(KnowledgeBaseTestSuite, findCombinedAttributeTransform) {
+    KnowledgeBase::registerEventType(eT7);
+    Transformations ts = KnowledgeBase::findTransforms(eT3);
+    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
+    for(const ConfiguredTransformation& t : ts)
+      cout << t << endl;
+    EXPECT_TRUE(checkResult(ts, hom2)) << "Searched Transform not found in list";
+  }
+
+  TEST_F(KnowledgeBaseTestSuite, fullTree) {
+    KnowledgeBase::registerEventType(eT7);
+    KnowledgeBase::registerEventType(eT4);
+    KnowledgeBase::registerEventType(eT5);
+    KnowledgeBase::registerEventType(eT6);
+    Transformations ts = KnowledgeBase::findTransforms(eT0);
+    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
+    EXPECT_TRUE(checkResult(ts, hom2)) << "Searched Transform not found in list";
   }
 }
