@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <numeric>
 
 using namespace std;
 
@@ -17,76 +18,126 @@ class KBImpl {
     using EventTypes = Transformation::EventTypes;
 
   private:
-    TransStorage mTrans;
+    using OutIt = back_insert_iterator<Transformations>;
+    using TypeOutIt = back_insert_iterator<EventTypes>;
+    TransStorage mHetTrans;
+    TransStorage mAttrTrans;
     TypeStorage  mTypes;
 
-    void filter(vector<const Transformation*>& trans, EventID goal, const EventIDs& ids) const {
-      auto useless = [&goal, &ids](const Transformation* t){
-        const auto& tIn = t->in(goal);
-        return goal>t->out();// || !includes(tIn.begin(), tIn.end(), ids.begin(), ids.end());
-      };
-      auto endIt = remove_if(trans.begin(), trans.end(), useless);
-      trans.erase(endIt, trans.end());
+
+    EventIDs extractIDs(EventID goal, const EventIDs& ids) const {
+      EventIDs result;
+      auto start = lower_bound(ids.begin(), ids.end(), goal);
+      copy_if(start, ids.end(), back_inserter(result), [&goal](EventID id){ return id>=goal; });
+
+      return result;
     }
 
-    void addValidTypes(EventTypes& list, EventID id, const EventIDs& ids) const {
-      auto it = lower_bound(ids.begin(), ids.end(), id);
-      for(;it!=ids.end();it++)
-        if(id<=*it)
-          transform(mTypes.find(*it).first, mTypes.find(*it).second, back_inserter(list), [](const EventType& eT){ return &eT;});
+    void addValidTypes(EventID id, TypeOutIt it) const {
+      transform(mTypes.find(id).first, mTypes.find(id).second, it, [](const EventType& eT){ return &eT;});
     }
 
     vector<EventTypes> generateTypeLists(const EventIDs& in, const EventIDs& ids) const{
       vector<EventTypes> result(in.size());
-      for(EventID id : in)
-        addValidTypes(result.back(), id, ids);
+      for(unsigned int i=0; i < in.size(); i++) {
+        addValidTypes(in[i], back_inserter(result[i]));
+        if(!result[i].size())
+          break;
+      }
       return result;
     }
 
     vector<EventTypes> generateCombinations(const vector<EventTypes>& typeLists) const {
-      vector<EventTypes> result;
       if(typeLists.empty())
-        return result;
-      auto toList = [](const EventType* eT){ return EventTypes({eT});};
-      transform(typeLists[0].begin(), typeLists[0].end(), back_inserter(result), toList);
-      for(size_t i=1; i<typeLists.size(); i++) {
-        auto currStart = result.begin();
-        for(const EventType* b : typeLists[i]) {
-          auto currEnd = result.end();
-          copy(currStart, currEnd, back_inserter(result));
-          for(; currStart!=currEnd; currStart++){
-            currStart->push_back(b);
+        return vector<EventTypes>();
+
+      size_t size = accumulate(typeLists.begin(), typeLists.end(), 1UL, [](size_t size, const EventTypes& tL){ return size*tL.size(); });
+
+      if(!size)
+        return vector<EventTypes>();
+
+      vector<EventTypes> result(size);
+      for(size_t i=0; i<size; i++)
+        result[i].resize(typeLists.size());
+
+      size_t currSize=size;
+      size_t oldSize = 1;
+      for(size_t i=0; i < typeLists.size(); i++) {
+        for(size_t m=0; m < oldSize; m++)
+          for(size_t j=0; j < typeLists[i].size(); j++) {
+            currSize /= typeLists[i].size();
+            for(size_t k=0; k < currSize; k++)
+              result[i][j*currSize+k] = typeLists[j][i];
           }
-        }
+        oldSize = typeLists[i].size();
       }
       return result;
     }
 
-    Transformations generate(vector<const Transformation*>& trans,
-                  const EventType& goal, const EventIDs& ids) const {
-      Transformations result;
-      for(const Transformation* t : trans) {
-        vector<EventTypes> usableEventTypes = generateTypeLists(t->in(goal), ids);
-        vector<EventTypes> typeCombinations = generateCombinations(usableEventTypes);
-        auto create = [t, &goal](const EventTypes& in){
-          return ConfiguredTransformation(*t, goal, in);
-        };
-        transform(typeCombinations.begin(), typeCombinations.end(), back_inserter(result), create);
-      }
-      return result;
+
+    void generateAll(const ConfiguredTransformation& trans, const EventIDs& ids, OutIt it) const {
+      vector<EventTypes> usableEventTypes = generateTypeLists(trans.inIDs(), ids);
+      vector<EventTypes> typeCombinations = generateCombinations(usableEventTypes);
+      auto create = [trans](const EventTypes& in){
+        ConfiguredTransformation t(trans);
+        t.in(in);
+        return t;
+      };
+      transform(typeCombinations.begin(), typeCombinations.end(), it, create);
     }
+
+    /** \brief create fitting composite transformation for goal EventID
+     * \param trans all existing heterogeneus transformations
+     * \param goal the EventID of the goal
+     * \param all existing published EventIDs
+     * \return a list of fitting heterogeneus (composite) transformations
+     * \todo filter on input eventids
+     * \todo generate composite transformations
+     **/
+    void findHetTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
+      auto checkAndConvert = [&goal, &ids](OutIt it, const Transformation* t){
+        if (t && EventID(goal) <= t->out() )
+          return *it++ = ConfiguredTransformation(*t, goal);// || !includes(tIn.begin(), tIn.end(), ids.begin(), ids.end());
+        else
+          return it;
+      };
+
+      accumulate(mHetTrans.begin(), mHetTrans.end(), it, checkAndConvert);
+    }
+
+    /** \brief find attribute transforms leading directly to goal
+     *  \param goal the goal EventType
+     *  \param ids available EventIDs
+     *  \return a list of fully configured transformations leading to the goal EventType
+     *  \todo enable composite transforms
+     **/
+    void findAttrTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
+
+      EventIDs comp = extractIDs(EventID(goal), ids);
+      if(!comp.size())
+        return;
+
+      for( EventID id : comp)
+        for( const EventType& type : mTypes.find(id)) {
+          auto toConfTrans = [&type](const Transformation* t){ return ConfiguredTransformation(*t, type); };
+          transform(mAttrTrans.begin(), mAttrTrans.end(), it, toConfTrans);
+      }
+    }
+
   public:
     void regTrans(const Transformation& trans) {
       if(trans==Transformation::invalid)
         return;
-      if(count(mTrans.begin(), mTrans.end(), &trans))
+      TransStorage& storage = (trans.out() == EventID::any)?mAttrTrans:mHetTrans;
+      if(count(storage.begin(), storage.end(), &trans))
         return;
-      mTrans.push_back(&trans);
+      storage.push_back(&trans);
     }
 
     void unregTrans(const Transformation& trans) {
-      auto it = remove(mTrans.begin(), mTrans.end(), &trans);
-      mTrans.erase(it, mTrans.end());
+      TransStorage& storage = (trans.out() == EventID::any)?mAttrTrans:mHetTrans;
+      auto it = remove(storage.begin(), storage.end(), &trans);
+      storage.erase(it, storage.end());
     }
 
     void regType(const EventType& eT) {
@@ -97,19 +148,30 @@ class KBImpl {
       mTypes.unregisterType(eT);
     }
 
+    /** \brief Find Composite Transformations for EventType
+     *  \param goal the output of the Transformations
+     *  \return a list of ConfigureTransformation
+     *  \todo Add homogeneus transforms
+     *  \todo enable composite transforms
+     **/
     Transformations find(const EventType& goal) {
-      EventIDs ids = mTypes.ids(); //<< Get EventIDs currently registered
-      sort(ids.begin(), ids.end());//<< Sort EventIDs ascending
+      EventIDs ids = mTypes.ids();
+      sort(ids.begin(), ids.end()); //<< Sort EventIDs ascending
 
-      EventID out = (EventID)goal; //<< Get goal EventID
-      std::vector<const Transformation*> trans(mTrans); //<< Copy list of transformations
+      Transformations temp;
+      Transformations result;
 
-      filter(trans, out, ids); //<< Remove all transformation not leading to the goal EventID or with unfullfilled dependancies
-      Transformations result = generate(trans, goal, ids); //<< Generate all configurations
-      auto resultEnd = remove_if(result.begin(), result.end(),
-        [](const ConfiguredTransformation& t){ return !t.check();}
-      ); //<< Remove invalid configurations
-      result.erase(resultEnd, result.end());
+      findHetTrans(goal, ids, back_inserter(temp));
+      findAttrTrans(goal, ids, back_inserter(temp));
+
+      for(const ConfiguredTransformation& confTrans : temp)
+        generateAll(confTrans, ids, back_inserter(result));
+
+      auto it = remove_if(result.begin(), result.end(),
+                          [](const ConfiguredTransformation& t){ return !t.check(); }
+                );
+      result.erase(it, result.end());
+
       return result;
     }
 

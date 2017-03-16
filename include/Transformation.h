@@ -84,20 +84,31 @@ class ConfiguredTransformation {
   public:
   using EventTypes = Transformer::EventTypes;
   using TransPtr   = std::unique_ptr<Transformer>;
+  using EventIDs   = Transformation::EventIDs;
   private:
   const Transformation* mTrans = nullptr;
   const EventType* mOut = nullptr;
   EventTypes mIn;
   public:
   ConfiguredTransformation() = default;
-  ConfiguredTransformation(const Transformation& t, const EventType& out, const EventTypes in)
+  ConfiguredTransformation(const Transformation& t, const EventType& out, const EventTypes in={})
     : mTrans(&t), mOut(&out), mIn(in)
   {}
-  TransPtr create() const { return (mTrans&&mOut)?mTrans->create(*mOut, mIn):TransPtr(); }
-  bool     check() const { return mTrans && mOut && mTrans->check(*mOut, mIn); }
+  TransPtr create() const {
+    if(!check())
+      return TransPtr();
+    else
+      return mTrans->create(*mOut, mIn);
+  }
+  bool  check() const {
+    return (mTrans && mOut && mIn.size() == mTrans->arity() &&
+            mTrans->check(*mOut, mIn));
+  }
   const Transformation& trans() const { return *mTrans; }
   const EventType& out() const { return *mOut; }
   const EventTypes& in() const { return mIn; }
+  EventIDs inIDs() const { return (mTrans && mOut)?mTrans->in(*mOut):EventIDs(); }
+  void in(const EventTypes& eTs) { mIn = eTs; }
   bool operator==(const Transformer& t) const { return t==*this; }
   friend std::ostream& operator<<(std::ostream&, const ConfiguredTransformation&);
 };
