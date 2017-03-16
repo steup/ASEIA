@@ -24,7 +24,10 @@ class KBImpl {
     TransStorage mAttrTrans;
     TypeStorage  mTypes;
 
-
+    /** \brief extract comaptible EventIds  from published EventIds
+     *  \param goal the goal EventID
+     *  \param ids all published EventIds
+     **/
     EventIDs extractIDs(EventID goal, const EventIDs& ids) const {
       EventIDs result;
       auto start = lower_bound(ids.begin(), ids.end(), goal);
@@ -33,10 +36,19 @@ class KBImpl {
       return result;
     }
 
+    /** \brief add compatible EventTypes to list
+     *  \param id the EventID the EventTypes need to be compatible to
+     *  \param it Output iterator to store EventTypes
+     **/
     void addValidTypes(EventID id, TypeOutIt it) const {
       transform(mTypes.find(id).first, mTypes.find(id).second, it, [](const EventType& eT){ return &eT;});
     }
 
+    /** \brief generate list of compatible EventTypes for input EventIDs
+     *  \param in Input list of EventIDs
+     *  \param ids  all existing published EventIds
+     *  \return list of compatible EventTypes for each input EventID
+     **/
     vector<EventTypes> generateTypeLists(const EventIDs& in, const EventIDs& ids) const{
       //Extract IDs
       vector<EventTypes> result(in.size());
@@ -48,7 +60,11 @@ class KBImpl {
       return result;
     }
 
-    vector<EventTypes> generateCombinations(const vector<EventTypes>& typeLists) const {
+    /** \brief compute kartesian product
+     *  \param typeLists list of EventTypes for each required input EventID
+     *  \return kartesian product of the input lists
+     **/
+    vector<EventTypes> cartesianProduct(const vector<EventTypes>& typeLists) const {
       if(typeLists.empty())
         return vector<EventTypes>();
 
@@ -75,10 +91,14 @@ class KBImpl {
       return result;
     }
 
-
+    /** \brief generate all fully configured transformations
+     *  \param trans a partially configured transformation
+     *  \param ids currently published EventIDs
+     *  \param it Output iterator to store resulting fully configured transformations
+     **/
     void generateAll(const ConfiguredTransformation& trans, const EventIDs& ids, OutIt it) const {
       vector<EventTypes> usableEventTypes = generateTypeLists(trans.inIDs(), ids);
-      vector<EventTypes> typeCombinations = generateCombinations(usableEventTypes);
+      vector<EventTypes> typeCombinations = cartesianProduct(usableEventTypes);
       auto create = [trans](const EventTypes& in){
         ConfiguredTransformation t(trans);
         t.in(in);
@@ -87,11 +107,10 @@ class KBImpl {
       transform(typeCombinations.begin(), typeCombinations.end(), it, create);
     }
 
-    /** \brief create fitting composite transformation for goal EventID
-     * \param trans all existing heterogeneus transformations
+    /** \brief create fitting partially configured composite transformations for goal EventID
      * \param goal the EventID of the goal
      * \param all existing published EventIDs
-     * \return a list of fitting heterogeneus (composite) transformations
+     * \param it Output iterator to output fitting partially generated transformations
      * \todo filter on input eventids
      * \todo generate composite transformations
      **/
@@ -109,7 +128,7 @@ class KBImpl {
     /** \brief find attribute transforms leading directly to goal
      *  \param goal the goal EventType
      *  \param ids available EventIDs
-     *  \return a list of fully configured transformations leading to the goal EventType
+     *  \param it Output iterator to output partially configured transformations
      *  \todo enable composite transforms
      **/
     void findAttrTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
