@@ -167,10 +167,9 @@ TEST_F(FilterTestSuite, extendedSerializationTest) {
   auto i = std::back_inserter(buffer);
   Serializer<decltype(i)> s(i);
   FilterEvent<decltype(s)> s0(0, s);
-  FilterEvent<decltype(s)> s1(1);
+  FilterEvent<decltype(s)> s1(1, s);
 
 	uint16_t count = 0;
-
   s << filter0(s0, s1);
 	EXPECT_EQ(buffer[0], e0Time) << "Placeholder event 0 time serialized wrongly";
 	EXPECT_EQ(buffer[count+1], gt) << "Operation > with event argument serialized wrongly";
@@ -232,7 +231,7 @@ TEST_F(FilterTestSuite, compositeSerializationTest) {
   auto i = std::back_inserter(buffer);
   Serializer<decltype(i)> s(i);
   FilterEvent<decltype(s)> s0(0, s);
-  FilterEvent<decltype(s)> s1(1);
+  FilterEvent<decltype(s)> s1(1, s);
 	
   s << filter0(s0, s1);
 	EXPECT_EQ(buffer[0], e0Pos) << "Placeholder event 0 position serialized wrongly";
