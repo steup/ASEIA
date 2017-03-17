@@ -17,7 +17,7 @@ class EventType{
 
 
   public:
-    class const_iterator {
+    class const_iterator : public std::iterator<std::forward_iterator_tag, AttributeType> {
 			private:
 				StorageType::const_iterator  mI;
       public:
