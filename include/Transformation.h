@@ -1,6 +1,7 @@
 #pragma once
 
 #include <EventID.h>
+#include <EventType.h>
 
 #include <iosfwd>
 #include <vector>
@@ -67,6 +68,7 @@ class Transformation {
     virtual ~Transformation() = default;
     virtual std::size_t arity() const = 0;
     virtual EventIDs in(EventID goal) const = 0;
+    virtual std::vector<EventType> in(const EventType& goal, const  EventType& provided) const = 0;
     const EventID& out() const { return mOut; }
     virtual bool check(const EventType& out, const EventTypes& in) const =0;
     virtual TransPtr create(const EventType& out, const EventTypes& in) const =0;
@@ -107,7 +109,7 @@ class ConfiguredTransformation {
   const Transformation& trans() const { return *mTrans; }
   const EventType& out() const { return *mOut; }
   const EventTypes& in() const { return mIn; }
-  EventIDs inIDs() const { return (mTrans && mOut)?mTrans->in(*mOut):EventIDs(); }
+  EventIDs inIDs() const { return (mTrans && mOut)?mTrans->in(EventID(*mOut)):EventIDs(); }
   void in(const EventTypes& eTs) { mIn = eTs; }
   bool operator==(const Transformer& t) const { return t==*this; }
   friend std::ostream& operator<<(std::ostream&, const ConfiguredTransformation&);

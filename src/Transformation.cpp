@@ -31,6 +31,10 @@ class InvalidTransformation : public Transformation {
     InvalidTransformation() : Transformation(EventID::any) {
       KnowledgeBase::unregisterTransformation(*this);
     }
+    virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
+      vector<EventType> result;
+      return result;
+    }
     virtual bool check(const EventType& out, const EventTypes& in) const {
       return false;
     }

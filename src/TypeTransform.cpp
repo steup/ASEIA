@@ -8,28 +8,38 @@
 #include <MetaFactory.h>
 
 #include <iostream>
+#include <algorithm>
+#include <numeric>
 
 using namespace std;
 
 class TypeTransformer : public Transformer {
   private:
-    using Storage = std::map<id::attribute::ID, ValueType>;
+    // from -> to
+    using Storage = std::map<id::attribute::ID, pair<ValueType, ValueType>>;
     Storage mTypeDeltas;
 
 	public:
+    using TypeList = Storage;
+    static TypeList typeDiff(const EventType& to, const EventType&  from) {
+      TypeList result;
+      for(const AttributeType& aT : to) {
+        const AttributeType* temp = from.attribute(aT.id());
+        if(!temp || (ValueType)aT.value() == (ValueType)temp->value())
+          continue;
+
+				result.insert(make_pair(aT.id(), make_pair(temp->value(), aT.value())));
+      }
+      return  result;
+    }
+
     TypeTransformer(const Transformation* t, const EventType& out, const EventTypes& in)
 			: Transformer(t, out, in)
 		{
       if(in.size()!=1 || !in.front())
         return;
       const EventType& b = *in.front();
-      for(const AttributeType& aT : out) {
-        const AttributeType* temp = b.attribute(aT.id());
-        if(!temp || (ValueType)aT.value() == (ValueType)temp->value())
-          continue;
-
-				mTypeDeltas.insert(make_pair(aT.id(), (ValueType)aT.value()));
-      }
+      mTypeDeltas = typeDiff(out, b);
     }
 
     virtual bool check(const Events& events) const {
@@ -42,8 +52,8 @@ class TypeTransformer : public Transformer {
       MetaEvent e = *events.front();
       for(MetaAttribute& a : e) {
         auto it = mTypeDeltas.find(a.id());
-        if(it != mTypeDeltas.end())
-          a.value()=MetaFactory::instance().convert(it->second, a.value());
+        if(it != mTypeDeltas.end() && it->second.first != it->second.second)
+          a.value()=MetaFactory::instance().convert(it->second.second, a.value());
       }
       return e;
     }
@@ -51,7 +61,7 @@ class TypeTransformer : public Transformer {
     virtual void print(std::ostream& o) const {
       o << "Cast " << EventID(mOut) << ": \n";
       for(const Storage::value_type& typeOp : mTypeDeltas)
-        o << "\t" << id::attribute::name(typeOp.first) << " -> " << typeOp.second << "\n";
+        o << "\t" << id::attribute::name(typeOp.first) << ": " <<  typeOp.second.first << " -> " << typeOp.second.second << "\n";
     }
 
 };
@@ -68,16 +78,27 @@ class TypeTransformation : public Transformation {
       const EventType& b = *in.front();
       if(EventID(out)!=EventID(b))
         return false;
-      for(const AttributeType& a : out) {
-        const AttributeType* b = in.front()->attribute(a.id());
-        if(b && (ValueType)a.value() != (ValueType)b->value())
-          return true;
-      }
-      return false;
+
+      TypeTransformer::TypeList typeDiff = TypeTransformer::typeDiff(out, b);
+      auto check = [](const pair< id::attribute::ID, pair<ValueType, ValueType>>& v) {
+        return v.second.first != v.second.second;
+      };
+      return  any_of(typeDiff.begin(), typeDiff.end(), check);
     }
 
     virtual EventIDs in(EventID goal) const {
       return EventIDs({goal});
+    }
+
+    virtual vector<EventType> in(const EventType& goal, const EventType& provided)  const {
+      TypeTransformer::TypeList typeDiff = TypeTransformer::typeDiff(goal, provided);
+      auto apply = [](EventType eT, const pair<id::attribute::ID, pair<ValueType, ValueType>>& v){
+        EventType result = eT;
+        AttributeType& a = *result.attribute(v.first);
+        a.value() = v.second.first;
+        return result;
+      };
+      return {accumulate(typeDiff.begin(), typeDiff.end(), goal, apply)};
     }
 
     virtual std::size_t arity() const {

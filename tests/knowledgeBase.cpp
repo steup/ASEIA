@@ -8,6 +8,7 @@ namespace test {
  using std::ratio;
  using std::cout;
  using std::endl;
+ using std::vector;
 
   struct KnowledgeBaseTestSuite : public ::testing::Test {
 
@@ -37,6 +38,10 @@ namespace test {
       virtual EventIDs in(EventID goal) const  {
         return EventIDs({ EventID({Test3::value()}) });
       }
+      virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
+        vector<EventType> result;
+        return result;
+      }
       virtual bool check(const EventType& out, const EventTypes& in) const  { return true; }
       virtual TransPtr create(const EventType& out, const EventTypes& in) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << "Heterogeneus Transform 1"; }
@@ -47,6 +52,10 @@ namespace test {
       virtual std::size_t arity() const  { return 2; }
       virtual EventIDs in(EventID goal) const  {
         return EventIDs({ EventID({Test1::value()}), EventID({Test2::value()})});
+      }
+      virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
+        vector<EventType> result;
+        return result;
       }
       virtual bool check(const EventType& out, const EventTypes& in) const  { return true; }
       virtual TransPtr create(const EventType& out, const EventTypes& in) const { return TransPtr(); }
@@ -67,6 +76,10 @@ namespace test {
             return false;
         }
         return true;
+      }
+      virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
+        vector<EventType> result;
+        return result;
       }
       virtual TransPtr create(const EventType& out, const EventTypes& in) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << "Homogeneus Transform 1"; }
@@ -94,6 +107,10 @@ namespace test {
         return in[1]->attribute(Test4::value())->scale().reference() != outRef &&
                in[1]->attribute(Test1::value())->scale().reference() != inRef;
       }
+      virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
+        vector<EventType> result;
+        return result;
+      }
       virtual TransPtr create(const EventType& out, const EventTypes& in) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << "Homogeneus Transform 2"; }
     } hom1;
@@ -103,6 +120,10 @@ namespace test {
       virtual std::size_t arity() const  { return 1; }
       virtual EventIDs in(EventID goal) const  {
         return EventIDs({ goal });
+      }
+      virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
+        vector<EventType> result;
+        return result;
       }
       virtual bool check(const EventType& out, const EventTypes& in) const  {
         for(const auto& a : out) {

@@ -15,6 +15,9 @@ class ScaleType{
     public:
       ScaleType() = default;
 
+    ScaleType(int32_t num, uint32_t denom, uint32_t ref)
+      : mNum(num), mDenom(denom), mRef(ref) {}
+
     template<typename ratio, uint32_t ref>
     ScaleType(const Scale<ratio, ref> scale): mNum(scale.num), mDenom(scale.den), mRef(ref) {}
 
