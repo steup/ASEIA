@@ -69,22 +69,8 @@ class TypeTransformer : public Transformer {
 class TypeTransformation : public Transformation {
   public:
 		TypeTransformation()
-			: Transformation(EventID::any)
+			: Transformation(Transformation::Type::attribute, 1, EventID::any)
 		{	}
-    /** \todo fix lenient check for other subtypes **/
-    virtual bool check(const EventType& out, const EventTypes& in) const {
-      if(in.size()!=1 || !in.front())
-        return false;
-      const EventType& b = *in.front();
-      if(EventID(out)!=EventID(b))
-        return false;
-
-      TypeTransformer::TypeList typeDiff = TypeTransformer::typeDiff(out, b);
-      auto check = [](const pair< id::attribute::ID, pair<ValueType, ValueType>>& v) {
-        return v.second.first != v.second.second;
-      };
-      return  any_of(typeDiff.begin(), typeDiff.end(), check);
-    }
 
     virtual EventIDs in(EventID goal) const {
       return EventIDs({goal});
@@ -101,15 +87,11 @@ class TypeTransformation : public Transformation {
       return {accumulate(typeDiff.begin(), typeDiff.end(), goal, apply)};
     }
 
-    virtual std::size_t arity() const {
-      return 1;
-    }
-
     virtual TransPtr create(const EventType& out, const EventTypes& in) const {
-			if(check(out, in))
-				return TransPtr(new TypeTransformer(this, out, in));
-			else
-				return TransPtr();
+      if(in.size()!=arity())
+        return TransPtr();
+      else
+        return TransPtr(new TypeTransformer(this, out, in));
 		}
 
     virtual void print(std::ostream& o) const {

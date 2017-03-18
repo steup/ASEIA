@@ -8,7 +8,8 @@
 
 using namespace std;
 
-Transformation::Transformation(const EventID& out) : mOut(out) {
+Transformation::Transformation(Type type, size_t arity, const EventID& out)
+  : mOut(out), mType(type), mArity(arity) {
   KnowledgeBase::registerTransformation(*this);
 }
 
@@ -28,21 +29,11 @@ ostream& operator<<(ostream& o, const ConfiguredTransformation& t) {
 
 class InvalidTransformation : public Transformation {
   public:
-    InvalidTransformation() : Transformation(EventID::any) {
+    InvalidTransformation() : Transformation(Type::invalid, 0, EventID::any) {
       KnowledgeBase::unregisterTransformation(*this);
-    }
-    virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
-      vector<EventType> result;
-      return result;
-    }
-    virtual bool check(const EventType& out, const EventTypes& in) const {
-      return false;
     }
     virtual TransPtr create(const EventType& out, const EventTypes& in) const {
       return TransPtr();
-    }
-    virtual std::size_t arity() const {
-      return 0;
     }
     virtual void print(std::ostream& o) const {
       o << "invalid";

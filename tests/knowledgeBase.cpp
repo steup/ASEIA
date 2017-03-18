@@ -32,115 +32,94 @@ namespace test {
       static constexpr const ::id::attribute::ID value() { return 255; }
     };
 
-    struct HetTrans1 : public Transformation {
-      HetTrans1() : Transformation(EventID({Test2::value()})) {}
-      virtual std::size_t arity() const  { return 1; }
+    struct HetTrans0 : public Transformation {
+      const EventType& outE;
+      const EventType& inE;
+      HetTrans0(const EventType& outE, const EventType& inE)
+        : Transformation(Type::heterogeneus, 1, EventID({Test2::value()})), outE(outE), inE(inE)
+      {}
       virtual EventIDs in(EventID goal) const  {
         return EventIDs({ EventID({Test3::value()}) });
       }
-      virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
-        vector<EventType> result;
-        return result;
+      virtual vector<EventType> in(const EventType& goal) const  {
+        if(goal == outE)
+          return {inE};
+        else
+          return {};
       }
-      virtual bool check(const EventType& out, const EventTypes& in) const  { return true; }
-      virtual TransPtr create(const EventType& out, const EventTypes& in) const { return TransPtr(); }
+      virtual TransPtr create(const EventType& outE, const EventTypes& inE) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << "Heterogeneus Transform 1"; }
-    } het0;
+    };
 
-    struct HetTrans2 : public Transformation {
-      HetTrans2() : Transformation(EventID({Test0::value()})) {}
-      virtual std::size_t arity() const  { return 2; }
+    struct HetTrans1 : public Transformation {
+      const EventType& outE;
+      const EventType& in0;
+      const EventType& in1;
+      HetTrans1(const EventType& outE, const EventType& in0, const EventType& in1)
+        : Transformation(Type::heterogeneus, 2, EventID({Test0::value()})), outE(outE), in0(in0), in1(in1)
+      {}
       virtual EventIDs in(EventID goal) const  {
         return EventIDs({ EventID({Test1::value()}), EventID({Test2::value()})});
       }
-      virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
-        vector<EventType> result;
-        return result;
+      virtual vector<EventType> in(const EventType& goal) const  {
+        if(goal == outE)
+          return {in0, in1};
+        else
+          return {};
       }
-      virtual bool check(const EventType& out, const EventTypes& in) const  { return true; }
-      virtual TransPtr create(const EventType& out, const EventTypes& in) const { return TransPtr(); }
+      virtual TransPtr create(const EventType& outE, const EventTypes& inE) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << "Heterogeneus Transform 2"; }
-    } het1;
+    };
 
-    struct HomTrans1 : public Transformation {
-      HomTrans1() : Transformation(EventID::any) {}
-      virtual std::size_t arity() const  { return 1; }
+    struct HomTrans0 : public Transformation {
+      const EventType& outE;
+      const EventType& inE;
+      const EventType& p;
+      HomTrans0(const EventType& outE, const EventType& inE, const EventType& p)
+        : Transformation(Type::attribute, 1, EventID::any), outE(outE), inE(inE), p(p)
+      {}
       virtual EventIDs in(EventID goal) const  {
         return EventIDs({ goal });
       }
-      virtual bool check(const EventType& out, const EventTypes& in) const  {
-        for(const auto& a : out) {
-          const AttributeType* b = in[0]->attribute(a.id());
-          if(!b) return false;
-          if(a.value() != b->value() || a.unit() != b->unit() || a.scale().reference() !=b->scale().reference())
-            return false;
-        }
-        return true;
-      }
       virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
-        vector<EventType> result;
-        return result;
+        if(goal == outE && provided == p)
+          return {inE};
+        else
+          return {};
       }
-      virtual TransPtr create(const EventType& out, const EventTypes& in) const { return TransPtr(); }
+      virtual TransPtr create(const EventType& outE, const EventTypes& inE) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << "Homogeneus Transform 1"; }
-    } hom0;
+    };
 
-
-
-    struct HomTrans2 : public Transformation {
-      HomTrans2() : Transformation(EventID::any) {}
-      virtual std::size_t arity() const  { return 2; }
+    struct HomTrans1 : public Transformation {
+      const EventType& outE;
+      const EventType& in0;
+      const EventType& in1;
+      const EventType& p;
+      HomTrans1(const EventType& outE, const EventType& in0, const EventType& in1, const EventType& p)
+        : Transformation(Type::attribute, 2, EventID::any), outE(outE), in0(in0), in1(in1), p(p)
+      {}
       virtual EventIDs in(EventID goal) const  {
         return EventIDs({ goal, EventID({Test4::value()})});
       }
-      virtual bool check(const EventType& out, const EventTypes& in) const {
-        for(const auto& a : out) {
-          const AttributeType* b = in[0]->attribute(a.id());
-          if(!b) return false;
-          if(a.value() != b->value() || a.unit() != b->unit() ||
-             a.scale().num() != b->scale().num() || a.scale().denom() != b->scale().denom() )
-            return false;
-        }
-
-        uint32_t inRef = in[0]->attribute(Test1::value())->scale().reference();
-        uint32_t outRef = out.attribute(Test1::value())->scale().reference();
-        return in[1]->attribute(Test4::value())->scale().reference() != outRef &&
-               in[1]->attribute(Test1::value())->scale().reference() != inRef;
-      }
       virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
-        vector<EventType> result;
-        return result;
+        if(goal == outE && provided == p)
+          return {in0, in1};
+        else
+          return {};
       }
-      virtual TransPtr create(const EventType& out, const EventTypes& in) const { return TransPtr(); }
+      virtual TransPtr create(const EventType& outE, const EventTypes& inE) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << "Homogeneus Transform 2"; }
-    } hom1;
-
-    struct HomTrans3 : public Transformation {
-      HomTrans3() : Transformation(EventID::any) {}
-      virtual std::size_t arity() const  { return 1; }
-      virtual EventIDs in(EventID goal) const  {
-        return EventIDs({ goal });
-      }
-      virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
-        vector<EventType> result;
-        return result;
-      }
-      virtual bool check(const EventType& out, const EventTypes& in) const  {
-        for(const auto& a : out) {
-          const AttributeType* b = in[0]->attribute(a.id());
-          if(!b) return false;
-          if(a.value().cols() != b->value().cols() || a.value().rows() != b->value().rows() ||
-             a.unit() != b->unit() || a.scale() !=b->scale())
-            return false;
-        }
-        return true;
-      }
-      virtual TransPtr create(const EventType& out, const EventTypes& in) const { return TransPtr(); }
-      virtual void print(std::ostream& o) const { o << "Homogeneus Transform 3"; }
-    } hom2;
-
+    };
 
     EventType eT0, eT1, eT2, eT3, eT4, eT5, eT6, eT7;
+
+    HetTrans0 het0=HetTrans0(eT2, eT3);
+    HetTrans1 het1=HetTrans1(eT0, eT1, eT2);
+    HomTrans0 hom0=HomTrans0(eT3, eT4, eT4);
+    HomTrans1 hom1=HomTrans1(eT1, eT5, eT6, eT5);
+    HomTrans0 hom2=HomTrans0(eT4, eT7, eT7);
+
 
     KnowledgeBaseTestSuite() {
       ValueType v(id::type::Float::value(), 1, 1, false);
@@ -182,15 +161,19 @@ namespace test {
   TEST_F(KnowledgeBaseTestSuite, singleHeterogeneusTransform) {
     EXPECT_EQ(EventID(eT2), het0.out()) << "Wrong Output ID";
     EXPECT_EQ(het0.arity(), 1U) << "Wrong arity";
-    ASSERT_EQ(het0.in(eT3).size(), 1U) << "Wrong number of inputs";
-    EXPECT_EQ(EventID(eT3), het0.in(eT2).front()) << "Wrong input ID";
+    ASSERT_EQ(het0.in(EventID(eT2)).size(), 1U) << "Wrong number of input IDs";
+    EXPECT_EQ(EventID(eT3), het0.in(EventID(eT2)).front()) << "Wrong input ID";
+    ASSERT_EQ(het0.in(eT2).size(), 1U) << "Wrong number of input Types";
+    EXPECT_EQ(eT3, het0.in(eT2).front()) << "Wrong input Type";
   }
 
   TEST_F(KnowledgeBaseTestSuite, singleHomogeneusTransform) {
     EXPECT_EQ(EventID::any, hom0.out()) << "Wrong Output ID";
     EXPECT_EQ(hom0.arity(), 1U) << "Wrong arity";
-    ASSERT_EQ(hom0.in(eT3).size(), 1U) << "Wrong number of inputs";
-    EXPECT_EQ(EventID(eT4), hom0.in(eT3).front()) << "Wrong input ID";
+    ASSERT_EQ(hom0.in(EventID(eT3)).size(), 1U) << "Wrong number of input IDs";
+    EXPECT_EQ(EventID(eT4), hom0.in(EventID(eT3)).front()) << "Wrong input ID";
+    ASSERT_EQ(hom0.in(eT3, eT4).size(), 1U) << "Wrong number of input Types";
+    EXPECT_EQ(eT4, hom0.in(eT3, eT4).front()) << "Wrong input Type";
   }
 
   TEST_F(KnowledgeBaseTestSuite, findSingleHeterogeneusTransform) {
@@ -227,8 +210,6 @@ namespace test {
     KnowledgeBase::registerEventType(eT7);
     Transformations ts = KnowledgeBase::findTransforms(eT3);
     ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
-    for(const ConfiguredTransformation& t : ts)
-      cout << t << endl;
     EXPECT_TRUE(checkResult(ts, hom2)) << "Searched Transform not found in list";
   }
 

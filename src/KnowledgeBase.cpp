@@ -20,9 +20,8 @@ class KBImpl {
   private:
     using OutIt = back_insert_iterator<Transformations>;
     using TypeOutIt = back_insert_iterator<EventTypes>;
-    TransStorage mHetTrans;
-    TransStorage mAttrTrans;
-    TypeStorage  mTypes;
+    TypeStorage mTypes;
+    TransStorage mHetTrans, mHomTrans, mAtt1Trans, mAttNTrans;
 
     /** \brief extract comaptible EventIds  from published EventIds
      *  \param goal the goal EventID
@@ -39,9 +38,10 @@ class KBImpl {
     /** \brief add compatible EventTypes to list
      *  \param id the EventID the EventTypes need to be compatible to
      *  \param it Output iterator to store EventTypes
+     *  \return the Output iterator after insertion
      **/
-    void addValidTypes(EventID id, TypeOutIt it) const {
-      transform(mTypes.find(id).first, mTypes.find(id).second, it, [](const EventType& eT){ return &eT;});
+    TypeOutIt addValidTypes(TypeOutIt it, EventID id) const {
+      return transform(mTypes.find(id).first, mTypes.find(id).second, it, [](const EventType& eT){ return &eT;});
     }
 
     /** \brief generate list of compatible EventTypes for input EventIDs
@@ -49,7 +49,7 @@ class KBImpl {
      *  \param ids  all existing published EventIds
      *  \return list of compatible EventTypes for each input EventID
      **/
-    vector<EventTypes> generateTypeLists(const EventIDs& in, const EventIDs& ids) const{
+    /*vector<EventTypes> generateTypeLists(const EventIDs& in, const EventIDs& ids) const{
       //Extract IDs
       vector<EventTypes> result(in.size());
       for(unsigned int i=0; i < in.size(); i++) {
@@ -58,13 +58,13 @@ class KBImpl {
           break;
       }
       return result;
-    }
+    }*/
 
     /** \brief compute kartesian product
      *  \param typeLists list of EventTypes for each required input EventID
      *  \return kartesian product of the input lists
      **/
-    vector<EventTypes> cartesianProduct(const vector<EventTypes>& typeLists) const {
+    /*vector<EventTypes> cartesianProduct(const vector<EventTypes>& typeLists) const {
       if(typeLists.empty())
         return vector<EventTypes>();
 
@@ -89,14 +89,14 @@ class KBImpl {
         oldSize = typeLists[i].size();
       }
       return result;
-    }
+    }*/
 
     /** \brief generate all fully configured transformations
      *  \param trans a partially configured transformation
      *  \param ids currently published EventIDs
      *  \param it Output iterator to store resulting fully configured transformations
      **/
-    void generateAll(const ConfiguredTransformation& trans, const EventIDs& ids, OutIt it) const {
+    /*void generateAll(const ConfiguredTransformation& trans, const EventIDs& ids, OutIt it) const {
       vector<EventTypes> usableEventTypes = generateTypeLists(trans.inIDs(), ids);
       vector<EventTypes> typeCombinations = cartesianProduct(usableEventTypes);
       auto create = [trans](const EventTypes& in){
@@ -105,6 +105,16 @@ class KBImpl {
         return t;
       };
       transform(typeCombinations.begin(), typeCombinations.end(), it, create);
+    }*/
+
+    EventTypes mapTypes(const vector<EventType>& types) const {
+      auto convert = [this](const EventType& t){
+        auto range = mTypes.find(t);
+        return range.empty()?nullptr:(const EventType*)range.first;
+      };
+      EventTypes used(types.size());
+      transform(types.begin(), types.end(), used.begin(), convert);
+      return used;
     }
 
     /** \brief create fitting partially configured composite transformations for goal EventID
@@ -114,15 +124,22 @@ class KBImpl {
      * \todo filter on input eventids
      * \todo generate composite transformations
      **/
-    void findHetTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
-      auto checkAndConvert = [&goal, &ids](OutIt it, const Transformation* t){
-        if (t && EventID(goal) <= t->out() )
-          return *it++ = ConfiguredTransformation(*t, goal);// || !includes(tIn.begin(), tIn.end(), ids.begin(), ids.end());
-        else
-          return it;
+    void generateHetTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
+      auto checkAndConvert = [&goal, &ids, this](OutIt it, const Transformation* t){
+        if (t && EventID(goal) <= t->out() ) {
+          vector<EventType> inT = t->in(goal);
+          EventTypes used = mapTypes(inT);
+          if( !inT.empty() && !count(used.begin(), used.end(), nullptr) )
+            *it++ = ConfiguredTransformation(*t, goal, used);
+        }
+        return it;
       };
 
       accumulate(mHetTrans.begin(), mHetTrans.end(), it, checkAndConvert);
+    }
+
+    void generateHomTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
+
     }
 
     /** \brief find attribute transforms leading directly to goal
@@ -131,30 +148,51 @@ class KBImpl {
      *  \param it Output iterator to output partially configured transformations
      *  \todo enable composite transforms
      **/
-    void findAttrTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
+    void generateAttTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
 
       EventIDs comp = extractIDs(EventID(goal), ids);
-      if(!comp.size())
-        return;
-      
-      auto toConfTrans = [&goal](const Transformation* t){ return ConfiguredTransformation(*t, goal); };
-      transform(mAttrTrans.begin(), mAttrTrans.end(), it, toConfTrans);
+
+      EventTypes provided;
+      accumulate(comp.begin(), comp.end(), back_inserter(provided),
+                 [this](TypeOutIt it, EventID id) { return addValidTypes(it, id); }
+                );
+
+      TransStorage trans = mAtt1Trans;
+      copy(mAttNTrans.begin(), mAttNTrans.end(), back_inserter(trans));
+
+      for(const EventType* in : provided)
+        for(const Transformation* t : trans) {
+          vector<EventType> inT = t->in(goal, *in);
+          EventTypes used = mapTypes(inT);
+          if( !inT.empty() && !count(used.begin(), used.end(), nullptr) )
+            *it++ = ConfiguredTransformation(*t, goal, used);
+        }
     }
 
   public:
     void regTrans(const Transformation& trans) {
-      if(trans==Transformation::invalid)
+      TransStorage* storagePtr;
+      switch(trans.type()) {
+        case(Transformation::Type::invalid): return;
+        case(Transformation::Type::heterogeneus): storagePtr = &mHetTrans; break;
+        case(Transformation::Type::homogeneus)  : storagePtr = &mHomTrans; break;
+        case(Transformation::Type::attribute)   : storagePtr = (trans.arity()==1)?&mAtt1Trans:&mAttNTrans; break;
+      }
+      if(count(storagePtr->begin(), storagePtr->end(), &trans))
         return;
-      TransStorage& storage = (trans.out() == EventID::any)?mAttrTrans:mHetTrans;
-      if(count(storage.begin(), storage.end(), &trans))
-        return;
-      storage.push_back(&trans);
+      storagePtr->push_back(&trans);
     }
 
     void unregTrans(const Transformation& trans) {
-      TransStorage& storage = (trans.out() == EventID::any)?mAttrTrans:mHetTrans;
-      auto it = remove(storage.begin(), storage.end(), &trans);
-      storage.erase(it, storage.end());
+      TransStorage* storagePtr;
+      switch(trans.type()) {
+        case(Transformation::Type::invalid): return;
+        case(Transformation::Type::heterogeneus): storagePtr = &mHetTrans; break;
+        case(Transformation::Type::homogeneus)  : storagePtr = &mHomTrans; break;
+        case(Transformation::Type::attribute)   : storagePtr = (trans.arity()==1)?&mAtt1Trans:&mAttNTrans; break;
+      }
+      auto it = remove(storagePtr->begin(), storagePtr->end(), &trans);
+      storagePtr->erase(it, storagePtr->end());
     }
 
     void regType(const EventType& eT) {
@@ -175,14 +213,11 @@ class KBImpl {
       EventIDs ids = mTypes.ids();
       sort(ids.begin(), ids.end()); //<< Sort EventIDs ascending
 
-      Transformations temp;
       Transformations result;
 
-      findHetTrans(goal, ids, back_inserter(temp));
-      findAttrTrans(goal, ids, back_inserter(temp));
-
-      for(const ConfiguredTransformation& confTrans : temp)
-        generateAll(confTrans, ids, back_inserter(result));
+      generateHetTrans(goal, ids, back_inserter(result));
+      generateHomTrans(goal, ids, back_inserter(result));
+      generateAttTrans(goal, ids, back_inserter(result));
 
       auto it = remove_if(result.begin(), result.end(),
                           [](const ConfiguredTransformation& t){ return !t.check(); }

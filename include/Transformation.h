@@ -60,19 +60,31 @@ class Transformation {
     using EventIDs   = std::vector<EventID>;
     using TransPtr   = std::unique_ptr<Transformer>;
     static const Transformation& invalid;
+    enum class Type{
+      invalid,
+      heterogeneus,
+      homogeneus,
+      attribute
+    };
   private:
     const EventID mOut;
-
+    const Type mType = Type::invalid;
+    const std::size_t mArity=0;
   public:
-    Transformation(const EventID& out);
-    virtual ~Transformation() = default;
-    virtual std::size_t arity() const = 0;
-    virtual EventIDs in(EventID goal) const = 0;
-    virtual std::vector<EventType> in(const EventType& goal, const  EventType& provided) const = 0;
+    Transformation(Type type, std::size_t arity, const EventID& out);
+
+    std::size_t arity() const { return mArity; }
     const EventID& out() const { return mOut; }
-    virtual bool check(const EventType& out, const EventTypes& in) const =0;
+    Type type() const { return mType; }
+
+    virtual ~Transformation() = default;
+    virtual std::vector<EventType> in(const EventType& goal) const { return {}; }
+    virtual std::vector<EventType> in(const EventType& goal, const  EventType& provided) const {return {}; }
+
+    virtual EventIDs in(EventID goal) const = 0;
     virtual TransPtr create(const EventType& out, const EventTypes& in) const =0;
     virtual void print(std::ostream& o) const = 0;
+
     bool operator==(const Transformation& b) const { return this == &b; }
     bool operator!=(const Transformation& b) const { return this != &b; }
 };
@@ -93,7 +105,7 @@ class ConfiguredTransformation {
   EventTypes mIn;
   public:
   ConfiguredTransformation() = default;
-  ConfiguredTransformation(const Transformation& t, const EventType& out, const EventTypes in={})
+  ConfiguredTransformation(const Transformation& t, const EventType& out, const EventTypes in)
     : mTrans(&t), mOut(&out), mIn(in)
   {}
   TransPtr create() const {
@@ -103,8 +115,7 @@ class ConfiguredTransformation {
       return mTrans->create(*mOut, mIn);
   }
   bool  check() const {
-    return (mTrans && mOut && mIn.size() == mTrans->arity() &&
-            mTrans->check(*mOut, mIn));
+    return mTrans && mOut && mIn.size() == mTrans->arity();
   }
   const Transformation& trans() const { return *mTrans; }
   const EventType& out() const { return *mOut; }

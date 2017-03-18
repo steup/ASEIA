@@ -70,31 +70,13 @@ class ScaleTransformer : public Transformer {
 class ScaleTransformation : public Transformation {
   public:
 		ScaleTransformation()
-			: Transformation(EventID::any)
+			: Transformation(Transformation::Type::attribute, 1, EventID::any)
 		{	}
 
-    /** \todo fix lenient check for other subtypes **/
-    virtual bool check(const EventType& out, const EventTypes& in) const {
-
-      if(in.size()!=1 || !in.front())
-        return false;
-
-      const EventType& b = *in.front();
-
-      if(EventID(out) != EventID(b))
-        return false;
-
-      ScaleTransformer::ScaleList scaleDiff = ScaleTransformer::scaleDiff(out, b);
-      auto check = [](const pair<id::attribute::ID, MetaScale>& v){
-        return v.second.num() != 1 || v.second.denom() != 1;
-      };
-      return any_of(scaleDiff.begin(), scaleDiff.end(), check);
-    }
-
     virtual EventIDs in(EventID goal) const {
-      return EventIDs({goal});
+      return {goal};
     }
-    
+
     virtual vector<EventType> in(const EventType& goal, const EventType& provided) const {
       ScaleTransformer::ScaleList scaleDiff = ScaleTransformer::scaleDiff(goal, provided);
       auto apply = [](EventType eT, const pair<id::attribute::ID, MetaScale>& v){
@@ -108,15 +90,11 @@ class ScaleTransformation : public Transformation {
       return {accumulate(scaleDiff.begin(), scaleDiff.end(), goal, apply)};
     }
 
-    virtual size_t arity() const {
-      return 1;
-    }
-
     virtual TransPtr create(const EventType& out, const EventTypes& in) const {
-			if(check(out, in))
-				return TransPtr(new ScaleTransformer(this, out, in));
-			else
+			if(in.size()!=arity())
 				return TransPtr();
+			else
+				return TransPtr(new ScaleTransformer(this, out, in));
 		}
 
     virtual void print(ostream& o) const {
