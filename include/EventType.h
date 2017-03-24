@@ -46,6 +46,7 @@ class EventType{
     
     bool operator==(const EventType& b) const;
     bool operator!=(const EventType& b) const { return !(*this==b); }
+    std::size_t operator-(const EventType& b) const;
 
     uint8_t length() const;
 

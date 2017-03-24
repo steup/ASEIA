@@ -44,6 +44,14 @@ class ValueType{
              && mCols           == b.mCols;
     }
     bool operator!=(const ValueType& b) const { return !(*this==b); }
+    std::size_t operator-(const ValueType& b) const {
+      std::size_t value=0;
+      value+=mTypeId!=b.mTypeId?1:0;
+      value+=mHasUncertainty^b.mHasUncertainty?1:0;
+      value+=abs(mRows-b.mRows);
+      value+=abs(mCols-b.mCols);
+      return value;
+    }
 
     template<typename I> friend DeSerializer<I>& operator>>(DeSerializer<I>&, ValueType&);
 };

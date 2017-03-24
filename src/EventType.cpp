@@ -64,6 +64,17 @@ bool EventType::operator==(const EventType& b) const{
   return true;
 }
 
+size_t EventType::operator-(const EventType& b) const{
+  size_t value=0;
+  for( const auto& p : mStorage ){
+    auto i = b.mStorage.find(p.first);
+    if( i == b.mStorage.end())
+      continue;
+    value+=p.second - i->second;
+  }
+  return value;
+}
+
 uint8_t EventType::length() const { 
   return mStorage.size();
 }

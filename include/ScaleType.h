@@ -28,7 +28,16 @@ class ScaleType{
     bool operator==(const ScaleType& b) const {
       return mNum == b.mNum && mDenom == b.mDenom && mRef == b.mRef;
     }
+
     bool operator!=(const ScaleType& b) const { return !(*this==b); }
+
+    std::size_t operator-(const ScaleType& b) const {
+      std::size_t value=0;
+      value+=abs(mNum-b.mNum);
+      value+=abs((int32_t)mDenom-b.mDenom);
+      value+=mRef==b.mRef?0:1;
+      return value;
+    }
 
     constexpr static std::size_t size() noexcept {return sizeof(mNum) + sizeof(mDenom) + sizeof(mRef);}
 

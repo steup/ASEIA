@@ -38,6 +38,7 @@ class AttributeType{
 
     bool operator==(const AttributeType& b) const;
     bool operator!=(const AttributeType& b) const { return !(*this==b); }
+    std::size_t operator-(const AttributeType& b) const;
 
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, AttributeType&);
 };
