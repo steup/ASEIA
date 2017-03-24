@@ -94,36 +94,4 @@ inline std::ostream& operator<<(std::ostream& o, const Transformation& t) {
   return o;
 }
 
-class ConfiguredTransformation {
-  public:
-  using EventTypes = Transformer::EventTypes;
-  using TransPtr   = std::unique_ptr<Transformer>;
-  using EventIDs   = Transformation::EventIDs;
-  private:
-  const Transformation* mTrans = nullptr;
-  const EventType* mOut = nullptr;
-  EventTypes mIn;
-  public:
-  ConfiguredTransformation() = default;
-  ConfiguredTransformation(const Transformation& t, const EventType& out, const EventTypes in)
-    : mTrans(&t), mOut(&out), mIn(in)
-  {}
-  TransPtr create() const {
-    if(!check())
-      return TransPtr();
-    else
-      return mTrans->create(*mOut, mIn);
-  }
-  bool  check() const {
-    return mTrans && mOut && mIn.size() == mTrans->arity();
-  }
-  const Transformation& trans() const { return *mTrans; }
-  const EventType& out() const { return *mOut; }
-  const EventTypes& in() const { return mIn; }
-  EventIDs inIDs() const { return (mTrans && mOut)?mTrans->in(EventID(*mOut)):EventIDs(); }
-  void in(const EventTypes& eTs) { mIn = eTs; }
-  bool operator==(const Transformer& t) const { return t==*this; }
-  friend std::ostream& operator<<(std::ostream&, const ConfiguredTransformation&);
-};
-
-std::ostream& operator<<(std::ostream& o, const ConfiguredTransformation& t);
+using TransformationPtr = std::shared_ptr<const Transformation>;

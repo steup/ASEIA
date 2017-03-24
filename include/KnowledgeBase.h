@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Transformation.h>
+#include <ConfiguredTransformation.h>
 
 #include <vector>
 #include <iosfwd>
