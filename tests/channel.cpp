@@ -12,8 +12,7 @@ struct ChannelTestSuite : public ::testing::Test{
   using TransPtr   = Transformation::TransPtr;
 
   struct TestTransformer : public Transformer {
-    EventType dummy;
-    TestTransformer() : Transformer(nullptr, EventType(), {&dummy}) {}
+    TestTransformer() : Transformer(Transformation::invalid, EventType(), {EventType()}) {}
     MOCK_CONST_METHOD1(check, bool(const Events&));
     MOCK_METHOD1(call, MetaEvent(const Events&));
     virtual MetaEvent operator()(const Events& events) { return call(events); }

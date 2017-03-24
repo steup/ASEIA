@@ -27,8 +27,8 @@ void Channel::handleEvent(const MetaEvent& e) {
 /* TODO: implement */
 std::ostream& operator<<(std::ostream& o, const Channel& c) {
   o << "[";
-  for(const EventType* eT : c.mTrans->in())
-    o << (EventID)*eT << "/" << (FormatID)*eT << ",";
+  for(const EventType& eT : c.mTrans->in())
+    o << (EventID)eT << "/" << (FormatID)eT << ",";
   o << "] -> " << (EventID)c.mTrans->out() << "/" << (FormatID)c.mTrans->out() << ":" << std::endl << *c.mTrans;
   return o;
 }

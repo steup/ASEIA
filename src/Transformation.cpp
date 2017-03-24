@@ -14,7 +14,7 @@ Transformation::Transformation(Type type, size_t arity, const EventID& out)
 }
 
 bool Transformer::operator==(const ConfiguredTransformation& t) const {
-  return mTrans == &t.trans() && mOut == t.out() && mIn == t.in();
+  return mTrans == *t.trans() && mOut == t.out() && mIn == t.in();
 }
 
 ostream& operator<<(ostream& o, const ConfiguredTransformation& t) {
@@ -22,8 +22,8 @@ ostream& operator<<(ostream& o, const ConfiguredTransformation& t) {
     return o << "invalid configured transformation";
 
   o << t.trans() << ": " << t.out() << " <- [";
-  for(const EventType* eT : t.in())
-    o << *eT << ", ";
+  for(const EventType& eT : t.in())
+    o << eT << ", ";
   return o << "]";
 }
 

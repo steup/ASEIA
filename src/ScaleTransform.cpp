@@ -32,13 +32,13 @@ class ScaleTransformer : public Transformer {
       return result;
     }
 
-    ScaleTransformer(const Transformation* t, const EventType& out, const EventTypes& in)
+    ScaleTransformer(const Transformation& t, const EventType& out, const EventTypes& in)
 			: Transformer(t, out, in) {
 
-      if(in.size()!=1 || !in.front())
+      if(in.size()!=1)
         return;
 
-      const EventType& b = *in.front();
+      const EventType& b = in.front();
       mScaleDeltas = scaleDiff(out, b);
     }
 
@@ -94,7 +94,7 @@ class ScaleTransformation : public Transformation {
 			if(in.size()!=arity())
 				return TransPtr();
 			else
-				return TransPtr(new ScaleTransformer(this, out, in));
+				return TransPtr(new ScaleTransformer(*this, out, in));
 		}
 
     virtual void print(ostream& o) const {

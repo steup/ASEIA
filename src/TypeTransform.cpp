@@ -33,12 +33,12 @@ class TypeTransformer : public Transformer {
       return  result;
     }
 
-    TypeTransformer(const Transformation* t, const EventType& out, const EventTypes& in)
+    TypeTransformer(const Transformation& t, const EventType& out, const EventTypes& in)
 			: Transformer(t, out, in)
 		{
-      if(in.size()!=1 || !in.front())
+      if(in.size()!=1)
         return;
-      const EventType& b = *in.front();
+      const EventType& b = in.front();
       mTypeDeltas = typeDiff(out, b);
     }
 
@@ -91,7 +91,7 @@ class TypeTransformation : public Transformation {
       if(in.size()!=arity())
         return TransPtr();
       else
-        return TransPtr(new TypeTransformer(this, out, in));
+        return TransPtr(new TypeTransformer(*this, out, in));
 		}
 
     virtual void print(std::ostream& o) const {

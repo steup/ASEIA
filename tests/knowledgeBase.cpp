@@ -152,7 +152,7 @@ namespace test {
 
     bool checkResult(const Transformations& ts, const Transformation & t) {
       auto pred = [&t](const ConfiguredTransformation& cT) {
-        return cT.trans() == t;
+        return *cT.trans() == t;
       };
       return any_of(ts.begin(), ts.end(), pred);
     }

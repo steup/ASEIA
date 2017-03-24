@@ -11,7 +11,7 @@ using namespace std;
 
 class KBImpl {
   public:
-    using TransStorage = std::vector<const Transformation*>;
+    using TransStorage = std::vector<TransformationPtr>;
     using TypeStorage  = AbstractRegistry<EventType>;
     using Transformations = KnowledgeBase::Transformations;
     using EventIDs = TypeStorage::EventIDs;
@@ -41,76 +41,13 @@ class KBImpl {
      *  \return the Output iterator after insertion
      **/
     TypeOutIt addValidTypes(TypeOutIt it, EventID id) const {
-      return transform(mTypes.find(id).first, mTypes.find(id).second, it, [](const EventType& eT){ return &eT;});
+      return copy(mTypes.find(id).first, mTypes.find(id).second, it);
     }
-
-    /** \brief generate list of compatible EventTypes for input EventIDs
-     *  \param in Input list of EventIDs
-     *  \param ids  all existing published EventIds
-     *  \return list of compatible EventTypes for each input EventID
-     **/
-    /*vector<EventTypes> generateTypeLists(const EventIDs& in, const EventIDs& ids) const{
-      //Extract IDs
-      vector<EventTypes> result(in.size());
-      for(unsigned int i=0; i < in.size(); i++) {
-        addValidTypes(in[i], back_inserter(result[i]));
-        if(!result[i].size())
-          break;
-      }
-      return result;
-    }*/
-
-    /** \brief compute kartesian product
-     *  \param typeLists list of EventTypes for each required input EventID
-     *  \return kartesian product of the input lists
-     **/
-    /*vector<EventTypes> cartesianProduct(const vector<EventTypes>& typeLists) const {
-      if(typeLists.empty())
-        return vector<EventTypes>();
-
-      size_t size = accumulate(typeLists.begin(), typeLists.end(), 1UL, [](size_t size, const EventTypes& tL){ return size*tL.size(); });
-
-      if(!size)
-        return vector<EventTypes>();
-
-      vector<EventTypes> result(size);
-      for(size_t i=0; i<size; i++)
-        result[i].resize(typeLists.size());
-
-      size_t currSize=size;
-      size_t oldSize = 1;
-      for(size_t i=0; i < typeLists.size(); i++) {
-        for(size_t m=0; m < oldSize; m++)
-          for(size_t j=0; j < typeLists[i].size(); j++) {
-            currSize /= typeLists[i].size();
-            for(size_t k=0; k < currSize; k++)
-              result[j*currSize+k][i] = typeLists[i][j];
-          }
-        oldSize = typeLists[i].size();
-      }
-      return result;
-    }*/
-
-    /** \brief generate all fully configured transformations
-     *  \param trans a partially configured transformation
-     *  \param ids currently published EventIDs
-     *  \param it Output iterator to store resulting fully configured transformations
-     **/
-    /*void generateAll(const ConfiguredTransformation& trans, const EventIDs& ids, OutIt it) const {
-      vector<EventTypes> usableEventTypes = generateTypeLists(trans.inIDs(), ids);
-      vector<EventTypes> typeCombinations = cartesianProduct(usableEventTypes);
-      auto create = [trans](const EventTypes& in){
-        ConfiguredTransformation t(trans);
-        t.in(in);
-        return t;
-      };
-      transform(typeCombinations.begin(), typeCombinations.end(), it, create);
-    }*/
 
     EventTypes mapTypes(const vector<EventType>& types) const {
       auto convert = [this](const EventType& t){
         auto range = mTypes.find(t);
-        return range.empty()?nullptr:(const EventType*)range.first;
+        return range.empty()?EventType():range.front();
       };
       EventTypes used(types.size());
       transform(types.begin(), types.end(), used.begin(), convert);
@@ -125,12 +62,12 @@ class KBImpl {
      * \todo generate composite transformations
      **/
     void generateHetTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
-      auto checkAndConvert = [&goal, &ids, this](OutIt it, const Transformation* t){
+      auto checkAndConvert = [&goal, &ids, this](OutIt it, TransformationPtr t){
         if (t && EventID(goal) <= t->out() ) {
           vector<EventType> inT = t->in(goal);
           EventTypes used = mapTypes(inT);
-          if( !inT.empty() && !count(used.begin(), used.end(), nullptr) )
-            *it++ = ConfiguredTransformation(*t, goal, used);
+          if( !inT.empty() && !count(used.begin(), used.end(), EventType()) )
+            *it++ = ConfiguredTransformation(t, goal, used);
         }
         return it;
       };
@@ -160,12 +97,12 @@ class KBImpl {
       TransStorage trans = mAtt1Trans;
       copy(mAttNTrans.begin(), mAttNTrans.end(), back_inserter(trans));
 
-      for(const EventType* in : provided)
-        for(const Transformation* t : trans) {
-          vector<EventType> inT = t->in(goal, *in);
+      for(const EventType& in : provided)
+        for(TransformationPtr t : trans) {
+          vector<EventType> inT(t->in(goal, in));
           EventTypes used = mapTypes(inT);
-          if( !inT.empty() && !count(used.begin(), used.end(), nullptr) )
-            *it++ = ConfiguredTransformation(*t, goal, used);
+          if( !inT.empty() && !count(used.begin(), used.end(), EventType()) )
+            *it++ = ConfiguredTransformation(t, goal, used);
         }
     }
 
@@ -178,9 +115,10 @@ class KBImpl {
         case(Transformation::Type::homogeneus)  : storagePtr = &mHomTrans; break;
         case(Transformation::Type::attribute)   : storagePtr = (trans.arity()==1)?&mAtt1Trans:&mAttNTrans; break;
       }
-      if(count(storagePtr->begin(), storagePtr->end(), &trans))
+      TransformationPtr tPtr(&trans, [](const Transformation*){});
+      if(count(storagePtr->begin(), storagePtr->end(), tPtr))
         return;
-      storagePtr->push_back(&trans);
+      storagePtr->push_back(tPtr);
     }
 
     void unregTrans(const Transformation& trans) {
@@ -191,7 +129,9 @@ class KBImpl {
         case(Transformation::Type::homogeneus)  : storagePtr = &mHomTrans; break;
         case(Transformation::Type::attribute)   : storagePtr = (trans.arity()==1)?&mAtt1Trans:&mAttNTrans; break;
       }
-      auto it = remove(storagePtr->begin(), storagePtr->end(), &trans);
+
+      TransformationPtr tPtr(&trans, [](const Transformation*){});
+      auto it = remove(storagePtr->begin(), storagePtr->end(), tPtr);
       storagePtr->erase(it, storagePtr->end());
     }
 
