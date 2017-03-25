@@ -8,13 +8,11 @@
 #include <initializer_list>
 #include <vector>
 
-class TransformationList : public Transformation {
-  private:
-    std::vector<TransformationPtr> mTransList;
+class TransformationList : public Transformation, public std::vector<TransformationPtr> {
   public:
     using InitType = std::initializer_list<TransformationPtr>;
 
-    TransformationList(InitType list);
+    TransformationList(Type type, EventID id) : Transformation(type, 1, id) {}
     virtual std::vector<EventType> in(const EventType& goal) const;
     virtual std::vector<EventType> in(const EventType& goal, const  EventType& provided) const;
 

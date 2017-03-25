@@ -8,13 +8,11 @@ using namespace std;
 using EventIDs = Transformation::EventIDs;
 using TransPtr = Transformation::TransPtr;
 
-class TransformerList : public Transformer {
-  private:
-    vector<TransPtr> mTrans;
+class TransformerList : public Transformer, public vector<TransPtr> {
   public:
     TransformerList(const Transformation& t, const EventType& out,
                     const EventTypes in, vector<TransPtr>&& trans)
-      : Transformer(t, out, in), mTrans(move(trans))
+      : Transformer(t, out, in), vector<TransPtr>(move(trans))
     {}
 
     virtual bool check(const Events& events) const {
@@ -30,14 +28,9 @@ class TransformerList : public Transformer {
     }
 };
 
-
-TransformationList::TransformationList(InitType list)
-  : Transformation(list.size()==0?Type::invalid:(*begin(list))->type(), 1, EventID::any), mTransList(list)
-{}
-
 std::vector<EventType> TransformationList::in(const EventType& goal) const {
   EventType curr = goal;
-  for(const TransformationPtr& t : mTransList) {
+    for(const TransformationPtr& t : *this) {
     EventTypes temp(t->in(curr));
     if(temp.empty())
       return {};
@@ -48,7 +41,7 @@ std::vector<EventType> TransformationList::in(const EventType& goal) const {
 
 std::vector<EventType> TransformationList::in(const EventType& goal, const  EventType& provided) const {
   EventType curr = goal;
-  for(const TransformationPtr& t : mTransList) {
+  for(const TransformationPtr& t : *this) {
     EventTypes temp(t->in(curr, provided));
     if(temp.empty())
       return {};
@@ -59,7 +52,7 @@ std::vector<EventType> TransformationList::in(const EventType& goal, const  Even
 
 EventIDs TransformationList::in(EventID goal) const {
   EventID curr = goal;
-  for(const TransformationPtr& t : mTransList) {
+  for(const TransformationPtr& t : *this) {
     EventIDs temp(t->in(curr));
     if(temp.empty())
       return {};
@@ -73,9 +66,8 @@ TransPtr TransformationList::create(const EventType& out, const EventTypes& in) 
     return TransPtr();
   vector<TransPtr> trans;
   EventType currOut = out;
-  if(type()==Type::heterogeneus)
-  for(const TransformationPtr& t : mTransList) {
-    EventTypes currIn(t->in(currOut));
+  for(const TransformationPtr& t : *this) {
+    EventTypes currIn(t->in(currOut, in[0]));
     if(currIn.size() != 1)
       return TransPtr();
     trans.emplace_back(t->create(currOut, currIn));
@@ -87,7 +79,7 @@ TransPtr TransformationList::create(const EventType& out, const EventTypes& in) 
 
 void TransformationList::print(std::ostream& o) const {
   o << "Transformation List: " << endl;
-  for(const TransformationPtr& t : mTransList) {
+  for(const TransformationPtr& t : *this) {
     o << "\t";
     t->print(o);
     o << endl;
