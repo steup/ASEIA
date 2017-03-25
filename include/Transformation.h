@@ -55,7 +55,7 @@ class Transformation {
   public:
     using EventTypes = Transformer::EventTypes;
     using EventIDs   = std::vector<EventID>;
-    using TransPtr   = std::unique_ptr<Transformer>;
+    using TransPtr   = std::shared_ptr<Transformer>;
     static const Transformation& invalid;
     enum class Type{
       invalid,

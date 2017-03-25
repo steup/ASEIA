@@ -15,7 +15,7 @@ class ConfiguredTransformation;
 class ConfiguredTransformation {
   public:
   using EventTypes = Transformer::EventTypes;
-  using TransPtr   = std::unique_ptr<Transformer>;
+  using TransPtr   = Transformation::TransPtr;
   using EventIDs   = Transformation::EventIDs;
   private:
   TransformationPtr mTrans = nullptr;
