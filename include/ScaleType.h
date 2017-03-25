@@ -24,6 +24,9 @@ class ScaleType{
     int32_t num() const { return mNum; }
     uint32_t denom() const { return mDenom; }
     uint32_t reference() const { return mRef; }
+    void num(int32_t v) { mNum=v; }
+    void denom(uint32_t v) { mDenom = v; }
+    void reference(uint32_t v) { mRef = v; }
 
     bool operator==(const ScaleType& b) const {
       return mNum == b.mNum && mDenom == b.mDenom && mRef == b.mRef;
