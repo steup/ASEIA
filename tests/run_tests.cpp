@@ -20,6 +20,7 @@
 #include <channel.cpp>
 #include <scale.cpp>
 #include <knowledgeBase.cpp>
+#include <transformList.cpp>
 
 /** \namespace tests
  *  \brief %Unit Test Suites
