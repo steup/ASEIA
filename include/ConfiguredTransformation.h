@@ -36,7 +36,9 @@ class ConfiguredTransformation {
     return mTrans && mOut && mIn.size() == mTrans->arity();
   }
   TransformationPtr trans() const { return mTrans; }
+  void trans(TransformationPtr t) { mTrans = t; }
   const EventType& out() const { return *mOut; }
+  void out(const EventType& eT) {mOut = &eT; }
   const EventTypes& in() const { return mIn; }
   EventIDs inIDs() const { return (mTrans && mOut)?mTrans->in(EventID(*mOut)):EventIDs(); }
   void in(const EventTypes& eTs) { mIn = eTs; }
