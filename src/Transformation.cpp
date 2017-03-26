@@ -21,7 +21,7 @@ ostream& operator<<(ostream& o, const ConfiguredTransformation& t) {
   if(!t.mTrans || !t.mOut)
     return o << "invalid configured transformation";
 
-  o << t.trans() << ": " << t.out() << " <- [";
+  o << *t.trans() << ": " << t.out() << " <- [";
   for(const EventType& eT : t.in())
     o << eT << ", ";
   return o << "]";
