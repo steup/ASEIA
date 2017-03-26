@@ -1,6 +1,8 @@
 #include <KnowledgeBase.h>
 #include <AttributeType.h>
 #include <ratio>
+#include <TransformationList.h>
+#include <algorithm>
 
 namespace test {
 
@@ -9,6 +11,8 @@ namespace test {
  using std::cout;
  using std::endl;
  using std::vector;
+ using std::count;
+
 
   struct KnowledgeBaseTestSuite : public ::testing::Test {
 
@@ -119,6 +123,7 @@ namespace test {
     HomTrans0 hom0=HomTrans0(eT3, eT4, eT4);
     HomTrans1 hom1=HomTrans1(eT1, eT5, eT6, eT5);
     HomTrans0 hom2=HomTrans0(eT4, eT7, eT7);
+    HomTrans0 hom3=HomTrans0(eT3, eT4, eT7);
 
 
     KnowledgeBaseTestSuite() {
@@ -130,6 +135,7 @@ namespace test {
       KnowledgeBase::registerTransformation(hom0);
       KnowledgeBase::registerTransformation(hom1);
       KnowledgeBase::registerTransformation(hom2);
+      KnowledgeBase::registerTransformation(hom3);
       eT0.add(AttributeType(Test0::value(), v, Scale<>(), Dimensionless()));
       eT1.add(AttributeType(Test1::value(), v, Scale<>(), Dimensionless()));
       eT2.add(AttributeType(Test2::value(), v, Scale<>(), Dimensionless()));
@@ -139,13 +145,6 @@ namespace test {
       eT6.add(AttributeType(Test1::value(), v, Scale<ratio<1, 1>, 0>(), Dimensionless()));
       eT6.add(AttributeType(Test4::value(), v, Scale<ratio<1, 1>, 1>(), Dimensionless()));
       eT7.add(AttributeType(Test3::value(), v2, Scale<ratio<1, 1000>>(), Dimensionless()));
-    }
-
-    ~KnowledgeBaseTestSuite() {
-      KnowledgeBase::unregisterTransformation(het0);
-      KnowledgeBase::unregisterTransformation(het1);
-      KnowledgeBase::unregisterTransformation(hom0);
-      KnowledgeBase::unregisterTransformation(hom1);
     }
 
     using  Transformations = KnowledgeBase::Transformations;
@@ -210,7 +209,13 @@ namespace test {
     KnowledgeBase::registerEventType(eT7);
     Transformations ts = KnowledgeBase::findTransforms(eT3);
     ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
-    EXPECT_TRUE(checkResult(ts, hom2)) << "Searched Transform not found in list";
+    TransformationPtr hom2Ptr(&hom2, [](const Transformation*){});
+    TransformationPtr hom3Ptr(&hom3, [](const Transformation*){});
+    auto check = [hom2Ptr, hom3Ptr](const ConfiguredTransformation& cT){
+      const TransformationList& list = dynamic_cast<const TransformationList&>(*cT.trans());
+      return count(list.begin(), list.end(), hom2Ptr) && count(list.begin(), list.end(), hom3Ptr);
+    };
+    EXPECT_TRUE(any_of(ts.begin(), ts.end(), check));
   }
 
   TEST_F(KnowledgeBaseTestSuite, fullTree) {
@@ -220,6 +225,5 @@ namespace test {
     KnowledgeBase::registerEventType(eT6);
     Transformations ts = KnowledgeBase::findTransforms(eT0);
     ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
-    EXPECT_TRUE(checkResult(ts, hom2)) << "Searched Transform not found in list";
   }
 }
