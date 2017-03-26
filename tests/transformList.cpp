@@ -103,8 +103,11 @@ TEST_F(TransformListSuite, createTest) {
     .Times(1).WillOnce(Return(TransPtr(&d, [](const Transformer*){})));
   TransPtr result = list.create(goal, {provided});
   MetaEvent eA(provided);
+  eA.attribute(Test0::value())->value().set(0, 0, {1.1f});
   MetaEvent eB(intermediate);
+  eB.attribute(Test0::value())->value().set(0, 0, {1100.0f});
   MetaEvent eC(goal);
+  eC.attribute(Test0::value())->value().set(0, 0, {1100});
   EXPECT_CALL(c, call(Events({&eA})))
     .Times(1).WillOnce(Return(eB));
   EXPECT_CALL(d, call(Events{&eB}))
