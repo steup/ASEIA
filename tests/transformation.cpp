@@ -6,6 +6,9 @@ namespace test {
 using namespace ::id::attribute;
 using namespace ::id::type;
 
+extern Transformation* castPtr;
+extern Transformation* rescalePtr;
+
 using TransPtr    = Transformation::TransPtr;
 using Events      = Transformer::Events;
 using EventTypes  = Transformer::EventTypes;
@@ -21,6 +24,9 @@ struct TransformationTestSuite : public ::testing::Test{
     s.unit() = Second();
     in.add(s);
     out.add(s);
+    KnowledgeBase::clear();
+    KnowledgeBase::registerTransformation(*castPtr);
+    KnowledgeBase::registerTransformation(*rescalePtr);
   }
 
   void registerTypes() {

@@ -98,3 +98,7 @@ class TypeTransformation : public Transformation {
 			o << "Cast Transformation";
 		}
 } cast;
+
+namespace test {
+Transformation* castPtr = &cast;
+}

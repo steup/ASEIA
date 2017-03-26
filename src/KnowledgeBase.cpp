@@ -169,6 +169,9 @@ class KBImpl {
 
     void clear() {
       mTypes.clear();
+      mHetTrans.clear();
+      mAtt1Trans.clear();
+      mAttNTrans.clear();
     }
 };
 

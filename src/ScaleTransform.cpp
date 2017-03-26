@@ -101,3 +101,7 @@ class ScaleTransformation : public Transformation {
 			o << "Rescale Transformation";
 		}
 } rescale;
+
+namespace test {
+Transformation* rescalePtr = &rescale;
+}
