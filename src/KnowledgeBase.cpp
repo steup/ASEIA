@@ -1,6 +1,8 @@
 #include <KnowledgeBase.h>
 #include <TypeRegistry.h>
 
+#include <TransformationList.h>
+
 #include <Singleton.h>
 
 #include <vector>
@@ -43,15 +45,27 @@ class KBImpl {
     TypeOutIt addValidTypes(TypeOutIt it, EventID id) const {
       return copy(mTypes.find(id).first, mTypes.find(id).second, it);
     }
+    /** \todo find all compatible types not just direct fits **/
+    pair<bool, EventTypes> mapTypes(const vector<EventType>& types) const {
+      EventTypes used;
+      for(const EventType& eT : types) {
+        auto range = mTypes.find(eT);
+        if(range.empty())
+          return make_pair(false, EventTypes());
+        else
+          used.push_back(range.front());
+      }
+      return make_pair(true, used);
+    }
 
-    EventTypes mapTypes(const vector<EventType>& types) const {
-      auto convert = [this](const EventType& t){
-        auto range = mTypes.find(t);
-        return range.empty()?EventType():range.front();
-      };
-      EventTypes used(types.size());
-      transform(types.begin(), types.end(), used.begin(), convert);
-      return used;
+    pair<bool, EventType> extractID(EventID goal, const EventTypes& types) const {
+      EventTypes result;
+      auto pred = [goal](const EventType& eT){ return EventID(eT)>=goal; };
+      auto it = find_if(types.begin(), types.end(), pred);
+      if(it!=types.end())
+        return make_pair(true, *it);
+      else
+        return make_pair(false, EventType());
     }
 
     /** \brief create fitting partially configured composite transformations for goal EventID
@@ -65,9 +79,9 @@ class KBImpl {
       auto checkAndConvert = [&goal, &ids, this](OutIt it, TransformationPtr t){
         if (t && EventID(goal) <= t->out() ) {
           vector<EventType> inT = t->in(goal);
-          EventTypes used = mapTypes(inT);
-          if( !inT.empty() && !count(used.begin(), used.end(), EventType()) )
-            *it++ = ConfiguredTransformation(t, goal, used);
+          auto used = mapTypes(inT);
+          if( !inT.empty() && used.first )
+            *it++ = ConfiguredTransformation(t, goal, used.second);
         }
         return it;
       };
@@ -94,16 +108,51 @@ class KBImpl {
                  [this](TypeOutIt it, EventID id) { return addValidTypes(it, id); }
                 );
 
-      TransStorage trans = mAtt1Trans;
-      copy(mAttNTrans.begin(), mAttNTrans.end(), back_inserter(trans));
+      TransStorage trans = mAttNTrans;
+      copy(mAtt1Trans.begin(), mAtt1Trans.end(), back_inserter(trans));
+      vector<ConfiguredTransformation> temp;
 
       for(const EventType& in : provided)
         for(TransformationPtr t : trans) {
-          vector<EventType> inT(t->in(goal, in));
-          EventTypes used = mapTypes(inT);
-          if( !inT.empty() && !count(used.begin(), used.end(), EventType()) )
-            *it++ = ConfiguredTransformation(t, goal, used);
+
+          EventTypes inList = t->in(goal, in);
+          auto result = extractID(EventID(goal), inList);
+
+          if(result.first && result.second - in < in - goal ) {
+
+            auto fitting = mapTypes(inList);
+
+            if(!fitting.first)
+              temp.emplace_back(t, goal, inList);
+            else
+              *it++ = ConfiguredTransformation(t, goal, fitting.second);
+          }
         }
+      for(ConfiguredTransformation& cT : temp) {
+        if(cT.in().size()==1) {
+          const EventType& in = cT.in()[0];
+          TransformationList& list = *new TransformationList(Transformation::Type::attribute, EventID(in));
+          list.push_back(cT.trans());
+          TransStorage trans1;
+          copy_if(mAtt1Trans.begin(), mAtt1Trans.end(), back_inserter(trans1),
+                  [&cT](const TransformationPtr& t){ return t != cT.trans();}
+                  );
+          cT.trans(TransformationPtr(&list));
+          for(const EventType& in : provided)
+            for(const TransformationPtr t : trans1) {
+              EventTypes inList = t->in(cT.in()[0], in);
+              if(inList.size()==1 && inList[0] - in < in - cT.in()[0]) {
+                list.push_back(t);
+                cT.in(inList);
+              }
+            }
+        }
+        auto fitting = mapTypes(cT.in());
+
+        if(fitting.first)
+          *it++ = cT;
+
+      }
     }
 
   public:
