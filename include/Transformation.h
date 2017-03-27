@@ -61,7 +61,8 @@ class Transformation {
       invalid,
       heterogeneus,
       homogeneus,
-      attribute
+      attribute,
+      composite
     };
   private:
     const EventID mOut;
@@ -74,7 +75,7 @@ class Transformation {
     const EventID& out() const { return mOut; }
     Type type() const { return mType; }
 
-    virtual ~Transformation() = default;
+    virtual ~Transformation();
     virtual std::vector<EventType> in(const EventType& goal) const { return {}; }
     virtual std::vector<EventType> in(const EventType& goal, const  EventType& provided) const {return {}; }
 

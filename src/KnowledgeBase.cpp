@@ -163,6 +163,7 @@ class KBImpl {
         case(Transformation::Type::heterogeneus): storagePtr = &mHetTrans; break;
         case(Transformation::Type::homogeneus)  : storagePtr = &mHomTrans; break;
         case(Transformation::Type::attribute)   : storagePtr = (trans.arity()==1)?&mAtt1Trans:&mAttNTrans; break;
+        default                                 : return;
       }
       TransformationPtr tPtr(&trans, [](const Transformation*){});
       if(count(storagePtr->begin(), storagePtr->end(), tPtr))
@@ -177,6 +178,7 @@ class KBImpl {
         case(Transformation::Type::heterogeneus): storagePtr = &mHetTrans; break;
         case(Transformation::Type::homogeneus)  : storagePtr = &mHomTrans; break;
         case(Transformation::Type::attribute)   : storagePtr = (trans.arity()==1)?&mAtt1Trans:&mAttNTrans; break;
+        default                                 : return;
       }
 
       TransformationPtr tPtr(&trans, [](const Transformation*){});
