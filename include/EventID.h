@@ -13,8 +13,8 @@ class EventID {
 		IDType mID;
     static IDType idGen(const EventType& eT);
     static IDType idGen(const InitType& attrs);
-		constexpr EventID() : mID(0) {}
 	public:
+		constexpr EventID() : mID(0) {}
 
 		template<typename Event>
     EventID(const Event& e)
