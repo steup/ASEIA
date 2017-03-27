@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Transformation.h>
 
 #include <Transformation.h>
@@ -17,30 +19,30 @@ class ConfiguredTransformation {
   using EventTypes = Transformer::EventTypes;
   using TransPtr   = Transformation::TransPtr;
   using EventIDs   = Transformation::EventIDs;
-  private:
+  protected:
   TransformationPtr mTrans = nullptr;
-  const EventType* mOut = nullptr;
+  EventType mOut;
   EventTypes mIn;
   public:
   ConfiguredTransformation() = default;
   ConfiguredTransformation(TransformationPtr t, const EventType& out, const EventTypes in)
-    : mTrans(t), mOut(&out), mIn(in)
+    : mTrans(t), mOut(out), mIn(in)
   {}
   TransPtr create() const {
     if(!check())
       return TransPtr();
     else
-      return mTrans->create(*mOut, mIn);
+      return mTrans->create(mOut, mIn);
   }
   bool  check() const {
-    return mTrans && mOut && mIn.size() == mTrans->arity();
+    return mTrans && mIn.size() == mTrans->arity();
   }
   TransformationPtr trans() const { return mTrans; }
   void trans(TransformationPtr t) { mTrans = t; }
-  const EventType& out() const { return *mOut; }
-  void out(const EventType& eT) {mOut = &eT; }
+  const EventType& out() const { return mOut; }
+  void out(const EventType& eT) {mOut = eT; }
   const EventTypes& in() const { return mIn; }
-  EventIDs inIDs() const { return (mTrans && mOut)?mTrans->in(EventID(*mOut)):EventIDs(); }
+  EventIDs inIDs() const { return (mTrans)?mTrans->in(EventID(mOut)):EventIDs(); }
   void in(const EventTypes& eTs) { mIn = eTs; }
   bool operator==(const Transformer& t) const { return t==*this; }
   friend std::ostream& operator<<(std::ostream&, const ConfiguredTransformation&);
