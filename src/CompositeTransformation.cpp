@@ -8,110 +8,88 @@
 #include <map>
 
 
-using namespace boost;
-using std::copy;
-using std::vector;
-using std::back_inserter;
-using std::map;
+using namespace std;
 
-struct InputEventTypeExtractor : public default_dfs_visitor {
-  using Graph      = CompositeTransformation::Graph;
-  using Vertex     = CompositeTransformation::Vertex;
-  using Edge       = CompositeTransformation::Edge;
-  using EventTypes = Transformation::EventTypes;
-  using OutEdgeIter= Graph::out_edge_iterator;
+using Graph      = CompositeTransformation::Graph;
+using Vertex     = CompositeTransformation::Vertex;
+using Edge       = Graph::edge_descriptor;
+using EventTypes = CompositeTransformation::EventTypes;
+using EventIDs   = CompositeTransformation::EventIDs;
+using TransPtr   = CompositeTransformation::TransPtr;
+
+struct InputEventTypeExtractor : public boost::default_dfs_visitor {
   Vertex temp;
   EventTypes& in;
-  EventType goal, provided;
-  map<Edge, EventType> types;
 
-  InputEventTypeExtractor(EventTypes& in, const EventType& goal, EventType provided=EventType())
-    : in(in), goal(goal), provided(provided)
+  InputEventTypeExtractor(EventTypes& in)
+    : in(in)
   {}
 
   void discover_vertex(Vertex v, const Graph& g) {
     temp = v;
-    auto inIDs = in_edges(v, g);
-    EventType tempGoal = (inIDs.first != inIDs.second)?types[*inIDs.first]:goal;
-    EventTypes tempIn = (provided!=EventType())?g[v]->in(tempGoal, provided):g[v]->in(tempGoal);
-    auto outEdges = out_edges(v, g);
-    for(OutEdgeIter i = outEdges.first; i != outEdges.second; i++) {
-      EventID edgeID = g[*i];
-      auto it = find_if(tempIn.begin(), tempIn.end(), [edgeID](const EventType& e){ return EventID(e)>=edgeID; });
-      types[*i]=*it;
-    }
   }
 
   void finish_vertex(Vertex v, const Graph& g) {
     if(temp == v) {
-      auto inIDs = in_edges(v, g);
-      EventType tempGoal = (inIDs.first != inIDs.second)?types[*inIDs.first]:goal;
-      EventTypes tempIn = (provided!=EventType())?g[v]->in(tempGoal, provided):g[v]->in(tempGoal);
+      const EventTypes& tempIn = g[v].in();
       copy(tempIn.begin(), tempIn.end(), back_inserter(in));
     }
   }
 };
 
-struct InputEventIDExtractor : public default_dfs_visitor {
-  using Graph    = CompositeTransformation::Graph;
-  using Vertex   = CompositeTransformation::Vertex;
-  using Edge     = CompositeTransformation::Edge;
-  using EventIDs = Transformation::EventIDs;
-  Vertex temp;
-  EventIDs& in;
-  EventID goal;
 
-  InputEventIDExtractor(EventIDs& in, EventID goal)
-    : in(in), goal(goal)
-  {}
-
-  void discover_vertex(Vertex v, const Graph& g) {
-    temp = v;
-  }
-
-  void finish_vertex(Vertex v, const Graph& g) {
-    if(temp == v) {
-      auto inIDs = in_edges(v, g);
-      if(inIDs.first != inIDs.second) {
-        Edge e = *inIDs.first;
-        EventID tempGoal = g[e];
-        EventIDs tempIn = g[v]->in(tempGoal);
-        copy(tempIn.begin(), tempIn.end(), back_inserter(in));
-      }
-    }
-  }
-};
-
-CompositeTransformation::CompositeTransformation()
-  : Transformation(Type::composite, 0, EventID::any) {
-
-}
-
-Transformation::EventTypes CompositeTransformation::in(const EventType& goal) const {
-  EventTypes result;
-  InputEventTypeExtractor extractTypes(result, goal);
-  depth_first_search(graph, visitor(extractTypes));
-  return result;
-}
-
-Transformation::EventTypes CompositeTransformation::in(const EventType& goal, const  EventType& provided) const {
-  EventTypes result;
-  InputEventTypeExtractor extractTypes(result, goal, provided);
-  depth_first_search(graph, visitor(extractTypes));
-  return result;
-}
-
-Transformation::EventIDs CompositeTransformation::in(EventID goal) const {
-  EventIDs result;
-  InputEventIDExtractor  extractIDs(result, goal);
-  depth_first_search(graph, visitor(extractIDs));
-  return result;
-}
-
-Transformation::TransPtr CompositeTransformation::create(const EventType& out, const EventTypes& in) const {
+TransPtr CompositeTransformation::create() const {
   return TransPtr();
 }
 
-void CompositeTransformation::print(std::ostream& o) const {
-
+bool CompositeTransformation::check() const {
+  return boost::num_vertices(mGraph);
 }
+
+pair<Vertex, bool> CompositeTransformation::addRootTransformation(TransformationPtr tPtr, const EventType& tempGoal, EventType provided) {
+  if(num_vertices(mGraph)==0) {
+    Vertex root = boost::add_vertex(mGraph);
+    ConfiguredTransformation& cT = mGraph[root];
+    cT.trans(tPtr);
+    cT.out(tempGoal);
+    if(provided==EventType())
+      cT.in(tPtr->in(tempGoal));
+    else
+      cT.in(tPtr->in(tempGoal, provided));
+    in(cT.in());
+    out(cT.out());
+    return make_pair(root, true);
+  }else
+    return make_pair(Vertex(), false);
+}
+
+pair<Vertex, bool> CompositeTransformation::addTransformation(TransformationPtr tPtr, Vertex v,
+                                                              const EventType& intermediate, EventType provided) {
+  const EventTypes& tempIn = mGraph[v].in();
+  if(!count(tempIn.begin(), tempIn.end(), intermediate))
+    return make_pair(Vertex(), false);
+
+  Vertex newV = boost::add_vertex(mGraph);
+  ConfiguredTransformation& cT = mGraph[newV];
+  cT.trans(tPtr);
+  cT.out(intermediate);
+  if(provided==EventType())
+    cT.in(tPtr->in(intermediate));
+  else
+    cT.in(tPtr->in(intermediate, provided));
+  auto e = boost::add_edge(v, newV, mGraph);
+  mGraph[e.first]=&cT.out();
+  mIn.clear();
+  boost::depth_first_search(mGraph, boost::visitor(InputEventTypeExtractor(mIn)));
+  //sort(mIn.begin(), mIn.end());
+  //mIn.erase(unique(mIn.begin(). mIn.end()), mIn.end());
+  return make_pair(newV, true);
+}
+
+EventIDs CompositeTransformation::inIDs() const {
+  EventIDs ids(mIn.size());
+  copy(mIn.begin(), mIn.end(), ids.begin());
+  return ids;
+}
+
+ostream& operator<<(ostream& o, const CompositeTransformation& t);
