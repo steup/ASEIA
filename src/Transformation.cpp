@@ -13,6 +13,10 @@ Transformation::Transformation(Type type, size_t arity, const EventID& out)
   KnowledgeBase::registerTransformation(*this);
 }
 
+Transformation::~Transformation() {
+  KnowledgeBase::unregisterTransformation(*this);
+}
+
 bool Transformer::operator==(const ConfiguredTransformation& t) const {
   return mTrans == *t.trans() && mOut == t.out() && mIn == t.in();
 }
