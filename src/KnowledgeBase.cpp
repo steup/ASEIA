@@ -106,27 +106,24 @@ class KBImpl {
         }
 
       for(CompositeTransformation& cT : temp) {
-        /*if(cT.in().size()==1) {
-          const EventType& in = cT.in()[0];
-          TransformationList& list = *new TransformationList(Transformation::Type::attribute, EventID(in));
-          list.push_back(cT.trans());
           TransStorage trans1;
           copy_if(mAtt1Trans.begin(), mAtt1Trans.end(), back_inserter(trans1),
-                  [&cT](const TransformationPtr& t){ return t != cT.trans();}
+                  [cT](const TransformationPtr& t){ return cT.contains(t);}
                   );
-          cT.trans(TransformationPtr(&list));
-          for(const EventType& in : provided)
-            for(const TransformationPtr t : trans1) {
-              EventTypes inList = t->in(cT.in()[0], in);
-              if(inList.size()==1 && inList[0] - in < in - cT.in()[0]) {
-                list.push_back(t);
-                cT.in(inList);
-              }
+          for(const EventType& in :  cT.in()) {
+            EventIDs compIDs = extractCompatibleIDs(in, ids);
+            bool found = false;
+            for(EventID id : compIDs) {
+              if(found)break;
+              for(const EventType& provType : mTypes.find(id))
+                if(in<=provType)  {
+                  found=true;
+                  break;
+                }
             }
-        }*/
+          } 
         if(mapTypes(cT.in()))
-          *it++ = cT;
-
+        *it++ = cT;
       }
     }
 
