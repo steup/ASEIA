@@ -1,4 +1,5 @@
 #include <CompositeTransformation.h>
+#include <EventTypeHelpers.h>
 
 #include <boost/graph/depth_first_search.hpp>
 
@@ -10,12 +11,13 @@
 
 using namespace std;
 
-using Graph      = CompositeTransformation::Graph;
-using Vertex     = CompositeTransformation::Vertex;
-using Edge       = Graph::edge_descriptor;
-using EventTypes = CompositeTransformation::EventTypes;
-using EventIDs   = CompositeTransformation::EventIDs;
-using TransPtr   = CompositeTransformation::TransPtr;
+using Graph        = CompositeTransformation::Graph;
+using Vertex       = CompositeTransformation::Vertex;
+using VertexResult = CompositeTransformation::VertexResult;
+using Edge         = Graph::edge_descriptor;
+using EventTypes   = CompositeTransformation::EventTypes;
+using EventIDs     = CompositeTransformation::EventIDs;
+using TransPtr     = CompositeTransformation::TransPtr;
 
 struct InputEventTypeExtractor : public boost::default_dfs_visitor {
   Vertex temp;
@@ -37,6 +39,12 @@ struct InputEventTypeExtractor : public boost::default_dfs_visitor {
   }
 };
 
+CompositeTransformation::CompositeTransformation(TransformationPtr tPtr, const EventType& goal,
+                                                 const EventType& provided) {
+  VertexResult res = addRootTransformation(tPtr, goal, provided);
+  if(res.second)
+    mRoot = res.first;
+}
 
 TransPtr CompositeTransformation::create() const {
   return TransPtr();
@@ -46,7 +54,8 @@ bool CompositeTransformation::check() const {
   return boost::num_vertices(mGraph);
 }
 
-pair<Vertex, bool> CompositeTransformation::addRootTransformation(TransformationPtr tPtr, const EventType& tempGoal, EventType provided) {
+VertexResult CompositeTransformation::addRootTransformation(TransformationPtr tPtr, const EventType& tempGoal, 
+                                                            const EventType& provided) {
   if(num_vertices(mGraph)==0) {
     Vertex root = boost::add_vertex(mGraph);
     ConfiguredTransformation& cT = mGraph[root];
@@ -63,8 +72,9 @@ pair<Vertex, bool> CompositeTransformation::addRootTransformation(Transformation
     return make_pair(Vertex(), false);
 }
 
-pair<Vertex, bool> CompositeTransformation::addTransformation(TransformationPtr tPtr, Vertex v,
-                                                              const EventType& intermediate, EventType provided) {
+VertexResult CompositeTransformation::addTransformation(TransformationPtr tPtr, Vertex v,
+                                                        const EventType& intermediate,
+                                                        const EventType& provided) {
   const EventTypes& tempIn = mGraph[v].in();
   if(!count(tempIn.begin(), tempIn.end(), intermediate))
     return make_pair(Vertex(), false);
@@ -92,4 +102,6 @@ EventIDs CompositeTransformation::inIDs() const {
   return ids;
 }
 
-ostream& operator<<(ostream& o, const CompositeTransformation& t);
+ostream& operator<<(ostream& o, const CompositeTransformation& t) {
+
+}
