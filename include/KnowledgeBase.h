@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Transformation.h>
-#include <ConfiguredTransformation.h>
+#include <CompositeTransformation.h>
 
 #include <vector>
 #include <iosfwd>
@@ -10,7 +10,7 @@ class EventType;
 
 class KnowledgeBase {
   public:
-    using Transformations = std::vector<ConfiguredTransformation>;
+    using Transformations = std::vector<CompositeTransformation>;
 
     static void registerTransformation(const Transformation& trans);
     static void unregisterTransformation(const Transformation& trans);

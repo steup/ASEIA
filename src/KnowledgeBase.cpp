@@ -57,10 +57,9 @@ class KBImpl {
     void generateHetTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
       auto checkAndConvert = [&goal, &ids, this](OutIt it, TransformationPtr t){
         if (t && EventID(goal) <= t->out() ) {
-          vector<EventType> inT = t->in(goal);
-          auto used = mapTypes(inT);
-          if( !inT.empty() && used.first )
-            *it++ = ConfiguredTransformation(t, goal, used.second);
+          CompositeTransformation cT(t, goal, EventType());
+          if( !cT.in().empty() && mapTypes(cT.in()) )
+            *it++ = cT;
         }
         return it;
       };
@@ -104,11 +103,12 @@ class KBImpl {
               temp.back().in(inList);
             }
             else
-              *it++ = ConfiguredTransformation(t, goal, fitting.second);
+              *it++ = CompositeTransformation(t, goal, result.first);
           }
         }
-      for(ConfiguredTransformation& cT : temp) {
-        if(cT.in().size()==1) {
+
+      for(CompositeTransformation& cT : temp) {
+        /*if(cT.in().size()==1) {
           const EventType& in = cT.in()[0];
           TransformationList& list = *new TransformationList(Transformation::Type::attribute, EventID(in));
           list.push_back(cT.trans());
@@ -188,7 +188,7 @@ class KBImpl {
       generateAttTrans(goal, ids, back_inserter(result));
 
       auto it = remove_if(result.begin(), result.end(),
-                          [](const ConfiguredTransformation& t){ return !t.check(); }
+                          [](const CompositeTransformation& t){ return !t.check(); }
                 );
       result.erase(it, result.end());
 
