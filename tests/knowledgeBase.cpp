@@ -11,7 +11,7 @@ namespace test {
  using std::cout;
  using std::endl;
  using std::vector;
- using std::count;
+ using std::any_of;
 
 
   struct KnowledgeBaseTestSuite : public ::testing::Test {
@@ -150,8 +150,8 @@ namespace test {
     using  Transformations = KnowledgeBase::Transformations;
 
     bool checkResult(const Transformations& ts, const Transformation & t) {
-      auto pred = [&t](const ConfiguredTransformation& cT) {
-        return *cT.trans() == t;
+      auto pred = [&t](const CompositeTransformation& cT) {
+        return *cT.graph()[cT.root()].trans() == t;
       };
       return any_of(ts.begin(), ts.end(), pred);
     }
@@ -211,9 +211,13 @@ namespace test {
     ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
     TransformationPtr hom2Ptr(&hom2, [](const Transformation*){});
     TransformationPtr hom3Ptr(&hom3, [](const Transformation*){});
-    auto check = [hom2Ptr, hom3Ptr](const ConfiguredTransformation& cT){
-      const TransformationList& list = dynamic_cast<const TransformationList&>(*cT.trans());
-      return count(list.begin(), list.end(), hom2Ptr) && count(list.begin(), list.end(), hom3Ptr);
+    auto check = [hom2Ptr, hom3Ptr](const CompositeTransformation& cT){
+      const CompositeTransformation::Graph& g = cT.graph();
+      auto pred0 = [hom2Ptr, &g](CompositeTransformation::Vertex v){ return g[v].trans()==hom2Ptr; };
+      auto pred1 = [hom3Ptr, &g](CompositeTransformation::Vertex v){ return g[v].trans()==hom3Ptr; };
+      auto vertices = boost::vertices(g);
+      return any_of(vertices.first, vertices.second, pred0) && 
+             any_of(vertices.first, vertices.second, pred1);
     };
     EXPECT_TRUE(any_of(ts.begin(), ts.end(), check));
   }
