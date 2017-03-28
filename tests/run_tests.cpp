@@ -20,7 +20,6 @@
 #include <channel.cpp>
 #include <scale.cpp>
 #include <knowledgeBase.cpp>
-#include <transformList.cpp>
 #include <compositeTransformation.cpp>
 
 /** \namespace tests

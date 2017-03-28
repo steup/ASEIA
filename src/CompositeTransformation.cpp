@@ -47,6 +47,9 @@ CompositeTransformation::CompositeTransformation(TransformationPtr tPtr, const E
 }
 
 TransPtr CompositeTransformation::create() const {
+  if(boost::num_vertices(mGraph)==1) {
+    return mGraph[mRoot].create();
+  }
   return TransPtr();
 }
 

@@ -2,8 +2,6 @@
 #include <TypeRegistry.h>
 #include <EventTypeHelpers.h>
 
-#include <TransformationList.h>
-
 #include <Singleton.h>
 
 #include <vector>
