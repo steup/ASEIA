@@ -8,6 +8,14 @@
 
 using namespace std;
 
+bool Transformer::operator==(const ConfiguredTransformation& t) const {
+  return mTrans == *t.trans() && mOut == t.out() && mIn == t.in();
+}
+
+bool Transformer::operator==(const CompositeTransformation& t) const {
+  return mOut == t.out() && mIn == t.in();
+}
+
 Transformation::Transformation(Type type, size_t arity, const EventID& out)
   : mOut(out), mType(type), mArity(arity) {
   KnowledgeBase::registerTransformation(*this);

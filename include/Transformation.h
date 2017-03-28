@@ -9,6 +9,7 @@
 
 class MetaEvent;
 class ConfiguredTransformation;
+class CompositeTransformation;
 class Transformation;
 
 /** \brief Interface of a state-full execution of a Transformation
@@ -36,6 +37,7 @@ class Transformer {
     const Transformation& transformation() const { return mTrans; }
     bool operator==(const Transformer& b) const { return this == &b; }
     bool operator==(const ConfiguredTransformation& t) const;
+    bool operator==(const CompositeTransformation& t) const;
 };
 
 inline std::ostream& operator<<(std::ostream& o, const Transformer& t) {
