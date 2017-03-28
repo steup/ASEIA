@@ -78,14 +78,13 @@ struct CompositeTransformSuite : public ::testing::Test {
     ASSERT_TRUE(r0.second);
     auto r1 = compTrans.addTransformation(bPtr, r0.first, intermediate, provided);
     ASSERT_TRUE(r1.second);
-    auto r2 = compTrans2.addRootTransformation(TransformationPtr(&e, [](const Transformation*){}), goal);
+    auto r2 = compTrans2.addRootTransformation(TransformationPtr(&e, [](const Transformation*){}), goal, EventType());
     ASSERT_TRUE(r2.second);
     auto r3 = compTrans2.addTransformation(bPtr, r2.first, intermediate, provided);
     ASSERT_TRUE(r3.second);
     auto r4 = compTrans2.addTransformation(TransformationPtr(&f, [](const Transformation*){}), r2.first, intermediate2, provided2);
     ASSERT_TRUE(r4.second);
   }
-
 };
 
 TEST_F(CompositeTransformSuite, linearTest) {
