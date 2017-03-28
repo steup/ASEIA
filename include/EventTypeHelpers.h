@@ -7,7 +7,7 @@
 
 using EventTypeResult = std::pair<EventType, bool>;
 
-EventTypeResult findCompatibleEventType(EventID goal, const Transformation::EventTypes& types);
+EventTypeResult findGoalEventType(EventID goal, const Transformation::EventTypes& types);
 
 /** \brief extract comaptible EventIds  from published EventIds
  *  \param goal the goal EventID

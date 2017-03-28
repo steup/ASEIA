@@ -14,7 +14,7 @@ EventIDs extractCompatibleIDs(EventID goal, const EventIDs& ids) {
   return result;
 }
 
-EventTypeResult findCompatibleEventType(EventID goal, const EventTypes& types) {
+EventTypeResult findGoalEventType(EventID goal, const EventTypes& types) {
   EventTypes result;
   auto pred = [goal](const EventType& eT){ return EventID(eT)>=goal; };
   auto it = find_if(types.begin(), types.end(), pred);

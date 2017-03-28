@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <utility>
 
 using namespace std;
 
@@ -33,15 +34,61 @@ class KBImpl {
     TypeOutIt addValidTypes(TypeOutIt it, EventID id) const {
       return copy(mTypes.find(id).first, mTypes.find(id).second, it);
     }
-    /** \todo find all compatible types not just direct fits **/
-    bool mapTypes(const vector<EventType>& types) const {
-      EventTypes used;
-      for(const EventType& eT : types) {
-        auto range = mTypes.find(eT);
-        if(range.empty())
-          return false;
+
+    EventTypes extractCompatibleEventTypes(EventID goal, const EventIDs& ids) const {
+      EventIDs comp = extractCompatibleIDs(goal, ids);
+
+      EventTypes provided;
+      accumulate(comp.begin(), comp.end(), back_inserter(provided),
+                 [this](TypeOutIt it, EventID id) { return addValidTypes(it, id); }
+                );
+      return provided;
+    }
+
+    EventTypes unfitEvents(const CompositeTransformation& cT, const EventIDs& ids) const {
+      EventTypes todo;
+      for(const EventType& in :  cT.in()) {
+        EventIDs compIDs = extractCompatibleIDs(in, ids);
+        bool found = false;
+        for(EventID id : compIDs) {
+          if(found)break;
+          for(const EventType& provType : mTypes.find(id))
+            if(in<=provType)  {
+              found=true;
+              break;
+            }
+        }
+        if(!found)
+          todo.push_back(in);
       }
-      return true;
+      return todo;
+    }
+    /** \brief (partially) complete incomplete CompositeTransformations
+     *  \param cT the incomplete CompositeTransformation
+     *  \param ids the current sorted EventIDs available
+     *  \param its a apair of OutputIterators to the result and the partially complete vectors
+     *  \return the modified pair of Output Iterators
+     *  \todo implement attribute transformation insertion
+     *
+     *  This method tries different attribute transformations to transform
+     *  published EventTypes to input EventTypes of the given
+     *  CompositeTransformation. In this process the CompositeTransformation
+     *  may either be complete, when it is put to the result list or it is
+     *  still incomplete but changed, when it is output to the partial list. If
+     *  no transformation applied the CompositeTransformation cannot be
+     *  fulfilled and is discarded. In the case multiple transformations apply
+     *  additional CompositeTransformations are created and put in the partial
+     *  list.
+     *
+     **/
+    pair<OutIt, OutIt> closeTrans(const CompositeTransformation& cT, const EventIDs& ids, pair<OutIt, OutIt> its) const {
+      EventTypes todo = unfitEvents(cT, ids);
+      if(todo.empty())
+        *its.first++ = move(cT);
+
+      // insert black magic voodoo
+
+      return its;
     }
 
 
@@ -50,13 +97,13 @@ class KBImpl {
      * \param all existing published EventIDs
      * \param it Output iterator to output fitting partially generated transformations
      * \todo filter on input eventids
-     * \todo generate composite transformations
+     * \todo generate full composite transformation tree (Spanning Tree search)
      **/
     void generateHetTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
       auto checkAndConvert = [&goal, &ids, this](OutIt it, TransformationPtr t){
-        if (t && EventID(goal) <= t->out() ) {
+        if (EventID(goal) <= t->out()) {
           CompositeTransformation cT(t, goal, EventType());
-          if( !cT.in().empty() && mapTypes(cT.in()) )
+          if( !cT.in().empty())
             *it++ = cT;
         }
         return it;
@@ -65,6 +112,12 @@ class KBImpl {
       accumulate(mHetTrans.begin(), mHetTrans.end(), it, checkAndConvert);
     }
 
+    /** \brief find homogeneus transforms leading directly to goal
+     *  \param goal the goal EventType
+     *  \param ids the clist of currently published ids
+     *  \param it the OutputIterator to the CompositeTransformation storage
+     *  \todo implement
+     **/
     void generateHomTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
 
     }
@@ -73,58 +126,21 @@ class KBImpl {
      *  \param goal the goal EventType
      *  \param ids available EventIDs
      *  \param it Output iterator to output partially configured transformations
-     *  \todo enable composite transforms
      **/
     void generateAttTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
-
-      EventIDs comp = extractCompatibleIDs(EventID(goal), ids);
-
-      EventTypes provided;
-      accumulate(comp.begin(), comp.end(), back_inserter(provided),
-                 [this](TypeOutIt it, EventID id) { return addValidTypes(it, id); }
-                );
+      EventTypes provided = extractCompatibleEventTypes(goal, ids);
 
       TransStorage trans = mAttNTrans;
       copy(mAtt1Trans.begin(), mAtt1Trans.end(), back_inserter(trans));
-      Transformations temp;
 
       for(const EventType& in : provided)
         for(TransformationPtr t : trans) {
-
           EventTypes inList = t->in(goal, in);
-          auto result = findCompatibleEventType(EventID(goal), inList);
+          auto result = findGoalEventType(goal, inList);
 
-          if(result.second && result.first - in < in - goal ) {
-
-            if(mapTypes(inList)) {
-              temp.emplace_back(t, goal, result.first);
-              temp.back().in(inList);
-            }
-            else
-              *it++ = CompositeTransformation(t, goal, result.first);
-          }
+          if(result.second && result.first - in < in - goal )
+            *it++ = CompositeTransformation(t, goal, result.first);
         }
-
-      for(CompositeTransformation& cT : temp) {
-          TransStorage trans1;
-          copy_if(mAtt1Trans.begin(), mAtt1Trans.end(), back_inserter(trans1),
-                  [cT](const TransformationPtr& t){ return cT.contains(t);}
-                  );
-          for(const EventType& in :  cT.in()) {
-            EventIDs compIDs = extractCompatibleIDs(in, ids);
-            bool found = false;
-            for(EventID id : compIDs) {
-              if(found)break;
-              for(const EventType& provType : mTypes.find(id))
-                if(in<=provType)  {
-                  found=true;
-                  break;
-                }
-            }
-          } 
-        if(mapTypes(cT.in()))
-        *it++ = cT;
-      }
     }
 
   public:
@@ -169,23 +185,27 @@ class KBImpl {
     /** \brief Find Composite Transformations for EventType
      *  \param goal the output of the Transformations
      *  \return a list of ConfigureTransformation
-     *  \todo Add homogeneus transforms
-     *  \todo enable composite transforms
      **/
     Transformations find(const EventType& goal) {
       EventIDs ids = mTypes.ids();
       sort(ids.begin(), ids.end()); //<< Sort EventIDs ascending
 
+      Transformations initial;
       Transformations result;
 
-      generateHetTrans(goal, ids, back_inserter(result));
-      generateHomTrans(goal, ids, back_inserter(result));
-      generateAttTrans(goal, ids, back_inserter(result));
+      generateHetTrans(goal, ids, back_inserter(initial));
+      generateHomTrans(goal, ids, back_inserter(initial));
+      generateAttTrans(goal, ids, back_inserter(initial));
 
-      auto it = remove_if(result.begin(), result.end(),
-                          [](const CompositeTransformation& t){ return !t.check(); }
-                );
-      result.erase(it, result.end());
+      do {
+        Transformations temp;
+        auto fold=[this, &ids](pair<OutIt, OutIt> its, const CompositeTransformation& cT) { return closeTrans(cT, ids, its);};
+        accumulate(initial.begin(), initial.end(), make_pair(back_inserter(result), back_inserter(temp)), fold);
+        initial=move(temp);
+      }while(!initial.empty());
+
+      auto check = [](const CompositeTransformation& t){ return !t.check(); };
+      result.erase(remove_if(result.begin(), result.end(), check), result.end());
 
       return result;
     }
