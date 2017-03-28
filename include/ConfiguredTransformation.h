@@ -2,7 +2,6 @@
 
 #include <Transformation.h>
 
-#include <Transformation.h>
 #include <EventID.h>
 #include <EventType.h>
 
