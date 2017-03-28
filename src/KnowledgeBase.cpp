@@ -1,5 +1,6 @@
 #include <KnowledgeBase.h>
 #include <TypeRegistry.h>
+#include <EventTypeHelpers.h>
 
 #include <TransformationList.h>
 
@@ -25,17 +26,6 @@ class KBImpl {
     TypeStorage mTypes;
     TransStorage mHetTrans, mHomTrans, mAtt1Trans, mAttNTrans;
 
-    /** \brief extract comaptible EventIds  from published EventIds
-     *  \param goal the goal EventID
-     *  \param ids all published EventIds
-     **/
-    EventIDs extractIDs(EventID goal, const EventIDs& ids) const {
-      EventIDs result;
-      auto start = lower_bound(ids.begin(), ids.end(), goal);
-      copy_if(start, ids.end(), back_inserter(result), [&goal](EventID id){ return id>=goal; });
-
-      return result;
-    }
 
     /** \brief add compatible EventTypes to list
      *  \param id the EventID the EventTypes need to be compatible to
@@ -46,27 +36,16 @@ class KBImpl {
       return copy(mTypes.find(id).first, mTypes.find(id).second, it);
     }
     /** \todo find all compatible types not just direct fits **/
-    pair<bool, EventTypes> mapTypes(const vector<EventType>& types) const {
+    bool mapTypes(const vector<EventType>& types) const {
       EventTypes used;
       for(const EventType& eT : types) {
         auto range = mTypes.find(eT);
         if(range.empty())
-          return make_pair(false, EventTypes());
-        else
-          used.push_back(range.front());
+          return false;
       }
-      return make_pair(true, used);
+      return true;
     }
 
-    pair<bool, EventType> extractID(EventID goal, const EventTypes& types) const {
-      EventTypes result;
-      auto pred = [goal](const EventType& eT){ return EventID(eT)>=goal; };
-      auto it = find_if(types.begin(), types.end(), pred);
-      if(it!=types.end())
-        return make_pair(true, *it);
-      else
-        return make_pair(false, EventType());
-    }
 
     /** \brief create fitting partially configured composite transformations for goal EventID
      * \param goal the EventID of the goal
@@ -101,7 +80,7 @@ class KBImpl {
      **/
     void generateAttTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
 
-      EventIDs comp = extractIDs(EventID(goal), ids);
+      EventIDs comp = extractCompatibleIDs(EventID(goal), ids);
 
       EventTypes provided;
       accumulate(comp.begin(), comp.end(), back_inserter(provided),
@@ -110,20 +89,20 @@ class KBImpl {
 
       TransStorage trans = mAttNTrans;
       copy(mAtt1Trans.begin(), mAtt1Trans.end(), back_inserter(trans));
-      vector<ConfiguredTransformation> temp;
+      Transformations temp;
 
       for(const EventType& in : provided)
         for(TransformationPtr t : trans) {
 
           EventTypes inList = t->in(goal, in);
-          auto result = extractID(EventID(goal), inList);
+          auto result = findCompatibleEventType(EventID(goal), inList);
 
-          if(result.first && result.second - in < in - goal ) {
+          if(result.second && result.first - in < in - goal ) {
 
-            auto fitting = mapTypes(inList);
-
-            if(!fitting.first)
-              temp.emplace_back(t, goal, inList);
+            if(mapTypes(inList)) {
+              temp.emplace_back(t, goal, result.first);
+              temp.back().in(inList);
+            }
             else
               *it++ = ConfiguredTransformation(t, goal, fitting.second);
           }
@@ -146,10 +125,8 @@ class KBImpl {
                 cT.in(inList);
               }
             }
-        }
-        auto fitting = mapTypes(cT.in());
-
-        if(fitting.first)
+        }*/
+        if(mapTypes(cT.in()))
           *it++ = cT;
 
       }
