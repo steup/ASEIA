@@ -75,6 +75,11 @@ size_t EventType::operator-(const EventType& b) const{
   return value;
 }
 
+/** \todo implement **/
+bool EventType::operator<(const EventType& b) const {
+  return false;
+}
+
 uint8_t EventType::length() const { 
   return mStorage.size();
 }
