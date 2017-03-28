@@ -16,6 +16,7 @@ class CompositeTransformation {
                                                 ConfiguredTransformation, const EventType*>;
     using Vertex       = Graph::vertex_descriptor;
     using VertexResult = std::pair<Vertex, bool>;
+    using VertexList   = std::vector<Vertex>;
     using TransPtr     = Transformation::TransPtr;
     using EventTypes   = Transformer::EventTypes;
     using EventIDs     = Transformation::EventIDs;
@@ -45,6 +46,9 @@ class CompositeTransformation {
     const EventTypes& in() const { return mIn; }
     void in(const EventTypes& eTs) { mIn = eTs; }
     Vertex root() const { return mRoot; }
+    VertexResult find(TransformationPtr tPtr) const;
+    VertexList find(const EventType& eT) const;
+    bool contains(TransformationPtr tPtr) const { return find(tPtr).second; }
 
     bool operator==(const Transformer& t) const { return t==*this; }
 

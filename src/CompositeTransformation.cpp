@@ -14,6 +14,7 @@ using namespace std;
 using Graph        = CompositeTransformation::Graph;
 using Vertex       = CompositeTransformation::Vertex;
 using VertexResult = CompositeTransformation::VertexResult;
+using VertexList   = CompositeTransformation::VertexList;
 using Edge         = Graph::edge_descriptor;
 using EventTypes   = CompositeTransformation::EventTypes;
 using EventIDs     = CompositeTransformation::EventIDs;
@@ -105,6 +106,17 @@ EventIDs CompositeTransformation::inIDs() const {
   return ids;
 }
 
-ostream& operator<<(ostream& o, const CompositeTransformation& t) {
+/** \todo implement **/
+VertexResult CompositeTransformation::find(TransformationPtr tPtr) const {
+  return make_pair(Vertex(), false);
+}
 
+/** \todo implement **/
+VertexList CompositeTransformation::find(const EventType& eT) const {
+  return {};
+}
+
+/** \todo implement **/
+ostream& operator<<(ostream& o, const CompositeTransformation& t) {
+  return o;
 }
