@@ -22,6 +22,9 @@ class KBImpl {
   private:
     using OutIt = back_insert_iterator<Transformations>;
     using TypeOutIt = back_insert_iterator<EventTypes>;
+    using VertexList = CompositeTransformation::VertexList;
+    using Vertex     = CompositeTransformation::Vertex;
+    using TransList  = CompositeTransformation::TransList;
     TypeStorage mTypes;
     TransStorage mHetTrans, mHomTrans, mAtt1Trans, mAttNTrans;
 
@@ -81,13 +84,36 @@ class KBImpl {
      *  list.
      *
      **/
-    pair<OutIt, OutIt> closeTrans(const CompositeTransformation& cT, const EventIDs& ids, pair<OutIt, OutIt> its) const {
+    pair<OutIt, OutIt> closeTrans(const CompositeTransformation& cT, const EventIDs& ids,
+                                  const TransStorage& trans, pair<OutIt, OutIt> its) const {
+      if(cT.in().empty())
+        return its;
+
       EventTypes todo = unfitEvents(cT, ids);
+
       if(todo.empty())
         *its.first++ = move(cT);
-
-      // insert black magic voodoo
-
+      else {
+        for(const EventType& eT : todo) {
+          VertexList unfitTrans = cT.find(eT);
+          for(Vertex v : unfitTrans) {
+            TransStorage tempTrans;
+            TransList path = cT.path(v);
+            copy_if(trans.begin(), trans.end(), back_inserter(tempTrans),
+                    [&path](TransformationPtr tPtr){return std::find(path.begin(), path.end(), tPtr)==path.end(); });
+            for(TransformationPtr tPtr : tempTrans) {
+              for(const EventType& provided: extractCompatibleEventTypes(eT, ids)) {
+                EventTypeResult result = findGoalEventType(eT, tPtr->in(eT, provided));
+                if( result.second && result.first - provided < provided - eT) {
+                  CompositeTransformation newCT = cT;
+                  newCT.addTransformation(tPtr, v, eT, provided);
+                  *its.second++ = newCT;
+                }
+              }
+          }
+          }
+        }
+      }
       return its;
     }
 
@@ -135,11 +161,10 @@ class KBImpl {
 
       for(const EventType& in : provided)
         for(TransformationPtr t : trans) {
-          EventTypes inList = t->in(goal, in);
-          auto result = findGoalEventType(goal, inList);
+          auto result = findGoalEventType(goal, t->in(goal, in));
 
           if(result.second && result.first - in < in - goal )
-            *it++ = CompositeTransformation(t, goal, result.first);
+            *it++ = CompositeTransformation(t, goal, in);
         }
     }
 
@@ -197,11 +222,23 @@ class KBImpl {
       generateHomTrans(goal, ids, back_inserter(initial));
       generateAttTrans(goal, ids, back_inserter(initial));
 
+/*      bool done;
       do {
         Transformations temp;
-        auto fold=[this, &ids](pair<OutIt, OutIt> its, const CompositeTransformation& cT) { return closeTrans(cT, ids, its);};
+        auto fold=[this, &ids](pair<OutIt, OutIt> its, const CompositeTransformation& cT) { return closeTrans(cT, ids, mAttNTrans, its);};
         accumulate(initial.begin(), initial.end(), make_pair(back_inserter(result), back_inserter(temp)), fold);
-        initial=move(temp);
+        done = !temp.empty();
+        move(temp.begin(), temp.end(), back_inserter(initial));
+      }while(done);*/
+
+      do {
+        Transformations temp;
+        auto fold=[this, &ids](pair<OutIt, OutIt> its, const CompositeTransformation& cT) {
+          return closeTrans(cT, ids, mAtt1Trans, its);
+        };
+        accumulate(initial.begin(), initial.end(), make_pair(back_inserter(result), back_inserter(temp)), fold);
+        initial.clear();
+        move(temp.begin(), temp.end(), back_inserter(initial));
       }while(!initial.empty());
 
       auto check = [](const CompositeTransformation& t){ return !t.check(); };
