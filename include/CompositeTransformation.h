@@ -20,6 +20,7 @@ class CompositeTransformation {
     using TransPtr     = Transformation::TransPtr;
     using EventTypes   = Transformer::EventTypes;
     using EventIDs     = Transformation::EventIDs;
+    using TransList    = std::vector<TransformationPtr>;
 
   private:
     Graph mGraph;
@@ -46,6 +47,7 @@ class CompositeTransformation {
     const EventTypes& in() const { return mIn; }
     void in(const EventTypes& eTs) { mIn = eTs; }
     Vertex root() const { return mRoot; }
+    TransList path(Vertex v) const;
     VertexResult find(TransformationPtr tPtr) const;
     VertexList find(const EventType& eT) const;
     bool contains(TransformationPtr tPtr) const { return find(tPtr).second; }

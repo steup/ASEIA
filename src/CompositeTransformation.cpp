@@ -19,6 +19,7 @@ using Edge         = Graph::edge_descriptor;
 using EventTypes   = CompositeTransformation::EventTypes;
 using EventIDs     = CompositeTransformation::EventIDs;
 using TransPtr     = CompositeTransformation::TransPtr;
+using TransList    = CompositeTransformation::TransList;
 
 struct InputEventTypeExtractor : public boost::default_dfs_visitor {
   Vertex temp;
@@ -40,6 +41,37 @@ struct InputEventTypeExtractor : public boost::default_dfs_visitor {
   }
 };
 
+struct FindTransformation : public boost::default_dfs_visitor {
+  VertexResult& result;
+  TransformationPtr tPtr;
+
+  FindTransformation(TransformationPtr tPtr, VertexResult& result)
+    : result(result), tPtr(tPtr)
+  {}
+
+  void discover_vertex(Vertex v, const Graph& g) {
+    if(g[v].trans()==tPtr) {
+      result.first = v;
+      result.second =true;
+    }
+  }
+};
+
+struct FindEventType : public boost::default_dfs_visitor {
+  VertexList& result;
+  const EventType& eT;
+
+  FindEventType(const EventType& eT, VertexList& result)
+    : result(result), eT(eT)
+  {}
+
+  void discover_vertex(Vertex v, const Graph& g) {
+    if(count(g[v].in().begin(), g[v].in().end(), eT))
+      result.push_back(v);
+  }
+};
+;
+
 CompositeTransformation::CompositeTransformation(TransformationPtr tPtr, const EventType& goal,
                                                  const EventType& provided) {
   VertexResult res = addRootTransformation(tPtr, goal, provided);
@@ -58,7 +90,7 @@ bool CompositeTransformation::check() const {
   return boost::num_vertices(mGraph);
 }
 
-VertexResult CompositeTransformation::addRootTransformation(TransformationPtr tPtr, const EventType& tempGoal, 
+VertexResult CompositeTransformation::addRootTransformation(TransformationPtr tPtr, const EventType& tempGoal,
                                                             const EventType& provided) {
   if(num_vertices(mGraph)==0) {
     Vertex root = boost::add_vertex(mGraph);
@@ -106,14 +138,32 @@ EventIDs CompositeTransformation::inIDs() const {
   return ids;
 }
 
+TransList CompositeTransformation::path(Vertex v) const {
+  TransList result;
+  bool done=false;
+  do {
+    result.push_back(mGraph[v].trans());
+    auto in=in_edges(v, mGraph);
+    if(in.first!=in.second)
+      v=source(*in.first, mGraph);
+    else
+      done=true;
+  }while(!done);
+  return result;
+}
+
 /** \todo implement **/
 VertexResult CompositeTransformation::find(TransformationPtr tPtr) const {
-  return make_pair(Vertex(), false);
+  VertexResult result(Vertex(), false);
+  boost::depth_first_search(mGraph, boost::visitor(FindTransformation(tPtr, result)));
+  return result;
 }
 
 /** \todo implement **/
 VertexList CompositeTransformation::find(const EventType& eT) const {
-  return {};
+  VertexList result;
+  boost::depth_first_search(mGraph, boost::visitor(FindEventType(eT, result)));
+  return result;
 }
 
 /** \todo implement **/
