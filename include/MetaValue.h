@@ -75,7 +75,6 @@ inline std::ostream& operator<<(std::ostream& o, const MetaValue& v) {
   return v.print(o);
 }
 
-/** \todo insert deserialization code */
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, const MetaValue& me){
 	if(me.implementation())
@@ -83,7 +82,6 @@ Serializer<PB>& operator<<(Serializer<PB>& s, const MetaValue& me){
 	return s;
 }
 
-/** \todo insert deserialization code */
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& d, MetaValue& me){
 	if(me.implementation())

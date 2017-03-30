@@ -71,7 +71,6 @@ class KBImpl {
      *  \param ids the current sorted EventIDs available
      *  \param its a apair of OutputIterators to the result and the partially complete vectors
      *  \return the modified pair of Output Iterators
-     *  \todo implement attribute transformation insertion
      *
      *  This method tries different attribute transformations to transform
      *  published EventTypes to input EventTypes of the given

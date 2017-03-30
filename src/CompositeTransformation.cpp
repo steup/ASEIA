@@ -152,14 +152,12 @@ TransList CompositeTransformation::path(Vertex v) const {
   return result;
 }
 
-/** \todo implement **/
 VertexResult CompositeTransformation::find(TransformationPtr tPtr) const {
   VertexResult result(Vertex(), false);
   boost::depth_first_search(mGraph, boost::visitor(FindTransformation(tPtr, result)));
   return result;
 }
 
-/** \todo implement **/
 VertexList CompositeTransformation::find(const EventType& eT) const {
   VertexList result;
   boost::depth_first_search(mGraph, boost::visitor(FindEventType(eT, result)));
