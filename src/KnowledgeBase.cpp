@@ -1,6 +1,7 @@
 #include <KnowledgeBase.h>
 #include <TypeRegistry.h>
 #include <EventTypeHelpers.h>
+#include <TransformationGraph.h>
 
 #include <Singleton.h>
 
@@ -26,7 +27,8 @@ class KBImpl {
     using Vertex     = CompositeTransformation::Vertex;
     using TransList  = CompositeTransformation::TransList;
     TypeStorage mTypes;
-    TransStorage mHetTrans, mHomTrans, mAtt1Trans, mAttNTrans;
+    TransformationGraph mHetTrans;
+    TransStorage mHomTrans, mAtt1Trans, mAttNTrans;
 
 
     /** \brief add compatible EventTypes to list
@@ -116,27 +118,6 @@ class KBImpl {
       return its;
     }
 
-
-    /** \brief create fitting partially configured composite transformations for goal EventID
-     * \param goal the EventID of the goal
-     * \param all existing published EventIDs
-     * \param it Output iterator to output fitting partially generated transformations
-     * \todo filter on input eventids
-     * \todo generate full composite transformation tree (Spanning Tree search)
-     **/
-    void generateHetTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
-      auto checkAndConvert = [&goal, &ids, this](OutIt it, TransformationPtr t){
-        if (EventID(goal) <= t->out()) {
-          CompositeTransformation cT(t, goal, EventType());
-          if( !cT.in().empty())
-            *it++ = cT;
-        }
-        return it;
-      };
-
-      accumulate(mHetTrans.begin(), mHetTrans.end(), it, checkAndConvert);
-    }
-
     /** \brief find homogeneus transforms leading directly to goal
      *  \param goal the goal EventType
      *  \param ids the clist of currently published ids
@@ -170,14 +151,14 @@ class KBImpl {
   public:
     void regTrans(const Transformation& trans) {
       TransStorage* storagePtr;
+      TransformationPtr tPtr(&trans, [](const Transformation*){});
       switch(trans.type()) {
         case(Transformation::Type::invalid): return;
-        case(Transformation::Type::heterogeneus): storagePtr = &mHetTrans; break;
+        case(Transformation::Type::heterogeneus): mHetTrans.insert(tPtr); return;
         case(Transformation::Type::homogeneus)  : storagePtr = &mHomTrans; break;
         case(Transformation::Type::attribute)   : storagePtr = (trans.arity()==1)?&mAtt1Trans:&mAttNTrans; break;
         default                                 : return;
       }
-      TransformationPtr tPtr(&trans, [](const Transformation*){});
       if(count(storagePtr->begin(), storagePtr->end(), tPtr))
         return;
       storagePtr->push_back(tPtr);
@@ -185,15 +166,15 @@ class KBImpl {
 
     void unregTrans(const Transformation& trans) {
       TransStorage* storagePtr;
+      TransformationPtr tPtr(&trans, [](const Transformation*){});
       switch(trans.type()) {
         case(Transformation::Type::invalid): return;
-        case(Transformation::Type::heterogeneus): storagePtr = &mHetTrans; break;
+        case(Transformation::Type::heterogeneus): mHetTrans.remove(tPtr); return;
         case(Transformation::Type::homogeneus)  : storagePtr = &mHomTrans; break;
         case(Transformation::Type::attribute)   : storagePtr = (trans.arity()==1)?&mAtt1Trans:&mAttNTrans; break;
         default                                 : return;
       }
 
-      TransformationPtr tPtr(&trans, [](const Transformation*){});
       auto it = remove(storagePtr->begin(), storagePtr->end(), tPtr);
       storagePtr->erase(it, storagePtr->end());
     }
@@ -217,7 +198,7 @@ class KBImpl {
       Transformations initial;
       Transformations result;
 
-      generateHetTrans(goal, ids, back_inserter(initial));
+      mHetTrans.generate(goal, ids, back_inserter(initial));
       generateHomTrans(goal, ids, back_inserter(initial));
       generateAttTrans(goal, ids, back_inserter(initial));
 
