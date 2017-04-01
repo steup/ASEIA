@@ -2,13 +2,14 @@ PROFILING        ?= 0
 DEBUG            ?= 0
 EMBEDDED         ?= 0
 
+RANLIB   ?= ranlib
 
 INCLUDES +=
 LDPATHS  +=
 SYMBOLS  +=
 CXXFLAGS += -std=gnu++11
 LDFLAGS  +=
-LIBS     +=
+LIBS     += boost_system boost_filesystem
 PACKAGES += eigen3
 LIBNAME  ?= ASEIA
 DLIBEXT  ?= so
@@ -52,7 +53,7 @@ PKG       := pkgconfig
 LOG       := log
 
 DIRS      := ${BIN} ${BLIB} ${BPROG} ${BTEST} ${BUILD} ${LIB} ${CMAKE} ${PKG} ${LOG}
-GARBAGE   := ${HTML} ${DIRS}
+GARBAGE   := $(wildcard ${DOC}/*.dot) $(wildcard ${DOC}/*.svg) ${HTML} ${DIRS}
 
 CMAKEFILE := ${CMAKE}/aseiaConfig.cmake
 PKGFILE   := ${PKG}/aseia.pc
@@ -63,7 +64,7 @@ TARGETS   := ${DYNLIB} ${STATLIB}
 
 vpath %.mk ${BASEDIR}/make
 
-.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% tests run_tests doc
+.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% tests run_tests doc dot
 .PRECIOUS: ${BPROG}/%.o ${BLIB}/%.o
 
 all: ${DYNLIB} ${STATLIB}
@@ -90,6 +91,7 @@ INCLUDES := $(addprefix -I, ${INCLUDES} ${INC} ${SMHASHER_INCLUDES}) ${PKG_INCLU
 CXXFLAGS := ${CXXFLAGS} ${PKG_CFLAGS}
 LDFLAGS  := ${LDFLAGS} ${PKG_LDFLAGS}
 DEPS     := $(wildcard ${BUILD}/*/*.o.d)
+GRAPHS   := $(foreach graph, $(basename $(wildcard ${DOC}/*.dot)), ${graph}.svg)
 
 OBJECTS  := ${OBJECTS} ${SMHASHER_OBJECTS}
 
@@ -118,7 +120,7 @@ ${DYNLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
 
 ${STATLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
 	@echo "Building static library: $@ <- [$^]"
-	@${AR} r $@ $^
+	@${AR} ${ARFLAGS} $@ $^
 	@${RANLIB} $@
 
 ${CMAKEFILE}: ${MAKEFILE_LIST}  | ${CMAKE}
@@ -175,5 +177,10 @@ clean:
 doc:
 	@echo "Creating Documentation"
 	@doxygen ${DOC}/doxyfile
+
+dot: ${GRAPHS}
+
+${GRAPHS}: ${DOC}/%.svg: ${DOC}/%.dot
+	@dot -Tsvg $< -o $@
 
 -include ${DEPS}

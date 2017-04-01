@@ -100,8 +100,6 @@ class ScaleTransformation : public Transformation {
     virtual void print(ostream& o) const {
 			o << "Rescale Transformation";
 		}
-} rescale;
+} rescaleObj;
 
-namespace test {
-Transformation* rescalePtr = &rescale;
-}
+const Transformation& rescale=rescaleObj;

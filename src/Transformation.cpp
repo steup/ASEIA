@@ -18,17 +18,14 @@ bool Transformer::operator==(const CompositeTransformation& t) const {
 
 Transformation::Transformation(Type type, size_t arity, const EventID& out)
   : mOut(out), mType(type), mArity(arity) {
-  KnowledgeBase::registerTransformation(*this);
 }
 
 Transformation::~Transformation() {
-  KnowledgeBase::unregisterTransformation(*this);
 }
 
 class InvalidTransformation : public Transformation {
   public:
     InvalidTransformation() : Transformation(Type::invalid, 0, EventID::any) {
-      KnowledgeBase::unregisterTransformation(*this);
     }
     virtual TransPtr create(const EventType& out, const EventTypes& in) const {
       return TransPtr();

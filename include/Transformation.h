@@ -94,4 +94,4 @@ inline std::ostream& operator<<(std::ostream& o, const Transformation& t) {
   return o;
 }
 
-using TransformationPtr = std::shared_ptr<const Transformation>;
+using TransformationPtr = const Transformation*;

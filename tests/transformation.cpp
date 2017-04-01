@@ -1,13 +1,11 @@
 #include <KnowledgeBase.h>
 #include <MetaFactory.h>
+#include <Transformations.h>
 
 namespace test {
 
 using namespace ::id::attribute;
 using namespace ::id::type;
-
-extern Transformation* castPtr;
-extern Transformation* rescalePtr;
 
 using TransPtr    = Transformation::TransPtr;
 using Events      = Transformer::Events;
@@ -25,8 +23,8 @@ struct TransformationTestSuite : public ::testing::Test{
     in.add(s);
     out.add(s);
     KnowledgeBase::clear();
-    KnowledgeBase::registerTransformation(*castPtr);
-    KnowledgeBase::registerTransformation(*rescalePtr);
+    KnowledgeBase::registerTransformation(cast);
+    KnowledgeBase::registerTransformation(rescale);
   }
 
   void registerTypes() {

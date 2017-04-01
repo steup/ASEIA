@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <iterator>
+#include <iosfwd>
 
 class TransformationGraph {
   private:
@@ -37,4 +38,8 @@ class TransformationGraph {
 
      /** \brief clear graph and remove all Transformations and connections **/
      void clear();
+
+   friend std::ostream& operator<<(std::ostream&, const TransformationGraph&);
 };
+
+std::ostream& operator<<(std::ostream& o, const TransformationGraph& g);

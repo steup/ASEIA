@@ -19,4 +19,5 @@ class KnowledgeBase {
     //TODO: query functions
     static Transformations findTransforms(const EventType& goal);
     static void clear();
+    static void print(std::ostream& o);
 };

@@ -1,8 +1,12 @@
 #include <KnowledgeBase.h>
 #include <AttributeType.h>
 
+#include <boost/filesystem.hpp>
+
 #include <ratio>
 #include <algorithm>
+#include <iostream>
+#include <boost/filesystem/fstream.hpp>
 
 namespace test {
 
@@ -12,6 +16,9 @@ namespace test {
  using std::endl;
  using std::vector;
  using std::any_of;
+ using boost::filesystem::ofstream;
+ using boost::filesystem::current_path;
+ using boost::filesystem::path;
 
 
   struct KnowledgeBaseTestSuite : public ::testing::Test {
@@ -145,6 +152,9 @@ namespace test {
       eT6.add(AttributeType(Test1::value(), v, Scale<ratio<1, 1>, 0>(), Dimensionless()));
       eT6.add(AttributeType(Test4::value(), v, Scale<ratio<1, 1>, 1>(), Dimensionless()));
       eT7.add(AttributeType(Test3::value(), v2, Scale<ratio<1, 1000>>(), Dimensionless()));
+      path file = current_path()/"doc"/"kb.dot";
+      ofstream out(file);
+      KnowledgeBase::print(out);
     }
 
     using  Transformations = KnowledgeBase::Transformations;
@@ -209,14 +219,14 @@ namespace test {
     KnowledgeBase::registerEventType(eT7);
     Transformations ts = KnowledgeBase::findTransforms(eT3);
     ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
-    TransformationPtr hom2Ptr(&hom2, [](const Transformation*){});
-    TransformationPtr hom3Ptr(&hom3, [](const Transformation*){});
+    TransformationPtr hom2Ptr(&hom2);
+    TransformationPtr hom3Ptr(&hom3);
     auto check = [hom2Ptr, hom3Ptr](const CompositeTransformation& cT){
       const CompositeTransformation::Graph& g = cT.graph();
       auto pred0 = [hom2Ptr, &g](CompositeTransformation::Vertex v){ return g[v].trans()==hom2Ptr; };
       auto pred1 = [hom3Ptr, &g](CompositeTransformation::Vertex v){ return g[v].trans()==hom3Ptr; };
       auto vertices = boost::vertices(g);
-      return any_of(vertices.first, vertices.second, pred0) && 
+      return any_of(vertices.first, vertices.second, pred0) &&
              any_of(vertices.first, vertices.second, pred1);
     };
     EXPECT_TRUE(any_of(ts.begin(), ts.end(), check));

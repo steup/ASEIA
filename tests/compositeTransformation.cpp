@@ -31,6 +31,7 @@ struct CompositeTransformSuite : public ::testing::Test {
   TestTransformation a, e, f;
   TestTransformer c, d, g;
   CompositeTransformation compTrans, compTrans2;
+  shared_ptr<const Transformation> bPtr;
   const TestTransformation* b=nullptr;
   EventType goal, provided, provided2, intermediate, intermediate2;
 
@@ -63,7 +64,7 @@ struct CompositeTransformSuite : public ::testing::Test {
     intermediate2.add(int2AT);
     provided2.add(prov2AT);
 
-    TransformationPtr bPtr(new TestTransformation());
+    bPtr.reset(new TestTransformation());
     b=dynamic_cast<const TestTransformation*>(bPtr.get());
     ASSERT_NE(b, nullptr);
     EXPECT_CALL(a, in(goal, provided))
@@ -74,15 +75,15 @@ struct CompositeTransformSuite : public ::testing::Test {
       .Times(1).WillOnce(Return(EventTypes({intermediate, intermediate2})));
     EXPECT_CALL(f, in(intermediate2, provided2))
       .Times(1).WillOnce(Return(EventTypes({provided2})));
-    auto r0 = compTrans.addRootTransformation(TransformationPtr(&a, [](const Transformation*){}), goal, provided);
+    auto r0 = compTrans.addRootTransformation(TransformationPtr(&a), goal, provided);
     ASSERT_TRUE(r0.second);
-    auto r1 = compTrans.addTransformation(bPtr, r0.first, intermediate, provided);
+    auto r1 = compTrans.addTransformation(b, r0.first, intermediate, provided);
     ASSERT_TRUE(r1.second);
-    auto r2 = compTrans2.addRootTransformation(TransformationPtr(&e, [](const Transformation*){}), goal, EventType());
+    auto r2 = compTrans2.addRootTransformation(TransformationPtr(&e), goal, EventType());
     ASSERT_TRUE(r2.second);
-    auto r3 = compTrans2.addTransformation(bPtr, r2.first, intermediate, provided);
+    auto r3 = compTrans2.addTransformation(b, r2.first, intermediate, provided);
     ASSERT_TRUE(r3.second);
-    auto r4 = compTrans2.addTransformation(TransformationPtr(&f, [](const Transformation*){}), r2.first, intermediate2, provided2);
+    auto r4 = compTrans2.addTransformation(TransformationPtr(&f), r2.first, intermediate2, provided2);
     ASSERT_TRUE(r4.second);
   }
 };

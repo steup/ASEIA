@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <numeric>
 #include <utility>
+#include <ostream>
 
 using namespace std;
 
@@ -151,7 +152,7 @@ class KBImpl {
   public:
     void regTrans(const Transformation& trans) {
       TransStorage* storagePtr;
-      TransformationPtr tPtr(&trans, [](const Transformation*){});
+      TransformationPtr tPtr(&trans);
       switch(trans.type()) {
         case(Transformation::Type::invalid): return;
         case(Transformation::Type::heterogeneus): mHetTrans.insert(tPtr); return;
@@ -166,7 +167,7 @@ class KBImpl {
 
     void unregTrans(const Transformation& trans) {
       TransStorage* storagePtr;
-      TransformationPtr tPtr(&trans, [](const Transformation*){});
+      TransformationPtr tPtr(&trans);
       switch(trans.type()) {
         case(Transformation::Type::invalid): return;
         case(Transformation::Type::heterogeneus): mHetTrans.remove(tPtr); return;
@@ -233,6 +234,10 @@ class KBImpl {
       mAtt1Trans.clear();
       mAttNTrans.clear();
     }
+
+    void print(ostream& o) const {
+      o << mHetTrans;
+    }
 };
 
 using KB = Singleton<KBImpl>;
@@ -259,4 +264,8 @@ KnowledgeBase::Transformations KnowledgeBase::findTransforms(const EventType& go
 
 void KnowledgeBase::clear() {
   KB::instance().clear();
+}
+
+void KnowledgeBase::print(ostream& o) {
+  KB::instance().print(o);
 }

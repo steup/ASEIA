@@ -97,8 +97,6 @@ class TypeTransformation : public Transformation {
     virtual void print(std::ostream& o) const {
 			o << "Cast Transformation";
 		}
-} cast;
+} castObj;
 
-namespace test {
-Transformation* castPtr = &cast;
-}
+const Transformation& cast=castObj;
