@@ -232,9 +232,15 @@ namespace test {
     EXPECT_TRUE(any_of(ts.begin(), ts.end(), check));
   }
 
+  TEST_F(KnowledgeBaseTestSuite, findCombinedHeterogeneusTransform) {
+    KnowledgeBase::registerEventType(eT1);
+    KnowledgeBase::registerEventType(eT3);
+    Transformations ts = KnowledgeBase::findTransforms(eT0);
+    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
+  }
+
   TEST_F(KnowledgeBaseTestSuite, fullTree) {
     KnowledgeBase::registerEventType(eT7);
-    KnowledgeBase::registerEventType(eT4);
     KnowledgeBase::registerEventType(eT5);
     KnowledgeBase::registerEventType(eT6);
     Transformations ts = KnowledgeBase::findTransforms(eT0);
