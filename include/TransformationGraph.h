@@ -13,7 +13,6 @@ class TransformationGraph {
   private:
     boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS,
                                         TransformationPtr, EventID> mGraph;
-
   public:
     using OutIt = std::back_insert_iterator<std::vector<CompositeTransformation>>;
     using EventIDs = Transformation::EventIDs;
