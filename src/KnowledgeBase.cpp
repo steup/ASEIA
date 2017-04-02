@@ -194,7 +194,7 @@ class KBImpl {
      **/
     Transformations find(const EventType& goal) {
       EventIDs ids = mTypes.ids();
-      sort(ids.begin(), ids.end()); //<< Sort EventIDs ascending
+      sort(ids.begin(), ids.end(), EventID::comp); //<< Sort EventIDs ascending
 
       Transformations initial;
       Transformations result;

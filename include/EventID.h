@@ -50,7 +50,9 @@ class EventID {
 			return !((*this)==b);
 		}
 
-		/** \brief strict superset test **/
+		/** \brief strict superset test
+     *  \todo may not work
+     **/
 		bool operator>(const EventID& b) const {
 			return !((*this)<=b) && b.value();
 		}
@@ -59,10 +61,12 @@ class EventID {
 		bool operator<(const EventID& b) const {
 			return (*this)<=b && (*this)!=b;
 		}
-
+    /** \todo doesnt work **/
 		bool operator>=(const EventID& b) const {
 			return (*this)>b || (*this)==b;
 		}
+
+    static bool comp(EventID a, EventID b) { return a.mID < b.mID; }
 
 		static const EventID any;
 };
