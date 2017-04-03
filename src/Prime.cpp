@@ -256,7 +256,8 @@ PrimeGenerator::Prime PrimeGenerator::prime(std::size_t i) {
 1597,
 1601,
 1607,
-1609
+1609,
+1613
 };
 	if(i < sizeof(primes)/sizeof(Prime))
 		return primes[i];
