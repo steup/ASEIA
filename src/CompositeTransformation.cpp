@@ -1,15 +1,74 @@
 #include <CompositeTransformation.h>
 #include <EventTypeHelpers.h>
+#include <MetaEvent.h>
 
 #include <boost/graph/depth_first_search.hpp>
+#include <boost/graph/copy.hpp>
+#include <boost/graph/transpose_graph.hpp>
+#include <boost/graph/graphviz.hpp>
 
 #include <algorithm>
 #include <iterator>
-#include <vector>
-#include <map>
 
 
 using namespace std;
+
+using namespace boost;
+
+
+struct CompositeTransformer : public Transformer {
+    using TransPtr = Transformation::TransPtr;
+    using Graph = adjacency_list<vecS, vecS, bidirectionalS, TransPtr>;
+    using Vertex= Graph::vertex_descriptor;
+    using Edge= Graph::edge_descriptor;
+
+    Graph graph;
+    /** \brief Generate CompositeTransformer from CompositeTransformation
+     *  \param out output EventType of the created MetaEvents
+     *  \param in input EventTypes of the consumed MetaEvents
+     *  \param g CompositeTransformation graph to generate Transformers from
+     **/
+    CompositeTransformer(const EventType& out, const EventTypes& in, const CompositeTransformation::Graph& g)
+      : Transformer(Transformation::invalid, out, in) {
+      auto vertexCopy = [&g, this](CompositeTransformation::Vertex in, Vertex out) {
+        graph[out] = g[in].create();
+      };
+      auto edgeCopy = [&g, this](CompositeTransformation::Graph::edge_descriptor in, Edge out) {};
+      Graph temp;
+      transpose_graph(g, graph, boost::vertex_copy(vertexCopy).edge_copy(edgeCopy));
+    }
+
+    /** \brief check for applicability  of Transformer
+     *  \param  events input events to check
+     *  \return true if transformer can be applied, false otherwise
+     *  \todo implement **/
+    bool check(const Events& events) const {
+      return false;
+    }
+
+    /** \brief execute transformer on input events
+     *  \param events input events
+     *  \return result of the transformer graph
+     *  \todo implement
+     **/
+    MetaEvent operator()(const Events& events) {
+      return MetaEvent();
+    }
+
+    /** \brief print composite transformer
+     *  \param o output stream to print to
+     **/
+    void print(std::ostream& o) const {
+      auto writeVertex = [this](ostream& o, Vertex v){
+        TransPtr t = graph[v];
+        if(t)
+          o << " [label=\"" << *t << "\"]";
+        else
+          o << " [label=\"nullptr\"]";
+      };
+      write_graphviz(o, graph, writeVertex);
+    }
+};
 
 using Graph        = CompositeTransformation::Graph;
 using Vertex       = CompositeTransformation::Vertex;
@@ -41,22 +100,6 @@ struct InputEventTypeExtractor : public boost::default_dfs_visitor {
   }
 };
 
-struct FindTransformation : public boost::default_dfs_visitor {
-  VertexResult& result;
-  TransformationPtr tPtr;
-
-  FindTransformation(TransformationPtr tPtr, VertexResult& result)
-    : result(result), tPtr(tPtr)
-  {}
-
-  void discover_vertex(Vertex v, const Graph& g) {
-    if(g[v].trans()==tPtr) {
-      result.first = v;
-      result.second =true;
-    }
-  }
-};
-
 struct FindEventType : public boost::default_dfs_visitor {
   VertexList& result;
   const EventType& eT;
@@ -83,7 +126,7 @@ TransPtr CompositeTransformation::create() const {
   if(boost::num_vertices(mGraph)==1) {
     return mGraph[mRoot].create();
   }
-  return TransPtr();
+  return TransPtr(new CompositeTransformer(mOut, mIn, mGraph));
 }
 
 bool CompositeTransformation::check() const {
@@ -153,9 +196,12 @@ TransList CompositeTransformation::path(Vertex v) const {
 }
 
 VertexResult CompositeTransformation::find(TransformationPtr tPtr) const {
-  VertexResult result(Vertex(), false);
-  boost::depth_first_search(mGraph, boost::visitor(FindTransformation(tPtr, result)));
-  return result;
+  auto  pred = [this, tPtr](Vertex v){ return mGraph[v].trans()==tPtr; };
+  auto it = find_if(vertices(mGraph).first, vertices(mGraph).second, pred);
+  if(it==vertices(mGraph).second)
+    return make_pair(Vertex(), false);
+  else
+    return make_pair(*it, true);
 }
 
 VertexList CompositeTransformation::find(const EventType& eT) const {
