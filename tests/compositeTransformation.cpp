@@ -149,8 +149,13 @@ TEST_F(CompositeTransformSuite, linearCreateTest) {
   ASSERT_NE(b, nullptr);
   EXPECT_CALL(*b, create(intermediate, EventTypes({provided})))
     .Times(1).WillOnce(Return(TransPtr(&d, [](const Transformer*){})));
+  EXPECT_CALL(c, print(_)).Times(1);
+  EXPECT_CALL(d, print(_)).Times(1);
   TransPtr result = compTrans.create();
   ASSERT_NE(result, nullptr);
+  path file = current_path()/"doc"/"linearComp.dot";
+  ofstream out(file);
+  out << *result;
   MetaEvent eA(provided);
   eA.attribute(Test0::value())->value().set(0, 0, {1.1f});
   MetaEvent eB(intermediate);
@@ -166,25 +171,31 @@ TEST_F(CompositeTransformSuite, linearCreateTest) {
 
 TEST_F(CompositeTransformSuite, treeCreateTest) {
   using Events = Transformer::Events;
-  EXPECT_CALL(e, create(goal, EventTypes({intermediate})))
+  EXPECT_CALL(e, create(goal, EventTypes({intermediate, intermediate2})))
     .Times(1).WillOnce(Return(TransPtr(&c, [](const Transformer*){})));
   ASSERT_NE(b, nullptr);
   EXPECT_CALL(*b, create(intermediate, EventTypes({provided})))
     .Times(1).WillOnce(Return(TransPtr(&d, [](const Transformer*){})));
-  EXPECT_CALL(f, create(intermediate, EventTypes({provided})))
+  EXPECT_CALL(f, create(intermediate2, EventTypes({provided2})))
     .Times(1).WillOnce(Return(TransPtr(&g, [](const Transformer*){})));
-  TransPtr result = compTrans.create();
+  EXPECT_CALL(c, print(_)).Times(1);
+  EXPECT_CALL(d, print(_)).Times(1);
+  EXPECT_CALL(g, print(_)).Times(1);
+  TransPtr result = compTrans2.create();
   ASSERT_NE(result, nullptr);
+  path file = current_path()/"doc"/"treeComp.dot";
+  ofstream out(file);
+  out << *result;
   MetaEvent eA(provided);
   eA.attribute(Test0::value())->value().set(0, 0, {1.0f});
   MetaEvent eB(provided2);
-  eA.attribute(Test1::value())->value().set(0, 0, {2.0f});
+  eB.attribute(Test1::value())->value().set(0, 0, {2.0f});
   MetaEvent eC(intermediate);
-  eB.attribute(Test0::value())->value().set(0, 0, {3.0f});
+  eC.attribute(Test0::value())->value().set(0, 0, {3.0f});
   MetaEvent eD(intermediate2);
-  eB.attribute(Test1::value())->value().set(0, 0, {4.0f});
+  eD.attribute(Test1::value())->value().set(0, 0, {4.0f});
   MetaEvent eE(goal);
-  eC.attribute(Test0::value())->value().set(0, 0, {5.0f});
+  eE.attribute(Test0::value())->value().set(0, 0, {5.0f});
   EXPECT_CALL(c, call(Events({&eA})))
     .Times(1).WillOnce(Return(eC));
   EXPECT_CALL(d, call(Events({&eB})))
