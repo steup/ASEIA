@@ -1,6 +1,7 @@
 #include <CompositeTransformation.h>
 #include <EventTypeHelpers.h>
 #include <MetaEvent.h>
+#include <IO.h>
 
 #include <boost/graph/depth_first_search.hpp>
 #include <boost/graph/copy.hpp>
@@ -167,7 +168,7 @@ VertexResult CompositeTransformation::addTransformation(TransformationPtr tPtr, 
   else
     cT.in(tPtr->in(intermediate, provided));
   auto e = boost::add_edge(v, newV, mGraph);
-  mGraph[e.first]=&cT.out();
+  mGraph[e.first]=cT.out();
   mIn.clear();
   boost::depth_first_search(mGraph, boost::visitor(InputEventTypeExtractor(mIn)));
   //sort(mIn.begin(), mIn.end());
@@ -212,5 +213,16 @@ VertexList CompositeTransformation::find(const EventType& eT) const {
 
 /** \todo implement **/
 ostream& operator<<(ostream& o, const CompositeTransformation& t) {
+  const Graph& g=t.graph();
+  auto writeVertex = [&g](ostream& o, Vertex v){
+      if(g[v].trans())
+        o << " [label=\"" << *g[v].trans() << "\"]";
+      else
+        o << " [label=\"nullptr\"]";
+  };
+  auto writeEdge = [&g](ostream& o, Edge e){
+    o << " [label=\"" << g[e] << "\"]";
+  };
+  write_graphviz(o, g, writeVertex, writeEdge);
   return o;
 }

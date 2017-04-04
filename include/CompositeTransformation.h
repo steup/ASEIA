@@ -13,7 +13,7 @@
 class CompositeTransformation {
   public:
     using  Graph       = boost::adjacency_list< boost::vecS, boost::vecS, boost::bidirectionalS,
-                                                ConfiguredTransformation, const EventType*>;
+                                                ConfiguredTransformation, EventType>;
     using Vertex       = Graph::vertex_descriptor;
     using VertexResult = std::pair<Vertex, bool>;
     using VertexList   = std::vector<Vertex>;
