@@ -4,6 +4,7 @@
 #include <IO.h>
 
 #include <boost/graph/depth_first_search.hpp>
+#include <boost/graph/breadth_first_search.hpp>
 #include <boost/graph/copy.hpp>
 #include <boost/graph/transpose_graph.hpp>
 #include <boost/graph/graphviz.hpp>
@@ -11,6 +12,7 @@
 #include <algorithm>
 #include <iterator>
 
+#include <iostream>
 
 using namespace std;
 
@@ -19,11 +21,43 @@ using namespace boost;
 
 struct CompositeTransformer : public Transformer {
     using TransPtr = Transformation::TransPtr;
-    using Graph = adjacency_list<vecS, vecS, bidirectionalS, TransPtr>;
+    using Graph = adjacency_list<vecS, vecS, bidirectionalS, TransPtr, EventType>;
     using Vertex= Graph::vertex_descriptor;
     using Edge= Graph::edge_descriptor;
 
+    struct CallVisitor : public default_dfs_visitor {
+
+      MetaEvent& e;
+      map<Vertex, MetaEvent> buffer;
+
+      const Events& input;
+      CallVisitor(MetaEvent& e, const Events& input) : e(e), input(input) {}
+      void finish_vertex(Vertex v, const Graph& g) {
+        Events localIn;
+        TransPtr currTrans = g[v];
+        auto edges = out_edges(v, g);
+        for(const EventType& eT : currTrans->in()) {
+          bool found = false;
+          for(auto it=edges.first; it!=edges.second; it++)
+            if(g[*it]==eT) {
+              localIn.push_back(&buffer[target(*it, g)]);
+              found=true;
+              break;
+            }
+          if(!found)
+            for(const MetaEvent* eIn : input)
+              if(eT == (EventType)*eIn) {
+                localIn.push_back(eIn);
+                break;
+              }
+        }
+        buffer[v] = (*g[v])(localIn);
+        e=buffer[v];
+      }
+    };
+
     Graph graph;
+    Vertex root;
     /** \brief Generate CompositeTransformer from CompositeTransformation
      *  \param out output EventType of the created MetaEvents
      *  \param in input EventTypes of the consumed MetaEvents
@@ -34,26 +68,34 @@ struct CompositeTransformer : public Transformer {
       auto vertexCopy = [&g, this](CompositeTransformation::Vertex in, Vertex out) {
         graph[out] = g[in].create();
       };
-      auto edgeCopy = [&g, this](CompositeTransformation::Graph::edge_descriptor in, Edge out) {};
       Graph temp;
-      transpose_graph(g, graph, boost::vertex_copy(vertexCopy).edge_copy(edgeCopy));
+      copy_graph(g, graph, boost::vertex_copy(vertexCopy));
+      auto it = find_if(vertices(graph).first, vertices(graph).second, 
+                        [this](Vertex v){ return !in_degree(v, graph);});
+      root = *it;
     }
 
     /** \brief check for applicability  of Transformer
      *  \param  events input events to check
      *  \return true if transformer can be applied, false otherwise
-     *  \todo implement **/
+     **/
     bool check(const Events& events) const {
-      return false;
+      for(const EventType& eT : in())
+        if(!any_of(events.begin(), events.end(), [&eT](const MetaEvent* e){ return EventType(*e)<=eT; }))
+          return false;
+      return true;
     }
 
     /** \brief execute transformer on input events
      *  \param events input events
      *  \return result of the transformer graph
-     *  \todo implement
      **/
     MetaEvent operator()(const Events& events) {
-      return MetaEvent();
+      MetaEvent e;
+      vector<default_color_type> colors(num_vertices(graph));
+      depth_first_visit(graph, root, CallVisitor(e, events), 
+                        make_iterator_property_map(colors.begin(), get(vertex_index, graph)));
+      return e;
     }
 
     /** \brief print composite transformer
@@ -67,7 +109,10 @@ struct CompositeTransformer : public Transformer {
         else
           o << " [label=\"nullptr\"]";
       };
-      write_graphviz(o, graph, writeVertex);
+      auto writeEdge = [this](ostream& o, Edge e) {
+        o << " [label=\"" << graph[e] << "\"]";
+      };
+      write_graphviz(o, graph, writeVertex, writeEdge);
     }
 };
 
@@ -171,8 +216,6 @@ VertexResult CompositeTransformation::addTransformation(TransformationPtr tPtr, 
   mGraph[e.first]=cT.out();
   mIn.clear();
   boost::depth_first_search(mGraph, boost::visitor(InputEventTypeExtractor(mIn)));
-  //sort(mIn.begin(), mIn.end());
-  //mIn.erase(unique(mIn.begin(). mIn.end()), mIn.end());
   return make_pair(newV, true);
 }
 
