@@ -2,29 +2,40 @@ PROFILING        ?= 0
 DEBUG            ?= 0
 EMBEDDED         ?= 0
 
-RANLIB   ?= ranlib
+INCLUDES :=
+LDPATHS  :=
+SYMBOLS  :=
+CXXFLAGS := -std=gnu++11 -ffunction-sections -fdata-sections -fvisibility-inlines-hidden ${CXXFLAGS}
 
-INCLUDES +=
-LDPATHS  +=
-SYMBOLS  +=
-CXXFLAGS += -std=gnu++11
-LDFLAGS  +=
-LIBS     += boost_system boost_filesystem
-PACKAGES += eigen3
+LDFLAGS  := -Wl,--gc-sections ${LDFLAGS}
+LIBS     := boost_system boost_filesystem
+PACKAGES := eigen3
 LIBNAME  ?= ASEIA
 DLIBEXT  ?= so
 SLIBEXT  ?= a
 
 ifeq (${EMBEDDED},1)
-	CXXFLAGS :=${CXXFLAGS} -ffunction-sections -fno-threadsafe-statics
-	LDFLAGS  :=${LDFLAGS} -Wl,--gc-sections
+	CXXFLAGS := -Os -fno-threadsafe-statics ${CXXFLAGS}
 else
-	CXXFLAGS :=${CXXFLAGS} -fPIC
+	CXXFLAGS := -fPIC ${CXXFLAGS}
+endif
+
+ifeq (${LTO},1)
+	CXXFLAGS := -flto=4 -fuse-linker-plugin ${CXXFLAGS}
+	LDFLAGS  := -flto=4 -fuse-linker-plugin ${LDFLAGS}
+	AR       := gcc-ar
+	RANLIB   := gcc-ranlib
+else
+	RANLIB   := ranlib
+	AR       := ar
 endif
 
 ifeq (${DEBUG},1)
-	CXXFLAGS :=${CXXFLAGS} -O0 -ggdb
-	LDFLAGS  += -ggdb
+	CXXFLAGS :=-O2 -ggdb ${CXXFLAGS}
+	LDFLAGS  :=-ggdb ${LDFLAGS}
+else
+	CXXFLAGS := -Ofast ${CXXFLAGS}
+	LDFLAGS  := -Ofast ${LDFLAGS}
 endif
 
 ifeq (${PROFILING},1)
