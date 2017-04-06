@@ -228,7 +228,7 @@ class Value {
 
     template<typename VE>
     Value<typename VE::VType, R, C, VE::U::value> cast() const {
-      return Value<typename VE::VType, R, C, VE::U::value>(mData.cast<VE>());
+      return Value<typename VE::VType, R, C, VE::U::value>(mData.template cast<VE>());
     }
 
 		constexpr const bool hasUncertainty() const noexcept {return BaseType().hasUncertainty();}

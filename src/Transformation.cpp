@@ -36,6 +36,6 @@ class InvalidTransformation : public Transformation {
     virtual EventIDs in(EventID goal) const {
       return EventIDs();
     }
-} invalid;
+} invalidInstance;
 
-const Transformation& Transformation::invalid = invalid;
+const Transformation& Transformation::invalid = invalidInstance;

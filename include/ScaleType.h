@@ -37,7 +37,7 @@ class ScaleType{
     std::size_t operator-(const ScaleType& b) const {
       std::size_t value=0;
       value+=abs(mNum-b.mNum);
-      value+=abs((int32_t)mDenom-b.mDenom);
+      value+=(mDenom-b.mDenom)>(b.mDenom-mDenom)?mDenom-b.mDenom:b.mDenom-mDenom;
       value+=mRef==b.mRef?0:1;
       return value;
     }
