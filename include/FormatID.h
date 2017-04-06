@@ -18,7 +18,7 @@ class FormatID{
     operator uint32_t() const { return mHash; }
     bool operator==(const FormatID& b) const { return mHash == b.mHash; }
     bool operator<(const FormatID& b) const { return mHash < b.mHash; }
-    static constexpr std::size_t size() noexcept { return sizeof(mHash); }
+    static constexpr size_t size() noexcept { return sizeof(mHash); }
 
 	template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, FormatID&);
 };
