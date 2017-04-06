@@ -54,7 +54,6 @@ TEST_F(TransformationTestSuite, scaleTransformBasicTest) {
   ASSERT_NE(scaleT, nullptr);
 	EXPECT_TRUE(scaleT->check(inL)) << "MetaValue is not supported by ScaleTransform";
 	EXPECT_EQ((*scaleT)(inL), out) << "Events not transformed correctly";
-  KnowledgeBase::unregisterEventType((EventType)in);
 }
 
 TEST_F(TransformationTestSuite, typeTransformBasicTest) {
@@ -73,7 +72,25 @@ TEST_F(TransformationTestSuite, typeTransformBasicTest) {
   ASSERT_NE(typeT, nullptr);
 	EXPECT_TRUE(typeT->check(inL)) << "MetaValue is not supported by TypeTransform";
 	EXPECT_EQ((*typeT)(inL), out) << "Events not transformed correctly";
-  KnowledgeBase::unregisterEventType((EventType)in);
+}
+
+TEST_F(TransformationTestSuite, castedRescaleTest) {
+  MetaAttribute& inA  = *in.attribute(Time::value());
+  MetaAttribute& outA = *out.attribute(Time::value());
+  inA.scale() = MetaScale(Scale<std::milli>());
+  inA.value() = f.create({{{1234.5, 0}}}, Float::value());
+  outA.value() = f.create({{{1234, 1}}}, UInt64::value());
+  registerTypes();
+  auto transList = KnowledgeBase::findTransforms(outT);
+  EXPECT_GE(transList.size(), 1U) << "Wrong amount of Transforms found!";
+  std::ostringstream os;
+  for(const CompositeTransformation& t : transList) {
+    os << t;
+    TransPtr typeT = t.create();
+    ASSERT_NE(typeT, nullptr);
+	  EXPECT_TRUE(typeT->check(inL)) << "MetaValue is not supported by TypeTransform";
+	  EXPECT_EQ((*typeT)(inL), out) << "Events not transformed correctly";
+  }
 }
 
 }
