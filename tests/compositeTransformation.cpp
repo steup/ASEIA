@@ -8,12 +8,26 @@ using namespace std;
 using ::testing::_;
 using ::testing::Return;
 using ::testing::AtLeast;
+using ::testing::Pointwise;
+using ::testing::Pointee;
+using ::testing::Contains;
 
+MATCHER(EqPtrContent, "") {
+  return *get<0>(arg)==*get<1>(arg);
+}
 struct CompositeTransformSuite : public ::testing::Test {
+
+  static bool comp(const MetaEvent* const a, const MetaEvent* const b) {
+    return *a==*b;
+  }
+
   struct TestTransformer : public Transformer {
     string name;
-    TestTransformer(const string& name)
-      : Transformer(Transformation::invalid, EventType(), {EventType()}), name(name) {}
+    TestTransformer(const string& name, const EventType& out, const EventTypes& in,
+                    map<string, TestTransformer*>& trans)
+      : Transformer(Transformation::invalid, out, in), name(name) {
+      trans[name]=this;
+    }
     MOCK_CONST_METHOD1(check, bool(const Events&));
     MOCK_METHOD1(call, MetaEvent(const Events&));
     virtual MetaEvent operator()(const Events& events) { return call(events); }
@@ -32,8 +46,8 @@ struct CompositeTransformSuite : public ::testing::Test {
     virtual void print(ostream& o) const { o << name; }
   };
 
-  TestTransformation a, e, f;
-  TestTransformer c, d, g;
+  map<string, TestTransformer*> trans;
+  TestTransformation a, c, d;
   CompositeTransformation compTrans, compTrans2;
   shared_ptr<const TestTransformation> b;
   EventType goal, provided, provided2, intermediate, intermediate2;
@@ -46,7 +60,7 @@ struct CompositeTransformSuite : public ::testing::Test {
   };
 
   CompositeTransformSuite()
-    : a("a", 1), e("e", 2), f("f", 1), c("c"), d("d"), g("g"), b(new TestTransformation("b", 1))
+    : a("a", 1), c("c", 2), d("d", 1), b(new TestTransformation("b", 1))
   {}
 
   void SetUp() {
@@ -76,9 +90,9 @@ struct CompositeTransformSuite : public ::testing::Test {
       .Times(1).WillOnce(Return(EventTypes({intermediate})));
     EXPECT_CALL(*b, in(intermediate, provided))
       .Times(AtLeast(1)).WillRepeatedly(Return(EventTypes({provided})));
-    EXPECT_CALL(e, in(goal))
+    EXPECT_CALL(c, in(goal))
       .Times(1).WillOnce(Return(EventTypes({intermediate, intermediate2})));
-    EXPECT_CALL(f, in(intermediate2, provided2))
+    EXPECT_CALL(d, in(intermediate2, provided2))
       .Times(1).WillOnce(Return(EventTypes({provided2})));
     auto r0 = compTrans.addRootTransformation(&a, goal, provided);
     ASSERT_TRUE(r0.second);
@@ -86,11 +100,11 @@ struct CompositeTransformSuite : public ::testing::Test {
     ASSERT_TRUE(r1.second);
     ofstream out(current_path()/"doc"/"linTransformation.dot");
     out << compTrans;
-    auto r2 = compTrans2.addRootTransformation(&e, goal, EventType());
+    auto r2 = compTrans2.addRootTransformation(&c, goal, EventType());
     ASSERT_TRUE(r2.second);
     auto r3 = compTrans2.addTransformation(b.get(), r2.first, intermediate, provided);
     ASSERT_TRUE(r3.second);
-    auto r4 = compTrans2.addTransformation(&f, r2.first, intermediate2, provided2);
+    auto r4 = compTrans2.addTransformation(&d, r2.first, intermediate2, provided2);
     ASSERT_TRUE(r4.second);
     out.close();
     out.open(current_path()/"doc"/"treeTransformation.dot");
@@ -129,21 +143,21 @@ TEST_F(CompositeTransformSuite, treeTest) {
   const Graph& g = compTrans2.graph();
   ASSERT_EQ(boost::num_vertices(g), 3U);
   auto v = boost::vertices(g);
-  Vertex testEV = *v.first;
-  const Transformation& testE = *g[testEV].trans();
-  EXPECT_EQ(testE, e);
-  auto out = out_edges(testEV, g);
+  Vertex testCV = *v.first;
+  const Transformation& testC = *g[testCV].trans();
+  EXPECT_EQ(testC, c);
+  auto out = out_edges(testCV, g);
   ASSERT_NE(out.first, out.second);
   Edge testBE = *out.first;
   Vertex testBV = target(testBE, g);
   const Transformation& testB = *g[testBV].trans();
   ASSERT_NE(b, nullptr);
   EXPECT_EQ(testB, *b);
-  Edge testFE = *++out.first;
-  Vertex testFV = target(testFE, g);
-  const Transformation& testF = *g[testFV].trans();
+  Edge testDE = *++out.first;
+  Vertex testDV = target(testDE, g);
+  const Transformation& testD = *g[testDV].trans();
   ASSERT_NE(b, nullptr);
-  EXPECT_EQ(testF, f);
+  EXPECT_EQ(testD, d);
 }
 
 TEST_F(CompositeTransformSuite, treeInTest) {
@@ -155,10 +169,10 @@ TEST_F(CompositeTransformSuite, treeInTest) {
 TEST_F(CompositeTransformSuite, linearCreateTest) {
   using Events = Transformer::Events;
   EXPECT_CALL(a, create(goal, EventTypes({intermediate})))
-    .Times(1).WillOnce(Return(TransPtr(&c, [](const Transformer*){})));
+    .Times(1).WillOnce(Return(TransPtr(new TestTransformer("a", goal, EventTypes({intermediate}), trans))));
   ASSERT_NE(b, nullptr);
   EXPECT_CALL(*b, create(intermediate, EventTypes({provided})))
-    .Times(1).WillOnce(Return(TransPtr(&d, [](const Transformer*){})));
+    .Times(1).WillOnce(Return(TransPtr(new TestTransformer("b", intermediate, EventTypes({provided}),trans))));
   TransPtr result = compTrans.create();
   ASSERT_NE(result, nullptr);
   path file = current_path()/"doc"/"linearTransformer.dot";
@@ -170,22 +184,22 @@ TEST_F(CompositeTransformSuite, linearCreateTest) {
   eB.attribute(Test0::value())->value().set(0, 0, {1100.0f});
   MetaEvent eC(goal);
   eC.attribute(Test0::value())->value().set(0, 0, {1100});
-  EXPECT_CALL(c, call(Events({&eA})))
+  EXPECT_CALL(*trans["b"], call(Pointwise(EqPtrContent(), {&eA})))
     .Times(1).WillOnce(Return(eB));
-  EXPECT_CALL(d, call(Events{&eB}))
+  EXPECT_CALL(*trans["a"], call(Pointwise(EqPtrContent(), {&eB})))
     .Times(1).WillOnce(Return(eC));
   EXPECT_EQ((*result)(Events({&eA})), eC);
 }
 
 TEST_F(CompositeTransformSuite, treeCreateTest) {
   using Events = Transformer::Events;
-  EXPECT_CALL(e, create(goal, EventTypes({intermediate, intermediate2})))
-    .Times(1).WillOnce(Return(TransPtr(&c, [](const Transformer*){})));
+  EXPECT_CALL(c, create(goal, EventTypes({intermediate, intermediate2})))
+    .Times(1).WillOnce(Return(TransPtr(new TestTransformer("c", goal, EventTypes({intermediate, intermediate2}), trans))));
   ASSERT_NE(b, nullptr);
   EXPECT_CALL(*b, create(intermediate, EventTypes({provided})))
-    .Times(1).WillOnce(Return(TransPtr(&d, [](const Transformer*){})));
-  EXPECT_CALL(f, create(intermediate2, EventTypes({provided2})))
-    .Times(1).WillOnce(Return(TransPtr(&g, [](const Transformer*){})));
+    .Times(1).WillOnce(Return(TransPtr(new TestTransformer("b", intermediate, EventTypes({provided}),trans))));
+  EXPECT_CALL(d, create(intermediate2, EventTypes({provided2})))
+    .Times(1).WillOnce(Return(TransPtr(new TestTransformer("d", intermediate2, EventTypes({provided2}), trans))));
   TransPtr result = compTrans2.create();
   ASSERT_NE(result, nullptr);
   path file = current_path()/"doc"/"treeTransformer.dot";
@@ -201,11 +215,11 @@ TEST_F(CompositeTransformSuite, treeCreateTest) {
   eD.attribute(Test1::value())->value().set(0, 0, {4.0f});
   MetaEvent eE(goal);
   eE.attribute(Test0::value())->value().set(0, 0, {5.0f});
-  EXPECT_CALL(c, call(Events({&eA})))
+  EXPECT_CALL(*trans["b"], call(Pointwise(EqPtrContent(), {&eA})))
     .Times(1).WillOnce(Return(eC));
-  EXPECT_CALL(d, call(Events({&eB})))
+  EXPECT_CALL(*trans["d"], call(Pointwise(EqPtrContent(), {&eB})))
     .Times(1).WillOnce(Return(eD));
-  EXPECT_CALL(g, call(Events({&eC, &eD})))
+  EXPECT_CALL(*trans["c"], call(Pointwise(EqPtrContent(), {&eC, &eD})))
     .Times(1).WillOnce(Return(eE));
   EXPECT_EQ((*result)(Events({&eA, &eB})), eE);
 }
