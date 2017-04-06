@@ -1,3 +1,5 @@
+
+#include <gtest/gtest.h>
 #include <MetaEvent.h>
 #include <MetaFactory.h>
 #include <ID.h>

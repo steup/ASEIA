@@ -1,3 +1,5 @@
+
+#include <gtest/gtest.h>
 #include <ID.h>
 
 /** \namespace id

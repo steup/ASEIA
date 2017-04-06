@@ -1,4 +1,12 @@
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include <CompositeTransformation.h>
+#include <MetaEvent.h>
+
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 
 namespace test {
@@ -11,11 +19,17 @@ using ::testing::AtLeast;
 using ::testing::Pointwise;
 using ::testing::Pointee;
 using ::testing::Contains;
+using boost::filesystem::ofstream;
+using boost::filesystem::current_path;
+using boost::filesystem::path;
 
 MATCHER(EqPtrContent, "") {
   return *get<0>(arg)==*get<1>(arg);
 }
 struct CompositeTransformSuite : public ::testing::Test {
+
+  using EventTypes = Transformer::EventTypes;
+  using TransPtr   = Transformation::TransPtr;
 
   static bool comp(const MetaEvent* const a, const MetaEvent* const b) {
     return *a==*b;

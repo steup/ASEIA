@@ -1,3 +1,5 @@
+
+#include <gtest/gtest.h>
 #include <KnowledgeBase.h>
 #include <AttributeType.h>
 

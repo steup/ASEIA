@@ -1,7 +1,10 @@
 
+#include <gtest/gtest.h>
 #include <EventID.h>
 #include <BaseEvent.h>
 #include <ID.h>
+#include <IO.h>
+#include <FormatID.h>
 
 #include <vector>
 #include <tuple>

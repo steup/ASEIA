@@ -1,3 +1,5 @@
+
+#include <gtest/gtest.h>
 #include <FormatID.h>
 #include <EventType.h>
 

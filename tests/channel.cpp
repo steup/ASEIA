@@ -1,3 +1,5 @@
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include <Channel.h>
 
 namespace test {

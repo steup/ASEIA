@@ -1,3 +1,5 @@
+
+#include <gtest/gtest.h>
 #include <TypeRegistry.h>
 
 #include <BaseEvent.h>

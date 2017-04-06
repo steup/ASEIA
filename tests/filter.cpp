@@ -1,3 +1,5 @@
+
+#include <gtest/gtest.h>
 #include <BaseEvent.h>
 #include <Filter.h>
 #include <MetaFilter.h>

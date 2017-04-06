@@ -1,3 +1,5 @@
+
+#include <gtest/gtest.h>
 #include <MetaValueImplementation.h>
 
 namespace tests {

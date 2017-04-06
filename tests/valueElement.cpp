@@ -1,3 +1,5 @@
+
+#include <gtest/gtest.h>
 #include <ValueElement.h>
 
 namespace tests {

@@ -1,3 +1,5 @@
+
+#include <gtest/gtest.h>
 #include <Serializer.h>
 
 #include <vector>

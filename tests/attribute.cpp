@@ -1,3 +1,4 @@
+#include <gtest/gtest.h>
 #include <Attribute.h>
 #include <ID.h>
 

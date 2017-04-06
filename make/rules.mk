@@ -35,7 +35,7 @@ endif
 BASEDIR   := $(abspath $(dir $(lastword ${MAKEFILE_LIST}))/..)
 
 SRC       := src
-EXAMPLE   := example
+EXAMPLES  := examples
 INC       := include
 DOC       := doc
 TESTS     := tests
@@ -45,14 +45,14 @@ HTML      := ${DOC}/html
 BIN       := bin
 BUILD     := build
 BLIB      := ${BUILD}/lib
-BPROG     := ${BUILD}/prog
-BTEST     := ${BUILD}/test
+BEX       := ${BUILD}/examples
+BTEST     := ${BUILD}/tests
 LIB       := lib
 CMAKE     := cmake
 PKG       := pkgconfig
 LOG       := log
 
-DIRS      := ${BIN} ${BLIB} ${BPROG} ${BTEST} ${BUILD} ${LIB} ${CMAKE} ${PKG} ${LOG}
+DIRS      := ${BIN} ${BLIB} ${BEX} ${BTEST} ${BUILD} ${LIB} ${CMAKE} ${PKG} ${LOG}
 GARBAGE   := $(wildcard ${DOC}/*.dot) $(wildcard ${DOC}/*.svg) ${HTML} ${DIRS}
 
 CMAKEFILE := ${CMAKE}/aseiaConfig.cmake
@@ -65,7 +65,7 @@ TARGETS   := ${DYNLIB} ${STATLIB}
 vpath %.mk ${BASEDIR}/make
 
 .PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% tests run_tests doc dot
-.PRECIOUS: ${BPROG}/%.o ${BLIB}/%.o
+#.PRECIOUS: ${BEX}/%.o ${BLIB}/%.o
 
 all: ${DYNLIB} ${STATLIB}
 
@@ -83,7 +83,8 @@ PKG_LDFLAGS := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --libs-only
 
 
 SYMBOLS  := $(addprefix -D, ${SYMBOLS})
-EXAMPLES := $(notdir $(basename $(wildcard ${EXAMPLE}/*.cpp)))
+EXEXES   := $(notdir $(basename $(wildcard ${EXAMPLES}/*.cpp)))
+TESTOBJS := $(addprefix ${BTEST}/, $(addsuffix .o, $(notdir $(basename $(wildcard ${TESTS}/*.cpp)))))
 OBJECTS  := $(addprefix ${BLIB}/, $(addsuffix .o, $(notdir $(basename $(wildcard ${SRC}/*.cpp)))))
 LIBS     := $(addprefix -l, ${LIBS}) ${PKG_LIBS}
 LDPATHS  := $(addprefix -L, ${LDPATHS}) ${PKG_LDPATHS}
@@ -102,17 +103,17 @@ tests: ${BIN}/${RUN_TESTS}
 run_tests: ${BIN}/${RUN_TESTS}
 	@./$<
 
-${BTEST}/${RUN_TESTS}.o: ${TESTS}/${RUN_TESTS}.cpp ${MAKEFILE_LIST} ${GTEST} | ${BTEST}
+${TESTOBJS}: ${BTEST}/%.o: ${TESTS}/%.cpp ${MAKEFILE_LIST} ${GTEST} | ${BTEST}
 	@echo "Building unit tests $@ <- $<"
 	@${CXX} -MP -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} -I${TESTS} ${GTEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES} ${GTEST_INCLUDES}
 
-${BIN}/${RUN_TESTS}: ${BTEST}/${RUN_TESTS}.o ${MAKEFILE_LIST} ${GTEST} | ${BIN} ${DYNLIB}
-	@echo "Linking unit tests $@ <- $<"
-	@${CXX} ${LDFLAGS} ${GTEST_LDFLAGS} $< -o $@ ${LDPATHS} ${LIBS} ${GTEST_LDPATHS} ${GTEST_LIBS}
+${BIN}/${RUN_TESTS}: ${TESTOBJS} ${MAKEFILE_LIST} ${GTEST} | ${BIN} ${DYNLIB}
+	@echo "Linking unit tests $@ <- [${TESTOBJS}]"
+	@${CXX} ${LDFLAGS} ${GTEST_LDFLAGS} ${TESTOBJS} -o $@ ${LDPATHS} ${LIBS} ${GTEST_LDPATHS} ${GTEST_LIBS}
 
-examples: ${EXAMPLES}
+examples: ${EXEXES}
 
-${EXAMPLES}: %: ${BIN}/%
+${EXEXES}: %: ${BIN}/%
 
 ${DYNLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
 	@echo "Linking dynamic library: $@ <- [$^]"
@@ -152,15 +153,17 @@ ${BLIB}/%.o: ${SRC}/%.cpp ${MAKEFILE_LIST} | ${BLIB}
 	@echo "Compiling lib file $@ <- $<"
 	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} ${SYMBOLS} $< -o $@ ${INCLUDES}
 
-${BPROG}/%.o: ${EXAMPLE}/%.cpp ${MAKEFILE_LIST} | ${BPROG}
-	@echo "Compiling prog $@ <- $<"
+${BEX}/%.o: ${EXAMPLES}/%.cpp ${MAKEFILE_LIST} | ${BEX}
+	@echo "Compiling example $@ <- $<"
 	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} ${SYMBOLS} $< -o $@ ${INCLUDES}
 
-${BIN}/%: ${BPROG}/%.o | ${DYNLIB} ${BIN}
-	@echo "Linking prog $@ <- $<"
+${BIN}/%: ${BEX}/%.o | ${DYNLIB} ${BIN}
+	@echo "Linking exampple $@ <- $<"
 	@${CXX} $< ${LDFLAGS} ${LDPATHS} ${LIBS} -o $@
 
-run_examples: $(addprefix run_,${EXAMPLES})
+run_examples: ${EXEXES}
+	@echo "Executing examples and writing output to ${LOG}"
+	@for exe in ${EXEXES} ; do ./${BIN}/$${exe} > log/$${exe}.log ; done
 
 run_%: % | ${LOG}
 	@echo "Running $<"

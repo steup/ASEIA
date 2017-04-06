@@ -1,10 +1,13 @@
 
+#include <gtest/gtest.h>
 #include <MetaEvent.h>
 #include <MetaAttribute.h>
 #include <MetaValue.h>
 #include <MetaFactory.h>
 #include <DeSerializer.h>
 #include <Serializer.h>
+#include <Value.h>
+#include <BaseEvent.h>
 
 #include <iterator>
 
