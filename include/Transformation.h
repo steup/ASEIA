@@ -8,36 +8,37 @@
 #include <memory>
 
 class MetaEvent;
-class ConfiguredTransformation;
-class CompositeTransformation;
 class Transformation;
+
+
+class ConfiguredTransformationInterface {
+  public:
+    using EventTypes = std::vector<EventType>;
+    using Events     = std::vector<const MetaEvent*>;
+  protected:
+    EventType mOut;
+    EventTypes mIn;
+  public:
+    const EventType& out() const { return mOut; }
+    const EventTypes& in() const { return mIn; }
+    bool operator==(const ConfiguredTransformationInterface& b) const;
+};
 
 /** \brief Interface of a state-full execution of a Transformation
   *
   * Subclasses implement actual Transformations. They transform single or
   * multiple incoming MetaEvents to a new output MetaEvent.
   **/
-class Transformer {
+class Transformer : public ConfiguredTransformationInterface {
   public:
-    using EventTypes = std::vector<EventType>;
-    using Events     = std::vector<const MetaEvent*>;
-  protected:
-    const EventType mOut;
-    const EventTypes mIn;
-    const Transformation& mTrans;
-  public:
-    Transformer(const Transformation& t, const EventType& out, const EventTypes& in)
-      : mOut(out), mIn(in), mTrans(t) {}
+    Transformer(const EventType& out, const EventTypes& in) {
+      mOut = out;
+      mIn = in;
+    }
     virtual ~Transformer() = default;
-    const EventType& out() const { return mOut; }
-    const EventTypes& in() const { return mIn; }
     virtual bool check(const Events& events) const =0;
     virtual MetaEvent operator()(const Events& events) =0;
     virtual void print(std::ostream& o) const = 0;
-    const Transformation& transformation() const { return mTrans; }
-    bool operator==(const Transformer& b) const { return this == &b; }
-    bool operator==(const ConfiguredTransformation& t) const;
-    bool operator==(const CompositeTransformation& t) const;
 };
 
 inline std::ostream& operator<<(std::ostream& o, const Transformer& t) {

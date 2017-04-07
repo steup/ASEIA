@@ -1,6 +1,5 @@
 #pragma once
 
-#include <ConfiguredTransformation.h>
 #include <Transformation.h>
 #include <EventID.h>
 #include <EventType.h>
@@ -10,8 +9,25 @@
 #include <ostream>
 #include <utility>
 
-class CompositeTransformation {
+class CompositeTransformation : public ConfiguredTransformationInterface {
   public:
+    class ConfiguredTransformation : public ConfiguredTransformationInterface {
+      private:
+        TransformationPtr mTPtr;
+      public:
+        using TransPtr = Transformation::TransPtr;
+        ConfiguredTransformation() = default;
+        ConfiguredTransformation(TransformationPtr tPtr, const EventType& out, const EventType& provided)
+          : mTPtr(tPtr) {
+          mOut = out;
+          if(provided==EventType())
+            mIn = tPtr->in(out);
+          else
+            mIn = tPtr->in(out, provided);
+        }
+        TransformationPtr trans() const { return mTPtr; }
+        TransPtr create() const { return mTPtr->create(mOut, mIn); }
+    };
     using  Graph       = boost::adjacency_list< boost::vecS, boost::vecS, boost::bidirectionalS,
                                                 ConfiguredTransformation, EventType>;
     using Vertex       = Graph::vertex_descriptor;
@@ -24,8 +40,6 @@ class CompositeTransformation {
 
   private:
     Graph mGraph;
-    EventType mOut;
-    EventTypes mIn;
     Vertex mRoot;
 
   public:
@@ -42,17 +56,11 @@ class CompositeTransformation {
     TransPtr create() const;
     bool check() const;
     const Graph& graph() const { return mGraph; }
-    const EventType& out() const { return mOut; }
-    void out(const EventType& eT) {mOut = eT; }
-    const EventTypes& in() const { return mIn; }
-    void in(const EventTypes& eTs) { mIn = eTs; }
     Vertex root() const { return mRoot; }
     TransList path(Vertex v) const;
     VertexResult find(TransformationPtr tPtr) const;
     VertexList find(const EventType& eT) const;
     bool contains(TransformationPtr tPtr) const { return find(tPtr).second; }
-
-    bool operator==(const Transformer& t) const { return t==*this; }
 
   friend std::ostream& operator<<(std::ostream&, const ConfiguredTransformation&);
 };

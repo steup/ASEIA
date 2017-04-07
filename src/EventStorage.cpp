@@ -2,6 +2,8 @@
 
 #include <MetaEvent.h>
 
+using StoragePtr = EventStorage::StoragePtr;
+
 class SimpleStorage : public EventStorage {
 	private:
 		MetaEvent mE;
@@ -23,8 +25,8 @@ class SimpleStorage : public EventStorage {
 		}
 };
 
-EventStorage::Ptr EventStorage::create(Type type, Policy policy) {
+StoragePtr EventStorage::create(Type type, Policy policy) {
   if(type == Type::simple)
-    return Ptr(new SimpleStorage());
-  return Ptr();
+    return StoragePtr(new SimpleStorage());
+  return StoragePtr();
 }

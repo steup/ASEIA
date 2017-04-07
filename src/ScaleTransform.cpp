@@ -32,8 +32,8 @@ class ScaleTransformer : public Transformer {
       return result;
     }
 
-    ScaleTransformer(const Transformation& t, const EventType& out, const EventTypes& in)
-			: Transformer(t, out, in) {
+    ScaleTransformer(const EventType& out, const EventTypes& in)
+			: Transformer(out, in) {
 
       if(in.size()!=1)
         return;
@@ -94,7 +94,7 @@ class ScaleTransformation : public Transformation {
 			if(in.size()!=arity())
 				return TransPtr();
 			else
-				return TransPtr(new ScaleTransformer(*this, out, in));
+				return TransPtr(new ScaleTransformer(out, in));
 		}
 
     virtual void print(ostream& o) const {

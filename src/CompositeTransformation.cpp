@@ -18,6 +18,7 @@ using namespace std;
 
 using namespace boost;
 
+using ConfiguredTransformation = CompositeTransformation::ConfiguredTransformation;
 
 struct CompositeTransformer : public Transformer {
     using TransPtr = Transformation::TransPtr;
@@ -64,13 +65,13 @@ struct CompositeTransformer : public Transformer {
      *  \param g CompositeTransformation graph to generate Transformers from
      **/
     CompositeTransformer(const EventType& out, const EventTypes& in, const CompositeTransformation::Graph& g)
-      : Transformer(Transformation::invalid, out, in) {
+      : Transformer(out, in) {
       auto vertexCopy = [&g, this](CompositeTransformation::Vertex in, Vertex out) {
         graph[out] = g[in].create();
       };
       Graph temp;
       copy_graph(g, graph, boost::vertex_copy(vertexCopy));
-      auto it = find_if(vertices(graph).first, vertices(graph).second, 
+      auto it = find_if(vertices(graph).first, vertices(graph).second,
                         [this](Vertex v){ return !in_degree(v, graph);});
       root = *it;
     }
@@ -183,15 +184,9 @@ VertexResult CompositeTransformation::addRootTransformation(TransformationPtr tP
                                                             const EventType& provided) {
   if(num_vertices(mGraph)==0) {
     Vertex root = boost::add_vertex(mGraph);
-    ConfiguredTransformation& cT = mGraph[root];
-    cT.trans(tPtr);
-    cT.out(tempGoal);
-    if(provided==EventType())
-      cT.in(tPtr->in(tempGoal));
-    else
-      cT.in(tPtr->in(tempGoal, provided));
-    in(cT.in());
-    out(cT.out());
+    mGraph[root] = ConfiguredTransformation(tPtr, tempGoal, provided);
+    mIn=mGraph[root].in();
+    mOut=mGraph[root].out();
     return make_pair(root, true);
   }else
     return make_pair(Vertex(), false);
@@ -205,15 +200,9 @@ VertexResult CompositeTransformation::addTransformation(TransformationPtr tPtr, 
     return make_pair(Vertex(), false);
 
   Vertex newV = boost::add_vertex(mGraph);
-  ConfiguredTransformation& cT = mGraph[newV];
-  cT.trans(tPtr);
-  cT.out(intermediate);
-  if(provided==EventType())
-    cT.in(tPtr->in(intermediate));
-  else
-    cT.in(tPtr->in(intermediate, provided));
+  mGraph[newV] = ConfiguredTransformation(tPtr, intermediate, provided);
   auto e = boost::add_edge(v, newV, mGraph);
-  mGraph[e.first]=cT.out();
+  mGraph[e.first]=mGraph[newV].out();
   mIn.clear();
   boost::depth_first_search(mGraph, boost::visitor(InputEventTypeExtractor(mIn)));
   return make_pair(newV, true);

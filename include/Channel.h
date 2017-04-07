@@ -12,7 +12,7 @@ class Channel{
   public:
     using TransPtr   = Transformation::TransPtr;
     using EventTypes = Transformation::EventTypes;
-    using StoragePtr = EventStorage::Ptr;
+    using StoragePtr = EventStorage::StoragePtr;
   protected:
     TransPtr   mTrans;
     StoragePtr mStore;

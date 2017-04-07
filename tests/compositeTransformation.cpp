@@ -39,7 +39,7 @@ struct CompositeTransformSuite : public ::testing::Test {
     string name;
     TestTransformer(const string& name, const EventType& out, const EventTypes& in,
                     map<string, TestTransformer*>& trans)
-      : Transformer(Transformation::invalid, out, in), name(name) {
+      : Transformer(out, in), name(name) {
       trans[name]=this;
     }
     MOCK_CONST_METHOD1(check, bool(const Events&));

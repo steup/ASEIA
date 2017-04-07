@@ -3,7 +3,7 @@
 #include <FormatID.h>
 #include <IO.h>
 
-Channel::Channel(Channel::TransPtr&& trans)
+Channel::Channel(TransPtr&& trans)
   : mTrans(std::move(trans))
 {
   if(mTrans && mTrans->in().size() == 1)

@@ -8,12 +8,9 @@
 
 using namespace std;
 
-bool Transformer::operator==(const ConfiguredTransformation& t) const {
-  return mTrans == *t.trans() && mOut == t.out() && mIn == t.in();
-}
-
-bool Transformer::operator==(const CompositeTransformation& t) const {
-  return mOut == t.out() && mIn == t.in();
+/** \todo ignore sorting of input EventTypes **/
+bool ConfiguredTransformationInterface::operator==(const ConfiguredTransformationInterface& b) const {
+  return mOut == b.out() && mIn == b.in();
 }
 
 Transformation::Transformation(Type type, size_t arity, const EventID& out)

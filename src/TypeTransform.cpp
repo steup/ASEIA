@@ -33,8 +33,8 @@ class TypeTransformer : public Transformer {
       return  result;
     }
 
-    TypeTransformer(const Transformation& t, const EventType& out, const EventTypes& in)
-			: Transformer(t, out, in)
+    TypeTransformer(const EventType& out, const EventTypes& in)
+			: Transformer(out, in)
 		{
       if(in.size()!=1)
         return;
@@ -91,7 +91,7 @@ class TypeTransformation : public Transformation {
       if(in.size()!=arity())
         return TransPtr();
       else
-        return TransPtr(new TypeTransformer(*this, out, in));
+        return TransPtr(new TypeTransformer(out, in));
 		}
 
     virtual void print(std::ostream& o) const {
