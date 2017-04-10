@@ -16,7 +16,6 @@ using EventTypes  = Transformer::EventTypes;
 struct TransformationTestSuite : public ::testing::Test{
 	MetaFactory& f  = MetaFactory::instance();
   MetaEvent    in, out;
-	Events       inL = { &in };
 	EventType    inT, outT;
 
   TransformationTestSuite()  {
@@ -32,8 +31,7 @@ struct TransformationTestSuite : public ::testing::Test{
   void registerTypes() {
     inT = (EventType)in;
     outT = (EventType)out;
-    for(const MetaEvent* ePtr : inL)
-      KnowledgeBase::registerEventType((EventType)*ePtr);
+    KnowledgeBase::registerEventType(inT);
   }
 };
 
@@ -50,10 +48,12 @@ TEST_F(TransformationTestSuite, scaleTransformBasicTest) {
   for(const CompositeTransformation& t : transList)
     os << t;
   ASSERT_LE(transList.size(), 1U) << "Too many Transforms found: " << os.str();
-  TransPtr scaleT = transList.front().create();
+  TransPtr scaleT = transList.front().create(AbstractPolicy());
   ASSERT_NE(scaleT, nullptr);
-	EXPECT_TRUE(scaleT->check(inL)) << "MetaValue is not supported by ScaleTransform";
-	EXPECT_EQ((*scaleT)(inL), out) << "Events not transformed correctly";
+	EXPECT_TRUE(scaleT->check(in)) << "MetaValue is not supported by ScaleTransform";
+  Events result = (*scaleT)(in);
+  ASSERT_GE(result.size(), 1U) << "No Events generated!";
+	EXPECT_EQ(result.front(), out) << "Events not transformed correctly";
 }
 
 TEST_F(TransformationTestSuite, typeTransformBasicTest) {
@@ -68,10 +68,12 @@ TEST_F(TransformationTestSuite, typeTransformBasicTest) {
   for(const CompositeTransformation& t : transList)
     os << t;
   ASSERT_LE(transList.size(), 1U) << "Too many Transforms found: " << os.str();
-  TransPtr typeT = transList.front().create();
+  TransPtr typeT = transList.front().create(AbstractPolicy());
   ASSERT_NE(typeT, nullptr);
-	EXPECT_TRUE(typeT->check(inL)) << "MetaValue is not supported by TypeTransform";
-	EXPECT_EQ((*typeT)(inL), out) << "Events not transformed correctly";
+	EXPECT_TRUE(typeT->check(in)) << "MetaValue is not supported by TypeTransform";
+  Events result = (*typeT)(in);
+  ASSERT_GE(result.size(), 1U) << "No Events generated!";
+	EXPECT_EQ(result.front(), out) << "Events not transformed correctly";
 }
 
 TEST_F(TransformationTestSuite, castedRescaleTest) {
@@ -86,10 +88,12 @@ TEST_F(TransformationTestSuite, castedRescaleTest) {
   std::ostringstream os;
   for(const CompositeTransformation& t : transList) {
     os << t;
-    TransPtr typeT = t.create();
+    TransPtr typeT = t.create(AbstractPolicy());
     ASSERT_NE(typeT, nullptr);
-	  EXPECT_TRUE(typeT->check(inL)) << "MetaValue is not supported by TypeTransform";
-	  EXPECT_EQ((*typeT)(inL), out) << "Events not transformed correctly";
+	  EXPECT_TRUE(typeT->check(in)) << "MetaValue is not supported by TypeTransform";
+    Events result = (*typeT)(in);
+    ASSERT_GE(result.size(), 1U) << "No Events generated!";
+	  EXPECT_EQ(result.front(), out) << "Events not transformed correctly";
   }
 }
 

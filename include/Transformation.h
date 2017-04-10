@@ -2,6 +2,7 @@
 
 #include <EventID.h>
 #include <EventType.h>
+#include <EventStorage.h>
 
 #include <iosfwd>
 #include <vector>
@@ -30,8 +31,11 @@ class AbstractConfiguredTransformation {
   * multiple incoming MetaEvents to a new output MetaEvent.
   **/
 class Transformer : public AbstractConfiguredTransformation {
+  private:
+    EventStorage mStorage;
   public:
-    Transformer(const EventType& out, const EventTypes& in) {
+    Transformer(const EventType& out, const EventTypes& in, const AbstractPolicy& policy)
+      : mStorage(in, policy) {
       mOut = out;
       mIn = in;
     }
@@ -83,7 +87,7 @@ class Transformation {
     virtual std::vector<EventType> in(const EventType& goal, const  EventType& provided) const {return {}; }
 
     virtual EventIDs in(EventID goal) const = 0;
-    virtual TransPtr create(const EventType& out, const EventTypes& in) const =0;
+    virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy) const =0;
     virtual void print(std::ostream& o) const = 0;
 
     bool operator==(const Transformation& b) const { return this == &b; }

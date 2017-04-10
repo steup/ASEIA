@@ -32,8 +32,8 @@ class ScaleTransformer : public Transformer {
       return result;
     }
 
-    ScaleTransformer(const EventType& out, const EventTypes& in)
-			: Transformer(out, in) {
+    ScaleTransformer(const EventType& out, const EventTypes& in, const AbstractPolicy& policy)
+			: Transformer(out, in, policy) {
 
       if(in.size()!=1)
         return;
@@ -85,11 +85,11 @@ class ScaleTransformation : public Transformation {
       return {accumulate(scaleDiff.begin(), scaleDiff.end(), goal, apply)};
     }
 
-    virtual TransPtr create(const EventType& out, const EventTypes& in) const {
+    virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy) const {
 			if(in.size()!=arity())
 				return TransPtr();
 			else
-				return TransPtr(new ScaleTransformer(out, in));
+				return TransPtr(new ScaleTransformer(out, in, policy));
 		}
 
     virtual void print(ostream& o) const {

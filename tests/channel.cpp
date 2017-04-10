@@ -14,10 +14,10 @@ struct ChannelTestSuite : public ::testing::Test{
   using TransPtr   = Transformation::TransPtr;
 
   struct TestTransformer : public Transformer {
-    TestTransformer() : Transformer(EventType(), {EventType()}) {}
-    MOCK_CONST_METHOD1(check, bool(const Events&));
-    MOCK_METHOD1(call, MetaEvent(const Events&));
-    virtual MetaEvent operator()(const Events& events) { return call(events); }
+    TestTransformer() : Transformer(EventType(), {EventType()}, AbstractPolicy()) {}
+    MOCK_CONST_METHOD1(check, bool(const MetaEvent&));
+    MOCK_METHOD1(call, Events(const MetaEvent&));
+    virtual Events operator()(const MetaEvent& event) { return call(event); }
     MOCK_CONST_METHOD1(print, void(std::ostream&));
   };
 
@@ -49,7 +49,7 @@ TEST_F(ChannelTestSuite, succededTransformTest) {
   ASSERT_TRUE(c.trans());
 	EXPECT_CALL(dynamic_cast<TestTransformer&>(*c.trans()), call(_))
 		.Times(1)
-		.WillRepeatedly(Return(e));
+		.WillRepeatedly(Return(Events({e})));
   EXPECT_CALL(dynamic_cast<const TestTransformer&>(*c.trans()), check(_))
     .Times(AtLeast(1))
     .WillRepeatedly(Return(true));

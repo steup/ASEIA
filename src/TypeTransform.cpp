@@ -33,8 +33,8 @@ class TypeTransformer : public Transformer {
       return  result;
     }
 
-    TypeTransformer(const EventType& out, const EventTypes& in)
-			: Transformer(out, in)
+    TypeTransformer(const EventType& out, const EventTypes& in, const AbstractPolicy& policy)
+			: Transformer(out, in, policy)
 		{
       if(in.size()!=1)
         return;
@@ -83,11 +83,11 @@ class TypeTransformation : public Transformation {
       return {accumulate(typeDiff.begin(), typeDiff.end(), goal, apply)};
     }
 
-    virtual TransPtr create(const EventType& out, const EventTypes& in) const {
+    virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy) const {
       if(in.size()!=arity())
         return TransPtr();
       else
-        return TransPtr(new TypeTransformer(out, in));
+        return TransPtr(new TypeTransformer(out, in, policy));
 		}
 
     virtual void print(std::ostream& o) const {

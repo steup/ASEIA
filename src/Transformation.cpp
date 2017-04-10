@@ -24,7 +24,7 @@ class InvalidTransformation : public Transformation {
   public:
     InvalidTransformation() : Transformation(Type::invalid, 0, EventID::any) {
     }
-    virtual TransPtr create(const EventType& out, const EventTypes& in) const {
+    virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy) const {
       return TransPtr();
     }
     virtual void print(std::ostream& o) const {

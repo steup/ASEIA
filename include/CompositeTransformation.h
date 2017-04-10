@@ -26,7 +26,7 @@ class CompositeTransformation : public AbstractConfiguredTransformation {
             mIn = tPtr->in(out, provided);
         }
         TransformationPtr trans() const { return mTPtr; }
-        TransPtr create() const { return mTPtr->create(mOut, mIn); }
+        TransPtr create(const AbstractPolicy& policy) const { return mTPtr->create(mOut, mIn, policy); }
     };
     using  Graph       = boost::adjacency_list< boost::vecS, boost::vecS, boost::bidirectionalS,
                                                 ConfiguredTransformation, EventType>;
@@ -53,7 +53,7 @@ class CompositeTransformation : public AbstractConfiguredTransformation {
     VertexResult addTransformation(TransformationPtr tPtr, Vertex v,
                                    const EventType& goal, const EventType& provided);
     EventIDs inIDs() const;
-    TransPtr create() const;
+    TransPtr create(const AbstractPolicy& policy) const;
     bool check() const;
     const Graph& graph() const { return mGraph; }
     Vertex root() const { return mRoot; }

@@ -1,20 +1,21 @@
 #pragma once
 
 #include <MetaEvent.h>
-#include <Transformation.h>
+#include <EventType.h>
 
 #include <vector>
 #include <iterator>
 
+/** \todo define interface **/
 class AbstractPolicy {
-  
+
 };
 
 class EventStorage {
   public:
-    using EventTypes = Transformer::EventTypes;
+    using EventTypes = std::vector<EventType>;
   private:
-    using Storage = std::vector<Transformer::Events>;
+    using Storage = std::vector<std::vector<MetaEvent>>;
     Storage mStorage;
     const AbstractPolicy& mPolicy;
     const EventTypes& mInTypes;
@@ -27,13 +28,12 @@ class EventStorage {
         const_iterator() = default;
         const_iterator(const Storage& storage) : mIndex(0), mStoragePtr(&storage) {}
         std::vector<const MetaEvent*> operator*() const;
-        std::vector<const MetaEvent*> operator->() const;
         bool operator==(const_iterator b) const { return mIndex == b.mIndex; };
         bool operator!=(const_iterator b) const { return mIndex != b.mIndex; }
         const_iterator& operator++() { mIndex++; return *this; };
-        const_iterator operator++(int) { const_iterator temp=*this; mIndex++; return temp;};
+        const_iterator operator++(int) { const_iterator temp=*this; ++mIndex; return temp;};
     };
-    EventStorage(EventTypes in, const AbstractPolicy& policy);
+    EventStorage(const EventTypes& in, const AbstractPolicy& policy);
 		~EventStorage() {}
 		void addEvent(const MetaEvent& e);
 		void purge() { mStorage.clear(); };

@@ -60,7 +60,7 @@ namespace test {
         else
           return {};
       }
-      virtual TransPtr create(const EventType& outE, const EventTypes& inE) const { return TransPtr(); }
+      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << "Heterogeneus Transform 1"; }
     };
 
@@ -80,7 +80,7 @@ namespace test {
         else
           return {};
       }
-      virtual TransPtr create(const EventType& outE, const EventTypes& inE) const { return TransPtr(); }
+      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << "Heterogeneus Transform 2"; }
     };
 
@@ -100,7 +100,7 @@ namespace test {
         else
           return {};
       }
-      virtual TransPtr create(const EventType& outE, const EventTypes& inE) const { return TransPtr(); }
+      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << "Homogeneus Transform 1"; }
     };
 
@@ -121,7 +121,7 @@ namespace test {
         else
           return {};
       }
-      virtual TransPtr create(const EventType& outE, const EventTypes& inE) const { return TransPtr(); }
+      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << "Homogeneus Transform 2"; }
     };
 

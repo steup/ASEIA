@@ -28,13 +28,16 @@ struct CompositeTransformer : public Transformer {
 
     struct CallVisitor : public default_dfs_visitor {
 
-      MetaEvent& e;
-      map<Vertex, MetaEvent> buffer;
+      Events& results;
+      //map<Vertex, MetaEvent> buffer;
 
-      const Events& input;
-      CallVisitor(MetaEvent& e, const Events& input) : e(e), input(input) {}
+      const MetaEvent& input;
+
+      CallVisitor(Events& results, const MetaEvent& input) : results(results), input(input) {}
+
+      /** \todo update according to new transform structure **/
       void finish_vertex(Vertex v, const Graph& g) {
-        Events localIn;
+        /*Events localIn;
         TransPtr currTrans = g[v];
         auto edges = out_edges(v, g);
         for(const EventType& eT : currTrans->in()) {
@@ -53,7 +56,7 @@ struct CompositeTransformer : public Transformer {
               }
         }
         buffer[v] = (*g[v])(localIn);
-        e=buffer[v];
+        e=buffer[v];*/
       }
     };
 
@@ -64,10 +67,11 @@ struct CompositeTransformer : public Transformer {
      *  \param in input EventTypes of the consumed MetaEvents
      *  \param g CompositeTransformation graph to generate Transformers from
      **/
-    CompositeTransformer(const EventType& out, const EventTypes& in, const CompositeTransformation::Graph& g)
-      : Transformer(out, in) {
-      auto vertexCopy = [&g, this](CompositeTransformation::Vertex in, Vertex out) {
-        graph[out] = g[in].create();
+    CompositeTransformer(const EventType& out, const EventTypes& in,
+                        const CompositeTransformation::Graph& g, const AbstractPolicy& policy)
+      : Transformer(out, in, AbstractPolicy()) {
+      auto vertexCopy = [&g, &policy, this](CompositeTransformation::Vertex in, Vertex out) {
+        graph[out] = g[in].create(policy);
       };
       Graph temp;
       copy_graph(g, graph, boost::vertex_copy(vertexCopy));
@@ -77,8 +81,8 @@ struct CompositeTransformer : public Transformer {
     }
 
     virtual bool check(const MetaEvent& e) const {
-      for(Vertex v : vertices(graph))
-        if(graph[v].trans()->check(e))
+      for(auto it = vertices(graph).first; it!=vertices(graph).second; it++)
+        if(graph[*it]->check(e))
           return true;
       return false;
     }
@@ -165,11 +169,11 @@ CompositeTransformation::CompositeTransformation(TransformationPtr tPtr, const E
     mRoot = res.first;
 }
 
-TransPtr CompositeTransformation::create() const {
+TransPtr CompositeTransformation::create(const AbstractPolicy& policy) const {
   if(boost::num_vertices(mGraph)==1) {
-    return mGraph[mRoot].create();
+    return mGraph[mRoot].create(policy);
   }
-  return TransPtr(new CompositeTransformer(mOut, mIn, mGraph));
+  return TransPtr(new CompositeTransformer(mOut, mIn, mGraph, policy));
 }
 
 bool CompositeTransformation::check() const {
