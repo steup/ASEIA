@@ -9,7 +9,7 @@
 using namespace std;
 
 /** \todo ignore sorting of input EventTypes **/
-bool ConfiguredTransformationInterface::operator==(const ConfiguredTransformationInterface& b) const {
+bool AbstractConfiguredTransformation::operator==(const AbstractConfiguredTransformation& b) const {
   return mOut == b.out() && mIn == b.in();
 }
 

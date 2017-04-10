@@ -11,7 +11,7 @@ class MetaEvent;
 class Transformation;
 
 
-class ConfiguredTransformationInterface {
+class AbstractConfiguredTransformation {
   public:
     using EventTypes = std::vector<EventType>;
     using Events     = std::vector<const MetaEvent*>;
@@ -21,7 +21,7 @@ class ConfiguredTransformationInterface {
   public:
     const EventType& out() const { return mOut; }
     const EventTypes& in() const { return mIn; }
-    bool operator==(const ConfiguredTransformationInterface& b) const;
+    bool operator==(const AbstractConfiguredTransformation& b) const;
 };
 
 /** \brief Interface of a state-full execution of a Transformation
@@ -29,7 +29,7 @@ class ConfiguredTransformationInterface {
   * Subclasses implement actual Transformations. They transform single or
   * multiple incoming MetaEvents to a new output MetaEvent.
   **/
-class Transformer : public ConfiguredTransformationInterface {
+class Transformer : public AbstractConfiguredTransformation {
   public:
     Transformer(const EventType& out, const EventTypes& in) {
       mOut = out;

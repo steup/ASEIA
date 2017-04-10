@@ -9,9 +9,9 @@
 #include <ostream>
 #include <utility>
 
-class CompositeTransformation : public ConfiguredTransformationInterface {
+class CompositeTransformation : public AbstractConfiguredTransformation {
   public:
-    class ConfiguredTransformation : public ConfiguredTransformationInterface {
+    class ConfiguredTransformation : public AbstractConfiguredTransformation {
       private:
         TransformationPtr mTPtr;
       public:
