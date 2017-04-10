@@ -14,7 +14,7 @@ class Transformation;
 class AbstractConfiguredTransformation {
   public:
     using EventTypes = std::vector<EventType>;
-    using Events     = std::vector<const MetaEvent*>;
+    using Events     = std::vector<MetaEvent>;
   protected:
     EventType mOut;
     EventTypes mIn;
@@ -36,8 +36,8 @@ class Transformer : public AbstractConfiguredTransformation {
       mIn = in;
     }
     virtual ~Transformer() = default;
-    virtual bool check(const Events& events) const =0;
-    virtual MetaEvent operator()(const Events& events) =0;
+    virtual bool check(const MetaEvent& e) const =0;
+    virtual Events operator()(const MetaEvent& event) =0;
     virtual void print(std::ostream& o) const = 0;
 };
 

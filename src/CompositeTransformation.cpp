@@ -76,27 +76,23 @@ struct CompositeTransformer : public Transformer {
       root = *it;
     }
 
-    /** \brief check for applicability  of Transformer
-     *  \param  events input events to check
-     *  \return true if transformer can be applied, false otherwise
-     **/
-    bool check(const Events& events) const {
-      for(const EventType& eT : in())
-        if(!any_of(events.begin(), events.end(), [&eT](const MetaEvent* e){ return EventType(*e)<=eT; }))
-          return false;
-      return true;
+    virtual bool check(const MetaEvent& e) const {
+      for(Vertex v : vertices(graph))
+        if(graph[v].trans()->check(e))
+          return true;
+      return false;
     }
 
     /** \brief execute transformer on input events
      *  \param events input events
      *  \return result of the transformer graph
      **/
-    MetaEvent operator()(const Events& events) {
-      MetaEvent e;
+    Events operator()(const MetaEvent& event) {
+      Events result;
       vector<default_color_type> colors(num_vertices(graph));
-      depth_first_visit(graph, root, CallVisitor(e, events), 
+      depth_first_visit(graph, root, CallVisitor(result, event),
                         make_iterator_property_map(colors.begin(), get(vertex_index, graph)));
-      return e;
+      return result;
     }
 
     /** \brief print composite transformer

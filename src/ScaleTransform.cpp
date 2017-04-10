@@ -42,21 +42,16 @@ class ScaleTransformer : public Transformer {
       mScaleDeltas = scaleDiff(out, b);
     }
 
-    virtual bool check(const Events& events) const {
-      return true;
-    }
+    virtual bool check(const MetaEvent& e) const { return mIn.front() <= (EventType) e; }
 
-    virtual MetaEvent operator()(const Events& events) {
-      if (events.size() != 1 || !events.front() || !mScaleDeltas.size())
-        return MetaEvent(mOut);
-
-      MetaEvent e = *events.front();
-      for(MetaAttribute& a : e) {
+    virtual Events operator()(const MetaEvent& event) {
+      Events result = { event };
+      for(MetaAttribute& a : result.front()) {
         auto it = mScaleDeltas.find(a.id());
         if(it != mScaleDeltas.end() && (it->second.num() != 1 || it->second.denom() != 1))
           a*=it->second;
       }
-      return e;
+      return result;
     }
 
     virtual void print(ostream& o) const {

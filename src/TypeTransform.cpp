@@ -42,20 +42,16 @@ class TypeTransformer : public Transformer {
       mTypeDeltas = typeDiff(out, b);
     }
 
-    virtual bool check(const Events& events) const {
-      return true;
-    }
+    virtual bool check(const MetaEvent& e) const { return mIn.front() <= (EventType) e; }
 
-    virtual MetaEvent operator()(const Events& events) {
-      if (events.size() != 1 || !events.front())
-        return MetaEvent(mOut);
-      MetaEvent e = *events.front();
-      for(MetaAttribute& a : e) {
+    virtual Events operator()(const MetaEvent& event) {
+      Events result = {event};
+      for(MetaAttribute& a : result.front()) {
         auto it = mTypeDeltas.find(a.id());
         if(it != mTypeDeltas.end() && it->second.first != it->second.second)
           a.value()=MetaFactory::instance().convert(it->second.second, a.value());
       }
-      return e;
+      return result;
     }
 
     virtual void print(std::ostream& o) const {
