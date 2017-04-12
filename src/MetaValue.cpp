@@ -18,11 +18,10 @@ MetaValue::MetaValue(MetaValue::Ptr&& ptr){
 		mImpl = move(ptr);
 }
 
-MetaValue::MetaValue(const MetaValue& copy) : mImpl(new MVB()){
-	mImpl = copy.mImpl->copy();
+MetaValue::MetaValue(const MetaValue& copy) {
+  if(this!=&copy)
+	  mImpl = copy.mImpl->copy();
 }
-
-MetaValue::MetaValue(MetaValue&& copy) : mImpl(move(copy.mImpl)) { }
 
 bool MetaValue::resize(std::size_t rows, std::size_t cols) {
 	Data d;
@@ -40,12 +39,8 @@ bool MetaValue::hasUncertainy(bool u) {
 }
 
 MetaValue& MetaValue::operator=(const MetaValue& copy) {
-	mImpl = copy.mImpl->copy();
-	return *this;
-}
-
-MetaValue& MetaValue::operator=(MetaValue&& copy) {
-  mImpl = move(copy.mImpl);
+  if(this != &copy)
+	  mImpl = copy.mImpl->copy();
 	return *this;
 }
 
