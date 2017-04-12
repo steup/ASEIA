@@ -3,19 +3,22 @@
 #include <MetaEvent.h>
 #include <EventType.h>
 
+#include <boost/circular_buffer.hpp>
+
 #include <vector>
 #include <iterator>
 
 /** \todo define interface **/
 class AbstractPolicy {
-
+  public:
+    size_t bufferSize=10;
 };
 
 class EventStorage {
   public:
     using EventTypes = std::vector<EventType>;
   private:
-    using Storage = std::vector<std::vector<MetaEvent>>;
+    using Storage = std::vector<boost::circular_buffer<MetaEvent>>;
     Storage mStorage;
     const AbstractPolicy& mPolicy;
     const EventTypes& mInTypes;
@@ -23,18 +26,18 @@ class EventStorage {
     class const_iterator : public std::iterator<std::forward_iterator_tag, std::vector<const MetaEvent*>> {
       private:
         long mIndex=-1;
+        long mFactor=0;
         const Storage* mStoragePtr = nullptr;
       public:
         const_iterator() = default;
-        const_iterator(const Storage& storage) : mIndex(0), mStoragePtr(&storage) {}
+        const_iterator(const Storage& storage);
         std::vector<const MetaEvent*> operator*() const;
-        bool operator==(const_iterator b) const { return mIndex == b.mIndex; };
+        bool operator==(const_iterator b) const { return mIndex == b.mIndex; }
         bool operator!=(const_iterator b) const { return mIndex != b.mIndex; }
-        const_iterator& operator++() { mIndex++; return *this; };
-        const_iterator operator++(int) { const_iterator temp=*this; ++mIndex; return temp;};
+        const_iterator& operator++();
+        const_iterator operator++(int) { auto temp=*this; ++(*this); return temp; }
     };
     EventStorage(const EventTypes& in, const AbstractPolicy& policy);
-		~EventStorage() {}
 		void addEvent(const MetaEvent& e);
 		void purge() { mStorage.clear(); };
     const_iterator begin() const { return const_iterator(mStorage); };
