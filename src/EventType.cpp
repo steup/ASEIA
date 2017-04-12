@@ -7,6 +7,10 @@ const EventType::ValueType& EventType::const_iterator::operator*() const {
   return mI->second;
 }
 
+const EventType::ValueType* EventType::const_iterator::operator->() const { 
+  return &mI->second;
+}
+
 EventType::const_iterator& EventType::const_iterator::operator++() {
 	++mI;
 	return *this;
@@ -26,11 +30,11 @@ EventType::const_iterator EventType::end() const {
   return const_iterator(mStorage.cend()); 
 }
 
-bool EventType::const_iterator::operator==(const const_iterator& b){
+bool EventType::const_iterator::operator==(const const_iterator& b) const {
 	return mI==b.mI;
 }
 
-bool EventType::const_iterator::operator!=(const const_iterator& b) {
+bool EventType::const_iterator::operator!=(const const_iterator& b) const {
 	return mI!=b.mI;
 }
 

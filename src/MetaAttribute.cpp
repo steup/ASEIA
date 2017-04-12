@@ -18,31 +18,6 @@ MetaAttribute::MetaAttribute(const AttributeType& at) {
 	mID = at.id();
 }
 
-MetaAttribute::MetaAttribute(const MetaAttribute& copy) {
-	*this = copy;
-}
-
-MetaAttribute::MetaAttribute(MetaAttribute&& movee) {
-	*this = movee;
-}
-MetaAttribute& MetaAttribute::operator=(const MetaAttribute& copy) {
-  mID = copy.mID;
-	mUnit = copy.mUnit;
-  mScale = copy.mScale;
-	mValue = copy.mValue;
-	return *this;
-}
-
-MetaAttribute& MetaAttribute::operator=(MetaAttribute&& copy) {
-	if(&copy != this) {
-    mID = move(copy.mID);
-	  mUnit = move(copy.mUnit);
-	  mScale = move(copy.mScale);
-	  mValue = move(copy.mValue);
-  }
-	return *this;
-}
-
 MetaAttribute& MetaAttribute::operator+=(const MetaAttribute& b) {
 	if(!(mUnit == b.mUnit)) {
 		mValue = MetaValue();
