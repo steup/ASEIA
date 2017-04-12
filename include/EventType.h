@@ -23,10 +23,11 @@ class EventType{
       public:
         const_iterator(StorageType::const_iterator i);
         const ValueType& operator*() const;
+        const ValueType* operator->() const;
         const_iterator& operator++();
         const_iterator operator++(int);
-				bool operator==(const const_iterator& b);
-				bool operator!=(const const_iterator& b);
+				bool operator==(const const_iterator& b) const;
+				bool operator!=(const const_iterator& b) const;
     };
 
     const_iterator begin() const;
