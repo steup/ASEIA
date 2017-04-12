@@ -20,14 +20,8 @@ class MetaAttribute {
     MetaScale  mScale ;
 
   public:
-    //MetaAttribute() = default;
-
     MetaAttribute(ID id = id::attribute::Base::value()) : mID(id) {}
     MetaAttribute(const AttributeType& at);
-    MetaAttribute(const MetaAttribute& copy);
-    MetaAttribute(MetaAttribute&& movee);
-    MetaAttribute& operator=(const MetaAttribute& copy);
-    MetaAttribute& operator=(MetaAttribute&& movee);
     MetaAttribute& operator+=(const MetaAttribute& b);
     MetaAttribute& operator*=(const MetaScale& scale);
     MetaAttribute operator*(const MetaScale& scale) const;

@@ -32,10 +32,8 @@ class MetaValue {
     MetaValue();
 
     MetaValue(const MetaValue& copy);
-    MetaValue(MetaValue&& copy);
 
     MetaValue& operator=(const MetaValue& b);
-    MetaValue& operator=(MetaValue&& b);
 
     MetaValue operator+(const MetaValue& b) const;
 		MetaValue operator==(const MetaValue& b) const;
