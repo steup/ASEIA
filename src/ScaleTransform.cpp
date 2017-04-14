@@ -11,7 +11,7 @@
 
 using namespace std;
 
-class ScaleTransformer : public Transformer {
+class ScaleTransformer : public SimpleTransformer {
   private:
     using Storage = map<id::attribute::ID, MetaScale>;
     Storage mScaleDeltas;
@@ -32,26 +32,9 @@ class ScaleTransformer : public Transformer {
       return result;
     }
 
-    ScaleTransformer(const EventType& out, const EventTypes& in, const AbstractPolicy& policy)
-			: Transformer(out, in, policy) {
-
-      if(in.size()!=1)
-        return;
-
-      const EventType& b = in.front();
-      mScaleDeltas = scaleDiff(out, b);
-    }
-
-    virtual bool check(const MetaEvent& e) const { return mIn.front() <= (EventType) e; }
-
-    virtual Events operator()(const MetaEvent& event) {
-      Events result = { event };
-      for(MetaAttribute& a : result.front()) {
-        auto it = mScaleDeltas.find(a.id());
-        if(it != mScaleDeltas.end() && (it->second.num() != 1 || it->second.denom() != 1))
-          a*=it->second;
-      }
-      return result;
+    ScaleTransformer(const EventType& out, const EventType& in)
+			: SimpleTransformer(out, in) {
+      mScaleDeltas = scaleDiff(out, in);
     }
 
     virtual void print(ostream& o) const {
@@ -60,6 +43,19 @@ class ScaleTransformer : public Transformer {
         o << "\t" << id::attribute::name(scaleOp.first) << ": " << scaleOp.second << "\n";
     }
 
+    protected:
+
+    virtual bool check(const MetaEvent& e) const { return true; }
+
+    virtual MetaEvent execute(const MetaEvent& event) const {
+      MetaEvent result = event;
+      for(MetaAttribute& a : result) {
+        auto it = mScaleDeltas.find(a.id());
+        if(it != mScaleDeltas.end() && (it->second.num() != 1 || it->second.denom() != 1))
+          a*=it->second;
+      }
+      return result;
+    }
 };
 
 class ScaleTransformation : public Transformation {
@@ -86,10 +82,10 @@ class ScaleTransformation : public Transformation {
     }
 
     virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy) const {
-			if(in.size()!=arity())
+			if(in.size()!=1)
 				return TransPtr();
 			else
-				return TransPtr(new ScaleTransformer(out, in, policy));
+				return TransPtr(new ScaleTransformer(out, in[0]));
 		}
 
     virtual void print(ostream& o) const {

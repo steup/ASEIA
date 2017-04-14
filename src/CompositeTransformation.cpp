@@ -62,7 +62,7 @@ struct CompositeTransformer : public Transformer {
      **/
     CompositeTransformer(const EventType& out, const EventTypes& in,
                         const CompositeTransformation::Graph& g, const AbstractPolicy& policy)
-      : Transformer(out, in, AbstractPolicy()) {
+      : Transformer(out, in) {
       auto vertexCopy = [&g, &policy, this](CompositeTransformation::Vertex in, Vertex out) {
         graph[out] = g[in].create(policy);
       };
@@ -84,7 +84,7 @@ struct CompositeTransformer : public Transformer {
      *  \param events input events
      *  \return result of the transformer graph
      **/
-    Events operator()(const MetaEvent& event) {
+    virtual Events operator()(const MetaEvent& event) {
       Events result;
       vector<default_color_type> colors(num_vertices(graph));
       depth_first_visit(graph, root, CallVisitor(result, event),

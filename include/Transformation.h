@@ -31,11 +31,8 @@ class AbstractConfiguredTransformation {
   * multiple incoming MetaEvents to a new output MetaEvent.
   **/
 class Transformer : public AbstractConfiguredTransformation {
-  private:
-    EventStorage mStorage;
   public:
-    Transformer(const EventType& out, const EventTypes& in, const AbstractPolicy& policy)
-      : mStorage(in, policy) {
+    Transformer(const EventType& out, const EventTypes& in) {
       mOut = out;
       mIn = in;
     }
@@ -43,6 +40,44 @@ class Transformer : public AbstractConfiguredTransformation {
     virtual bool check(const MetaEvent& e) const =0;
     virtual Events operator()(const MetaEvent& event) =0;
     virtual void print(std::ostream& o) const = 0;
+};
+
+class SimpleTransformer : public Transformer {
+  protected:
+    virtual MetaEvent execute(const MetaEvent& e) const =0;
+  public:
+    SimpleTransformer(const EventType& out, const EventType& in)
+      : Transformer(out, {in}) {}
+    virtual Events operator()(const MetaEvent& event) {
+      if(mIn.size() == 1 && (EventType)event <= mIn[0] && check(event))
+        return {execute(event)};
+      else
+        return {};
+    }
+};
+
+class BufferedTransformer : public Transformer {
+  protected:
+    EventStorage mStorage;
+    using EventPtrs = std::vector<const MetaEvent*>;
+    virtual Events execute(const EventPtrs& inputs) const =0;
+  public:
+    BufferedTransformer(const EventType& out, const EventTypes& in, const AbstractPolicy& policy)
+      :Transformer(out, in), mStorage(in, policy) {}
+
+    virtual Events operator()(const MetaEvent& event) {
+      Events result;
+      EventType eT = (EventType)event;
+      auto checkType = [&eT](const EventType& b){ return b<=eT; };
+      if( any_of(mIn.begin(), mIn.end(), checkType) && check(event)) {
+        mStorage.addEvent(event);
+        for(const EventPtrs& input : mStorage) {
+          Events temp = execute(input);
+          move(temp.begin(), temp.end(), back_inserter(result));
+        }
+      }
+      return result;
+    };
 };
 
 inline std::ostream& operator<<(std::ostream& o, const Transformer& t) {

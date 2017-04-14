@@ -13,7 +13,7 @@
 
 using namespace std;
 
-class TypeTransformer : public Transformer {
+class TypeTransformer : public SimpleTransformer {
   private:
     // from -> to
     using Storage = std::map<id::attribute::ID, pair<ValueType, ValueType>>;
@@ -33,25 +33,10 @@ class TypeTransformer : public Transformer {
       return  result;
     }
 
-    TypeTransformer(const EventType& out, const EventTypes& in, const AbstractPolicy& policy)
-			: Transformer(out, in, policy)
+    TypeTransformer(const EventType& out, const EventType& in)
+			: SimpleTransformer(out, in)
 		{
-      if(in.size()!=1)
-        return;
-      const EventType& b = in.front();
-      mTypeDeltas = typeDiff(out, b);
-    }
-
-    virtual bool check(const MetaEvent& e) const { return mIn.front() <= (EventType) e; }
-
-    virtual Events operator()(const MetaEvent& event) {
-      Events result = {event};
-      for(MetaAttribute& a : result.front()) {
-        auto it = mTypeDeltas.find(a.id());
-        if(it != mTypeDeltas.end() && it->second.first != it->second.second)
-          a.value()=MetaFactory::instance().convert(it->second.second, a.value());
-      }
-      return result;
+      mTypeDeltas = typeDiff(out, in);
     }
 
     virtual void print(std::ostream& o) const {
@@ -59,6 +44,20 @@ class TypeTransformer : public Transformer {
       for(const Storage::value_type& typeOp : mTypeDeltas)
         o << "\t" << id::attribute::name(typeOp.first) << ": " <<  typeOp.second.first << " -> " << typeOp.second.second << "\n";
     }
+
+  protected:
+    virtual bool check(const MetaEvent& e) const { return true; }
+
+    virtual MetaEvent execute(const MetaEvent& event) const {
+      MetaEvent result = event;
+      for(MetaAttribute& a : result) {
+        auto it = mTypeDeltas.find(a.id());
+        if(it != mTypeDeltas.end() && it->second.first != it->second.second)
+          a.value()=MetaFactory::instance().convert(it->second.second, a.value());
+      }
+      return result;
+    }
+
 
 };
 
@@ -84,10 +83,10 @@ class TypeTransformation : public Transformation {
     }
 
     virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy) const {
-      if(in.size()!=arity())
+      if(in.size()!=1)
         return TransPtr();
       else
-        return TransPtr(new TypeTransformer(out, in, policy));
+        return TransPtr(new TypeTransformer(out, in[0]));
 		}
 
     virtual void print(std::ostream& o) const {

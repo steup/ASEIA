@@ -36,12 +36,12 @@ struct CompositeTransformSuite : public ::testing::Test {
     string name;
     TestTransformer(const string& name, const EventType& out, const EventTypes& in,
                     map<string, TestTransformer*>& trans)
-      : Transformer(out, in, AbstractPolicy()), name(name) {
+      : Transformer(out, in), name(name) {
       trans[name]=this;
     }
     MOCK_CONST_METHOD1(check, bool(const MetaEvent&));
-    MOCK_METHOD1(call, Events(const MetaEvent&));
-    virtual Events operator()(const MetaEvent& events) { return call(events); }
+    MOCK_CONST_METHOD1(call, Events(const MetaEvent&));
+    virtual Events operator()(const MetaEvent& e) { return call(e); }
     virtual void print(ostream& o) const { o << name; }
   };
 

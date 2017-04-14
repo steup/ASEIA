@@ -13,11 +13,10 @@ struct ChannelTestSuite : public ::testing::Test{
   using EventTypes = Transformer::EventTypes;
   using TransPtr   = Transformation::TransPtr;
 
-  struct TestTransformer : public Transformer {
-    TestTransformer() : Transformer(EventType(), {EventType()}, AbstractPolicy()) {}
+  struct TestTransformer : public SimpleTransformer {
+    TestTransformer() : SimpleTransformer(EventType(), EventType()) {}
     MOCK_CONST_METHOD1(check, bool(const MetaEvent&));
-    MOCK_METHOD1(call, Events(const MetaEvent&));
-    virtual Events operator()(const MetaEvent& event) { return call(event); }
+    MOCK_CONST_METHOD1(execute, MetaEvent(const MetaEvent&));
     MOCK_CONST_METHOD1(print, void(std::ostream&));
   };
 
@@ -32,7 +31,7 @@ struct ChannelTestSuite : public ::testing::Test{
 
 TEST_F(ChannelTestSuite, failedSingleTransformTest) {
   ASSERT_TRUE(c.trans());
-	EXPECT_CALL(dynamic_cast<TestTransformer&>(*c.trans()), call(_))
+	EXPECT_CALL(dynamic_cast<TestTransformer&>(*c.trans()), execute(_))
 		.Times(0);
   EXPECT_CALL(dynamic_cast<const TestTransformer&>(*c.trans()), check(_))
     .Times(AtLeast(1))
@@ -47,9 +46,9 @@ TEST_F(ChannelTestSuite, succededTransformTest) {
 	MetaAttribute a;
 	e.add(a);
   ASSERT_TRUE(c.trans());
-	EXPECT_CALL(dynamic_cast<TestTransformer&>(*c.trans()), call(_))
+	EXPECT_CALL(dynamic_cast<TestTransformer&>(*c.trans()), execute(_))
 		.Times(1)
-		.WillRepeatedly(Return(Events({e})));
+		.WillRepeatedly(Return(e));
   EXPECT_CALL(dynamic_cast<const TestTransformer&>(*c.trans()), check(_))
     .Times(AtLeast(1))
     .WillRepeatedly(Return(true));
