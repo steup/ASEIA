@@ -29,34 +29,27 @@ struct CompositeTransformer : public Transformer {
     struct CallVisitor : public default_dfs_visitor {
 
       Events& results;
-      //map<Vertex, MetaEvent> buffer;
+      map<Vertex, vector<MetaEvent>> buffer;
 
       const MetaEvent& input;
 
       CallVisitor(Events& results, const MetaEvent& input) : results(results), input(input) {}
 
+      void initialize_vertex(Vertex v, const Graph& g) {
+        buffer.emplace(v, vector<MetaEvent>());
+      }
+
       /** \todo update according to new transform structure **/
       void finish_vertex(Vertex v, const Graph& g) {
-        /*Events localIn;
-        TransPtr currTrans = g[v];
+        vector<MetaEvent> temp = g[v]->operator()(input);
+        std::move(temp.begin(), temp.end(), back_inserter(buffer[v]));
         auto edges = out_edges(v, g);
-        for(const EventType& eT : currTrans->in()) {
-          bool found = false;
-          for(auto it=edges.first; it!=edges.second; it++)
-            if(g[*it]==eT) {
-              localIn.push_back(&buffer[target(*it, g)]);
-              found=true;
-              break;
-            }
-          if(!found)
-            for(const MetaEvent* eIn : input)
-              if(eT == (EventType)*eIn) {
-                localIn.push_back(eIn);
-                break;
-              }
-        }
-        buffer[v] = (*g[v])(localIn);
-        e=buffer[v];*/
+        for(auto it=edges.first; it!=edges.second; it++)
+          for(const MetaEvent& e: buffer[target(*it, g)]) {
+            temp = g[v]->operator()(e);
+            std::move(temp.begin(), temp.end(), back_inserter(buffer[v]));
+          }
+        results = buffer[v];
       }
     };
 

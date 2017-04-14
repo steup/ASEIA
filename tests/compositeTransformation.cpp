@@ -197,6 +197,8 @@ TEST_F(CompositeTransformSuite, linearCreateTest) {
   eC.attribute(Test0::value())->value().set(0, 0, {1100});
   EXPECT_CALL(*trans["b"], call(eA))
     .Times(1).WillOnce(Return(Events{eB}));
+  EXPECT_CALL(*trans["a"], call(_))
+    .WillRepeatedly(Return(Events{}));
   EXPECT_CALL(*trans["a"], call(eB))
     .Times(1).WillOnce(Return(Events{eC}));
   Events res0 = (*result)(eA);
@@ -228,10 +230,16 @@ TEST_F(CompositeTransformSuite, treeCreateTest) {
   eD.attribute(Test1::value())->value().set(0, 0, {4.0f});
   MetaEvent eE(goal);
   eE.attribute(Test0::value())->value().set(0, 0, {5.0f});
+  EXPECT_CALL(*trans["b"], call(_))
+    .WillRepeatedly(Return(Events{}));
   EXPECT_CALL(*trans["b"], call(eA))
     .Times(1).WillOnce(Return(Events{eC}));
+  EXPECT_CALL(*trans["d"], call(_))
+    .WillRepeatedly(Return(Events{}));
   EXPECT_CALL(*trans["d"], call(eB))
     .Times(1).WillOnce(Return(Events{eD}));
+  EXPECT_CALL(*trans["c"], call(_))
+    .WillRepeatedly(Return(Events{}));
   EXPECT_CALL(*trans["c"], call(eD))
     .Times(1);
   EXPECT_CALL(*trans["c"], call(eC))
