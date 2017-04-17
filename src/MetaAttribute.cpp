@@ -31,21 +31,22 @@ MetaAttribute& MetaAttribute::operator+=(const MetaAttribute& b) {
 		mValue = mValue + b.value();
 	return *this;
 }
- 
+
 MetaAttribute& MetaAttribute::operator*=(const MetaScale& scale){
   this->scale() *= scale;
   this->value() /= scale;
   return *this;
-}   
+}
+
 MetaAttribute MetaAttribute::operator*(const MetaScale& scale) const {
   MetaAttribute temp(*this);
   return temp*=scale;
 }
 
-bool MetaAttribute::operator==(const MetaAttribute& b) const { 
-	return id() == b.id() &&  (ValueType)value() == (ValueType)b.value() && unit() == b.unit() && scale() == b.scale();
+bool MetaAttribute::operator==(const MetaAttribute& b) const {
+	return id() == b.id() &&  value() == b.value() && unit() == b.unit() && scale() == b.scale();
 }
- 
+
 MetaAttribute::operator AttributeType() const {
   return AttributeType(id(), ValueType(value()), scale(), unit());
 }
