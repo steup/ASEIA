@@ -40,6 +40,6 @@ EventStorage::EventStorage(const EventTypes& in, const AbstractPolicy& policy)
 
 void EventStorage::addEvent(const MetaEvent& e) {
   for(size_t i=0;i<mInTypes.size();i++)
-    if(mInTypes[i]==(EventType)e)
+    if(mInTypes[i]<=(EventType)e)
       mStorage[i].push_front(e);
 }
