@@ -10,21 +10,26 @@
 
 class AttributeType;
 
-class MetaAttribute { 
+class MetaAttribute {
   public:
     using ID = id::attribute::ID;
-  private:
+  protected:
     ID         mID    ;
     MetaValue  mValue ;
     MetaUnit   mUnit  ;
     MetaScale  mScale ;
 
+    bool check(const MetaAttribute& b) const;
+
   public:
     MetaAttribute(ID id = id::attribute::Base::value()) : mID(id) {}
     MetaAttribute(const AttributeType& at);
     MetaAttribute& operator+=(const MetaAttribute& b);
+    MetaAttribute& operator-=(const MetaAttribute& b);
+    MetaAttribute& operator*=(const MetaAttribute& b);
+    MetaAttribute& operator/=(const MetaAttribute& b);
     MetaAttribute& operator*=(const MetaScale& scale);
-    MetaAttribute operator*(const MetaScale& scale) const;
+    MetaAttribute& operator/=(const MetaScale& b);
     bool operator==(const MetaAttribute& b) const;
     bool operator!=(const MetaAttribute& b) const { return !(*this==b); }
 
@@ -44,6 +49,13 @@ class MetaAttribute {
 	//friend class MetaFactory;
   template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, const MetaValue&);
 };
+
+MetaAttribute operator+(const MetaAttribute& a, const MetaAttribute& b);
+MetaAttribute operator-(const MetaAttribute& a, const MetaAttribute& b);
+MetaAttribute operator*(const MetaAttribute& a, const MetaAttribute& b);
+MetaAttribute operator/(const MetaAttribute& a, const MetaAttribute& b);
+MetaAttribute operator*(const MetaAttribute& a, const MetaScale& scale);
+MetaAttribute operator*(const MetaScale& scale, const MetaAttribute& a);
 
 std::ostream& operator<<(std::ostream& o, const MetaAttribute& ma);
 

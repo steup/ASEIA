@@ -31,7 +31,7 @@ bool MetaValue::resize(std::size_t rows, std::size_t cols) {
 	d.cols=cols;
 	return mImpl->set(Attributes::Cols, d);
 }
-    
+
 bool MetaValue::hasUncertainy(bool u) {
 	Data d;
 	d.hasUncertainty = u;
@@ -50,14 +50,35 @@ ValueElement<double, true> MetaValue::get(std::size_t row, std::size_t col) cons
 bool MetaValue::set(std::size_t row, std::size_t col, const ValueElement<double, true>& v) {
   return mImpl->set(row, col, v);
 }
-    
-MetaValue MetaValue::operator+(const MetaValue& b) const {
-  if(compatible(b)) {
-    MetaValue temp(*this);
-    temp.mImpl->binaryOp(BinaryOp::Add, *b.mImpl);
-    return temp;
-  } else
-    return MetaValue();
+
+MetaValue& MetaValue::operator+=(const MetaValue& b) {
+  if(compatible(b))
+    mImpl->binaryOp(BinaryOp::Add, *b.mImpl);
+   else
+    resize(0,0);
+  return *this;
+}
+
+MetaValue& MetaValue::operator-=(const MetaValue& b) {
+  if(compatible(b))
+    mImpl->binaryOp(BinaryOp::Sub, *b.mImpl);
+   else
+    resize(0,0);
+  return *this;
+}
+MetaValue& MetaValue::operator*=(const MetaValue& b) {
+  if(compatible(b))
+    mImpl->binaryOp(BinaryOp::Mul, *b.mImpl);
+   else
+    resize(0,0);
+  return *this;
+}
+MetaValue& MetaValue::operator/=(const MetaValue& b) {
+  if(compatible(b))
+    mImpl->binaryOp(BinaryOp::Div, *b.mImpl);
+   else
+    resize(0,0);
+  return *this;
 }
 
 MetaValue MetaValue::operator==(const MetaValue& b) const {

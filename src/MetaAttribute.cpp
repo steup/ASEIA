@@ -18,17 +18,39 @@ MetaAttribute::MetaAttribute(const AttributeType& at) {
 	mID = at.id();
 }
 
+bool MetaAttribute::check(const MetaAttribute& b) const {
+  return mUnit == b.mUnit && mScale == b.mScale && (ValueType)mValue == (ValueType)b.mValue && mID == b.mID;
+}
+
 MetaAttribute& MetaAttribute::operator+=(const MetaAttribute& b) {
-	if(!(mUnit == b.mUnit)) {
+	if(!check(b))
 		mValue = MetaValue();
-		return *this;
-	}
-	if(!(mScale == b.mScale)) {
-		MetaValue sumB = b.value();
-		sumB*=(b.mScale / mScale);
-		mValue = mValue + sumB;
-	} else
-		mValue = mValue + b.value();
+  else
+    mValue += b.value();
+	return *this;
+}
+
+MetaAttribute& MetaAttribute::operator-=(const MetaAttribute& b) {
+	if(!check(b))
+		mValue = MetaValue();
+  else
+    mValue -=  b.value();
+	return *this;
+}
+
+MetaAttribute& MetaAttribute::operator*=(const MetaAttribute& b) {
+	if(!check(b))
+		mValue = MetaValue();
+  else
+    mValue *= b.value();
+	return *this;
+}
+
+MetaAttribute& MetaAttribute::operator/=(const MetaAttribute& b) {
+	if(!check(b))
+		mValue = MetaValue();
+  else
+    mValue /= b.value();
 	return *this;
 }
 
@@ -38,13 +60,48 @@ MetaAttribute& MetaAttribute::operator*=(const MetaScale& scale){
   return *this;
 }
 
-MetaAttribute MetaAttribute::operator*(const MetaScale& scale) const {
-  MetaAttribute temp(*this);
+MetaAttribute& MetaAttribute::operator/=(const MetaScale& scale){
+  this->scale() /= scale;
+  this->value() *= scale;
+  return *this;
+}
+
+MetaAttribute operator+(const MetaAttribute& a, const MetaAttribute& b){
+  MetaAttribute temp(a);
+  return temp+=b;
+}
+
+MetaAttribute operator-(const MetaAttribute& a, const MetaAttribute& b){
+  MetaAttribute temp(a);
+  return temp-=b;
+}
+
+MetaAttribute operator*(const MetaAttribute& a, const MetaAttribute& b){
+  MetaAttribute temp(a);
+  return temp*=b;
+}
+
+MetaAttribute operator/(const MetaAttribute& a, const MetaAttribute& b){
+  MetaAttribute temp(a);
+  return temp/=b;
+}
+
+MetaAttribute operator*(const MetaAttribute& a, const MetaScale& scale){
+  MetaAttribute temp(a);
   return temp*=scale;
 }
 
+MetaAttribute operator/(const MetaAttribute& a, const MetaScale& scale){
+  MetaAttribute temp(a);
+  return temp/=scale;
+}
+
+MetaAttribute operator*(const MetaScale& scale, const MetaAttribute& a){
+  return a*scale;
+}
+
 bool MetaAttribute::operator==(const MetaAttribute& b) const {
-	return id() == b.id() &&  value() == b.value() && unit() == b.unit() && scale() == b.scale();
+	return check(b) && mValue == b.mValue;
 }
 
 MetaAttribute::operator AttributeType() const {

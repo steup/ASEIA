@@ -35,7 +35,10 @@ class MetaValue {
 
     MetaValue& operator=(const MetaValue& b);
 
-    MetaValue operator+(const MetaValue& b) const;
+    MetaValue& operator+=(const MetaValue& b);
+    MetaValue& operator-=(const MetaValue& b);
+    MetaValue& operator*=(const MetaValue& b);
+    MetaValue& operator/=(const MetaValue& b);
 		MetaValue operator==(const MetaValue& b) const;
 		MetaValue operator!=(const MetaValue& b) const;
 		MetaValue operator<=(const MetaValue& b) const;
