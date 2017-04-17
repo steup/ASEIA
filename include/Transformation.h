@@ -63,7 +63,7 @@ class BufferedTransformer : public Transformer {
     virtual Events execute(const EventPtrs& inputs) const =0;
   public:
     BufferedTransformer(const EventType& out, const EventTypes& in, const AbstractPolicy& policy)
-      :Transformer(out, in), mStorage(in, policy) {}
+      :Transformer(out, in), mStorage(mIn, policy) {}
 
     virtual Events operator()(const MetaEvent& event) {
       Events result;
