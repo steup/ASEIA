@@ -14,9 +14,9 @@ using Events      = Transformer::Events;
 using EventTypes  = Transformer::EventTypes;
 
 struct TransformationTestSuite : public ::testing::Test{
-	MetaFactory& f  = MetaFactory::instance();
+  MetaFactory& f  = MetaFactory::instance();
   MetaEvent    in, out;
-	EventType    inT, outT;
+  EventType    inT, outT;
 
   TransformationTestSuite()  {
     MetaAttribute s(Time::value());
@@ -50,10 +50,10 @@ TEST_F(TransformationTestSuite, scaleTransformBasicTest) {
   ASSERT_LE(transList.size(), 1U) << "Too many Transforms found: " << os.str();
   TransPtr scaleT = transList.front().create(AbstractPolicy());
   ASSERT_NE(scaleT, nullptr);
-	EXPECT_TRUE(scaleT->check(in)) << "MetaValue is not supported by ScaleTransform";
+  EXPECT_TRUE(scaleT->check(in)) << "MetaValue is not supported by ScaleTransform";
   Events result = (*scaleT)(in);
   ASSERT_GE(result.size(), 1U) << "No Events generated!";
-	EXPECT_EQ(result.front(), out) << "Events not transformed correctly";
+  EXPECT_EQ(result.front(), out) << "Events not transformed correctly";
 }
 
 TEST_F(TransformationTestSuite, typeTransformBasicTest) {
@@ -70,10 +70,10 @@ TEST_F(TransformationTestSuite, typeTransformBasicTest) {
   ASSERT_LE(transList.size(), 1U) << "Too many Transforms found: " << os.str();
   TransPtr typeT = transList.front().create(AbstractPolicy());
   ASSERT_NE(typeT, nullptr);
-	EXPECT_TRUE(typeT->check(in)) << "MetaValue is not supported by TypeTransform";
+  EXPECT_TRUE(typeT->check(in)) << "MetaValue is not supported by TypeTransform";
   Events result = (*typeT)(in);
   ASSERT_GE(result.size(), 1U) << "No Events generated!";
-	EXPECT_EQ(result.front(), out) << "Events not transformed correctly";
+  EXPECT_EQ(result.front(), out) << "Events not transformed correctly";
 }
 
 TEST_F(TransformationTestSuite, castedRescaleTest) {
@@ -81,7 +81,7 @@ TEST_F(TransformationTestSuite, castedRescaleTest) {
   MetaAttribute& outA = *out.attribute(Time::value());
   inA.scale() = MetaScale(Scale<std::milli>());
   inA.value() = f.create({{{1234.5, 0}}}, Float::value());
-  outA.value() = f.create({{{1234, 1}}}, UInt64::value());
+  outA.value() = f.create({{{1, 1}}}, UInt64::value());
   registerTypes();
   auto transList = KnowledgeBase::findTransforms(outT);
   EXPECT_GE(transList.size(), 1U) << "Wrong amount of Transforms found!";
@@ -90,10 +90,13 @@ TEST_F(TransformationTestSuite, castedRescaleTest) {
     os << t;
     TransPtr typeT = t.create(AbstractPolicy());
     ASSERT_NE(typeT, nullptr);
-	  EXPECT_TRUE(typeT->check(in)) << "MetaValue is not supported by TypeTransform";
+    EXPECT_TRUE(typeT->check(in)) << "MetaValue is not supported by TypeTransform";
     Events result = (*typeT)(in);
     ASSERT_GE(result.size(), 1U) << "No Events generated!";
-	  EXPECT_EQ(result.front(), out) << "Events not transformed correctly";
+    MetaAttribute* resA = result.front().attribute(Time::value());
+    ASSERT_NE(resA, nullptr);
+    EXPECT_EQ(resA->value().get(0,0).value(), outA.value().get(0,0).value()) <<  resA->value() << " != " << outA.value();
+    EXPECT_EQ(resA->value().get(0,0).uncertainty(), outA.value().get(0,0).uncertainty()) <<  resA->value() << " != " << outA.value();
   }
 }
 
