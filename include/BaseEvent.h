@@ -10,8 +10,8 @@ struct BaseConfig
 {
   static const Endianess end = hostEndianess;
   using PositionValueType    = Value<float   , 3       >;
-  using TimeValueType        = Value<uint64_t, 1       >;
-  using PublisherIDValueType = Value<uint64_t, 1, 1, false>;
+  using TimeValueType        = Value<uint32_t, 1       >;
+  using PublisherIDValueType = Value<uint32_t, 1, 1, false>;
   using PositionScale        = Scale<>;
   using TimeScale            = Scale<>;
   using PublisherIDScale     = Scale<>;

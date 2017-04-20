@@ -54,9 +54,9 @@ TEST_F(MetaSerializationSuite, 4value8Test) {
   check(comp);
 }
 
-TEST_F(MetaSerializationSuite, 1value64Test) {
-  MetaValue v = f.create({{{1024,2048}}}, UInt64::value());
-  Buffer comp={0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+TEST_F(MetaSerializationSuite, 1value32Test) {
+  MetaValue v = f.create({{{1024,2048}}}, UInt32::value());
+  Buffer comp={0x00, 0x04, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00};
   s << v;
   check(comp);
 }

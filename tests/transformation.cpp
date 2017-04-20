@@ -60,7 +60,7 @@ TEST_F(TransformationTestSuite, typeTransformBasicTest) {
   MetaAttribute& inA  = *in.attribute(Time::value());
   MetaAttribute& outA = *out.attribute(Time::value());
   inA.value() = f.create({{{1234.5, 0}}}, Float::value());
-  outA.value() = f.create({{{1234, 1}}}, UInt64::value());
+  outA.value() = f.create({{{1234, 1}}}, UInt32::value());
   registerTypes();
   auto transList = KnowledgeBase::findTransforms(outT);
   ASSERT_GT(transList.size(), 0U) << "No Transform found!";
@@ -81,7 +81,7 @@ TEST_F(TransformationTestSuite, castedRescaleTest) {
   MetaAttribute& outA = *out.attribute(Time::value());
   inA.scale() = MetaScale(Scale<std::milli>());
   inA.value() = f.create({{{1234.5, 0}}}, Float::value());
-  outA.value() = f.create({{{1, 1}}}, UInt64::value());
+  outA.value() = f.create({{{1, 1}}}, UInt32::value());
   registerTypes();
   auto transList = KnowledgeBase::findTransforms(outT);
   EXPECT_GE(transList.size(), 1U) << "Wrong amount of Transforms found!";

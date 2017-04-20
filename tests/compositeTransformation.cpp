@@ -87,8 +87,8 @@ struct CompositeTransformSuite : public ::testing::Test {
 
     intAT.scale().denom(1000);
     provAT.scale().denom(1000);
-    provAT.value().typeId(id::type::Int64::value());
-    prov2AT.value().typeId(id::type::Int64::value());
+    provAT.value().typeId(id::type::Int32::value());
+    prov2AT.value().typeId(id::type::Int32::value());
 
     goal.add(goalAT);
     intermediate.add(intAT);

@@ -89,45 +89,48 @@ namespace id{
       static constexpr const ID value(){return 3;}
     };
 
-    struct UInt64 : public Base{
-      using Type = uint64_t;
-      static constexpr const ID value(){return 4;}
-    };
 
     struct Int8 : public Base{
       using Type = std::int8_t;
-      static constexpr const ID value(){return 5;}
+      static constexpr const ID value(){return 4;}
     };
 
     struct Int16 : public Base{
       using Type = int16_t;
-      static constexpr const ID value(){return 6;}
+      static constexpr const ID value(){return 5;}
     };
 
     struct Int32 : public Base{
       using Type = int32_t;
-      static constexpr const ID value(){return 7;}
+      static constexpr const ID value(){return 6;}
     };
 
-    struct Int64 : public Base{
-      using Type = int64_t;
-      static constexpr const ID value(){return 8;}
-    };
 
     struct Float : public Base{
       using Type = float;
-      static constexpr const ID value(){return 9;}
+      static constexpr const ID value(){return 7;}
     };
 
     struct Double : public Base{
       using Type = double;
-      static constexpr const ID value(){return 10;}
+      static constexpr const ID value(){return 8;}
     };
-		
-		struct Bool : public Base{
+
+    struct Bool : public Base{
       using Type = bool;
-      static constexpr const ID value(){return 11;}
+      static constexpr const ID value(){return 9;}
     };
+
+/*    doesn work because of uncertainty computation and numeric_limits errors
+      struct UInt64 : public Base{
+      using Type = uint64_t;
+      static constexpr const ID value(){return 4;}
+    };*/
+/*    doesn work because of uncertainty computation and numeric_limits errors
+    struct Int64 : public Base{
+      using Type = int64_t;
+      static constexpr const ID value(){return 8;}
+    };*/
 
 
     template<ID id>
@@ -136,11 +139,11 @@ namespace id{
     template<> struct id2Type< Int8  ::value() > { using type = Int8  ; };
     template<> struct id2Type< Int16 ::value() > { using type = Int16 ; };
     template<> struct id2Type< Int32 ::value() > { using type = Int32 ; };
-    template<> struct id2Type< Int64 ::value() > { using type = Int64 ; };
+//    template<> struct id2Type< Int64 ::value() > { using type = Int64 ; };
     template<> struct id2Type< UInt8 ::value() > { using type = UInt8 ; };
     template<> struct id2Type< UInt16::value() > { using type = UInt16; };
     template<> struct id2Type< UInt32::value() > { using type = UInt32; };
-    template<> struct id2Type< UInt64::value() > { using type = UInt64; };
+//    template<> struct id2Type< UInt64::value() > { using type = UInt64; };
     template<> struct id2Type< Float ::value() > { using type = Float ; };
     template<> struct id2Type< Double::value() > { using type = Double; };
     template<> struct id2Type< Bool  ::value() > { using type = Bool; };
@@ -148,11 +151,11 @@ namespace id{
     static constexpr const ID id( int8_t   ) { return Int8  ::value(); }
     static constexpr const ID id( int16_t  ) { return Int16 ::value(); }
     static constexpr const ID id( int32_t  ) { return Int32 ::value(); }
-    static constexpr const ID id( int64_t  ) { return Int64 ::value(); }
+//    static constexpr const ID id( int64_t  ) { return Int64 ::value(); }
     static constexpr const ID id( uint8_t  ) { return UInt8 ::value(); }
     static constexpr const ID id( uint16_t ) { return UInt16::value(); }
     static constexpr const ID id( uint32_t ) { return UInt32::value(); }
-    static constexpr const ID id( uint64_t ) { return UInt64::value(); }
+//    static constexpr const ID id( uint64_t ) { return UInt64::value(); }
     static constexpr const ID id( float    ) { return Float ::value(); }
     static constexpr const ID id( double   ) { return Double::value(); }
     static constexpr const ID id( bool     ) { return Bool  ::value(); }

@@ -123,8 +123,8 @@ TEST_F(MetaDeSerializationSuite, 1value8Test) {
   test(v,u);
 }
 
-TEST_F(MetaDeSerializationSuite, 1value64Test) {
-  uint64_t v=1024,u=2048;
+TEST_F(MetaDeSerializationSuite, 1value32Test) {
+  uint32_t v=1024,u=2048;
   test(v,u);
 }
 
@@ -214,8 +214,8 @@ TEST_F(MetaDeSerializationSuite, complexNetworkTest) {
 	ASSERT_TRUE(timePtr) << "No time attribute in BaseEvent<>";
 	ASSERT_TRUE(pubPtr)  << "No publisher id in BaseEvent<>";
   posPtr->value() = f.create({{{0.0, 1.0}}, {{2.0, 3.0}}, {{4.0, 5.0}}}, Float::value());
-  timePtr->value() = f.create({{{128U, 256U}}}, UInt64::value());
-  pubPtr->value() = f.create({{{1024U}}}, UInt64::value(), false);
+  timePtr->value() = f.create({{{128U, 256U}}}, UInt32::value());
+  pubPtr->value() = f.create({{{1024U}}}, UInt32::value(), false);
 	EXPECT_EQ(eT, (EventType)ref) << "Referenz MetaEvent does not fit StaticEvent!";
 	S s(back_inserter(buffer));
 	s << e;

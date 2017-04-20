@@ -23,11 +23,11 @@ namespace id {
         case( UInt8 ::value() ) : return "uint8 ";
         case( UInt16::value() ) : return "uint16";
         case( UInt32::value() ) : return "uint32";
-        case( UInt64::value() ) : return "uint64";
+//        case( UInt64::value() ) : return "uint64";
         case( Int8  ::value() ) : return "int8  ";
         case( Int16 ::value() ) : return "int16 ";
         case( Int32 ::value() ) : return "int32 ";
-        case( Int64 ::value() ) : return "int64 ";
+//        case( Int64 ::value() ) : return "int64 ";
         case( Float ::value() ) : return "float ";
         case( Double::value() ) : return "double";
         default                 : return "void  ";

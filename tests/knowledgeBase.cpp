@@ -137,7 +137,7 @@ namespace test {
 
     KnowledgeBaseTestSuite() {
       ValueType v(id::type::Float::value(), 1, 1, false);
-      ValueType v2(id::type::UInt64::value(), 1, 1, false);
+      ValueType v2(id::type::UInt32::value(), 1, 1, false);
       KnowledgeBase::clear();
       KnowledgeBase::registerTransformation(het0);
       KnowledgeBase::registerTransformation(het1);

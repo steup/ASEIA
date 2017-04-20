@@ -67,13 +67,11 @@ namespace type {
 		EXPECT_EQ(UInt8::value() ,  1) << "ID of type \"UInt8\" does not match ";
 		EXPECT_EQ(UInt16::value(),  2) << "ID of type \"UInt16\" does not match ";
 		EXPECT_EQ(UInt32::value(),  3) << "ID of type \"UInt32\" does not match ";
-		EXPECT_EQ(UInt64::value(),  4) << "ID of type \"UInt64\" does not match ";
-		EXPECT_EQ(Int8::value()  ,  5) << "ID of type \"Int8\" does not match ";
-		EXPECT_EQ(Int16::value() ,  6) << "ID of type \"Int16\" does not match ";
-		EXPECT_EQ(Int32::value() ,  7) << "ID of type \"Int32\" does not match ";
-		EXPECT_EQ(Int64::value() ,  8) << "ID of type \"Int64\" does not match ";
-		EXPECT_EQ(Float::value() ,  9) << "ID of type \"Float\" does not match ";
-		EXPECT_EQ(Double::value(), 10) << "ID of type \"Double\" does not match ";
+		EXPECT_EQ(Int8::value()  ,  4) << "ID of type \"Int8\" does not match ";
+		EXPECT_EQ(Int16::value() ,  5) << "ID of type \"Int16\" does not match ";
+		EXPECT_EQ(Int32::value() ,  6) << "ID of type \"Int32\" does not match ";
+		EXPECT_EQ(Float::value() ,  7) << "ID of type \"Float\" does not match ";
+		EXPECT_EQ(Double::value(),  8) << "ID of type \"Double\" does not match ";
 	}
 
 	/** \brief Type ID lookup from integer test case
@@ -83,13 +81,11 @@ namespace type {
 		EXPECT_EQ(id2Type< 1>::type::value(),  1) << "ID of type \"UInt8\" does not match ";
 		EXPECT_EQ(id2Type< 2>::type::value(),  2) << "ID of type \"UInt16\" does not match ";
 		EXPECT_EQ(id2Type< 3>::type::value(),  3) << "ID of type \"UInt32\" does not match ";
-		EXPECT_EQ(id2Type< 4>::type::value(),  4) << "ID of type \"UInt64\" does not match ";
-		EXPECT_EQ(id2Type< 5>::type::value(),  5) << "ID of type \"Int8\" does not match ";
-		EXPECT_EQ(id2Type< 6>::type::value(),  6) << "ID of type \"Int16\" does not match ";
-		EXPECT_EQ(id2Type< 7>::type::value(),  7) << "ID of type \"Int32\" does not match ";
-		EXPECT_EQ(id2Type< 8>::type::value(),  8) << "ID of type \"Int64\" does not match ";
-		EXPECT_EQ(id2Type< 9>::type::value(),  9) << "ID of type \"Float\" does not match ";
-		EXPECT_EQ(id2Type<10>::type::value(), 10) << "ID of type \"Double\" does not match ";
+		EXPECT_EQ(id2Type< 4>::type::value(),  4) << "ID of type \"Int8\" does not match ";
+		EXPECT_EQ(id2Type< 5>::type::value(),  5) << "ID of type \"Int16\" does not match ";
+		EXPECT_EQ(id2Type< 6>::type::value(),  6) << "ID of type \"Int32\" does not match ";
+		EXPECT_EQ(id2Type< 7>::type::value(),  7) << "ID of type \"Float\" does not match ";
+		EXPECT_EQ(id2Type< 8>::type::value(),  8) << "ID of type \"Double\" does not match ";
 	}
 	
 	/** \brief Type integer lookup from type test case
@@ -99,13 +95,11 @@ namespace type {
 		EXPECT_EQ(id::type::id(uint8_t()) ,  1) << "ID of type \"UInt8\" does not match ";
 		EXPECT_EQ(id::type::id(uint16_t()),  2) << "ID of type \"UInt16\" does not match ";
 		EXPECT_EQ(id::type::id(uint32_t()),  3) << "ID of type \"UInt32\" does not match ";
-		EXPECT_EQ(id::type::id(uint64_t()),  4) << "ID of type \"UInt64\" does not match ";
-		EXPECT_EQ(id::type::id(int8_t())  ,  5) << "ID of type \"Int8\" does not match ";
-		EXPECT_EQ(id::type::id(int16_t()) ,  6) << "ID of type \"Int16\" does not match ";
-		EXPECT_EQ(id::type::id(int32_t()) ,  7) << "ID of type \"Int32\" does not match ";
-		EXPECT_EQ(id::type::id(int64_t()) ,  8) << "ID of type \"Int64\" does not match ";
-		EXPECT_EQ(id::type::id(float())   ,  9) << "ID of type \"Float\" does not match ";
-		EXPECT_EQ(id::type::id(double())  , 10) << "ID of type \"Double\" does not match ";
+		EXPECT_EQ(id::type::id(int8_t())  ,  4) << "ID of type \"Int8\" does not match ";
+		EXPECT_EQ(id::type::id(int16_t()) ,  5) << "ID of type \"Int16\" does not match ";
+		EXPECT_EQ(id::type::id(int32_t()) ,  6) << "ID of type \"Int32\" does not match ";
+		EXPECT_EQ(id::type::id(float())   ,  7) << "ID of type \"Float\" does not match ";
+		EXPECT_EQ(id::type::id(double())  ,  8) << "ID of type \"Double\" does not match ";
 	}
 }
 /** \brief %Unit ID Test Suites **/

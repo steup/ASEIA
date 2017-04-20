@@ -112,36 +112,36 @@ TEST_F(FilterTestSuite, basicSerializationTest) {
 	EXPECT_EQ(buffer[0], e0Time) << "Placeholder event 0 time serialized wrongly";
 	EXPECT_EQ(buffer[count+1], gt) << "Operation > with constant argument serialized wrongly";
 
-	count+=2*sizeof(uint64_t)+2;
+	count+=2*sizeof(uint32_t)+2;
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 
   s << filter1(s0);
 	EXPECT_EQ(buffer[count+1], lt) << "Operation < with constant argument serialized wrongly";
   
-	count+=2*sizeof(uint64_t)+2;
+	count+=2*sizeof(uint32_t)+2;
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 
 	s << filter2(s0);
 	EXPECT_EQ(buffer[count+1], ge) << "Operation >= with constant argument serialized wrongly";
   
-	count+=2*sizeof(uint64_t)+2;
+	count+=2*sizeof(uint32_t)+2;
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 
 	s << filter3(s0);
 	EXPECT_EQ(buffer[count+1], le) << "Operation <= with constant argument serialized wrongly";
 	
-	count+=2*sizeof(uint64_t)+2;
+	count+=2*sizeof(uint32_t)+2;
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 
 	s << filter4(s0);
 	EXPECT_EQ(buffer[count+1], eq) << "Operation == with constant argument serialized wrongly";
 	
-	count+=2*sizeof(uint64_t)+2;
+	count+=2*sizeof(uint32_t)+2;
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 	
 	s << filter5(s0);
 	EXPECT_EQ(buffer[count+1], ne) << "Operation != with constant argument serialized wrongly";
-	count+=2*sizeof(uint64_t)+2;
+	count+=2*sizeof(uint32_t)+2;
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 
 }
