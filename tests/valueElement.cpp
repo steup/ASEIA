@@ -131,4 +131,28 @@ TEST(ValueElementSuite, uncertainInt8Test) {
 	testOp(a,  c, V({  16,  39}), V({  10,  39}), V({  65, 185}), V({13,  37}));
 }
 
+TEST(ValueElementSuite, castTest) {
+  using I8 = ValueElement<int8_t, true>;
+  using U8 = ValueElement<uint8_t, true>;
+  using U16 = ValueElement<uint16_t, true>;
+  using U32 = ValueElement<uint32_t, true>;
+  using F = ValueElement<float, true>;
+  using D = ValueElement<double, true>;
+
+  I8 i8 = {-127, 0};
+  U8 u8 = {255, 0};
+  U32 u32 = {1234, 1};
+  F  f  = {1234.5678, 0};
+  EXPECT_EQ(U8(i8).value(), 0);
+  EXPECT_EQ(U8(i8).uncertainty(), 127);
+  EXPECT_EQ(I8(u8).value(), 127);
+  EXPECT_EQ(I8(u8).uncertainty(), 128);
+  EXPECT_EQ(U16(f).value(), 1234);
+  EXPECT_EQ(U16(f).uncertainty(), 1);
+  EXPECT_EQ(U32(f).value(), 1234);
+  EXPECT_EQ(U32(f).uncertainty(), 1);
+  EXPECT_EQ(D(u32).value(), 1234);
+  EXPECT_EQ(D(u32).uncertainty(), 1);
+}
+
 }}
