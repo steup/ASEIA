@@ -40,7 +40,7 @@ TEST_F(TransformationTestSuite, scaleTransformBasicTest) {
   MetaAttribute& outA = *out.attribute(Time::value());
   inA.scale() = MetaScale(Scale<std::milli>());
   inA.value() = f.create({{{1234, 0}}});
-  outA.value() = f.create({{{1, 1}}});
+  outA.value() = f.create({{{1.234, 0.0001}}});
   registerTypes();
   auto transList=KnowledgeBase::findTransforms(outT);
   ASSERT_GT(transList.size(), 0U) << "No Transform found!";
@@ -53,7 +53,10 @@ TEST_F(TransformationTestSuite, scaleTransformBasicTest) {
   EXPECT_TRUE(scaleT->check(in)) << "MetaValue is not supported by ScaleTransform";
   Events result = (*scaleT)(in);
   ASSERT_GE(result.size(), 1U) << "No Events generated!";
-  EXPECT_EQ(result.front(), out) << "Events not transformed correctly";
+  MetaAttribute* resA = result.front().attribute(Time::value());
+  ASSERT_NE(resA, nullptr);
+  EXPECT_EQ(resA->value().get(0,0).value(), outA.value().get(0,0).value()) <<  resA->value() << " != " << outA.value();
+  EXPECT_LE(resA->value().get(0,0).uncertainty(), outA.value().get(0,0).uncertainty()) <<  resA->value() << " != " << outA.value();
 }
 
 TEST_F(TransformationTestSuite, typeTransformBasicTest) {
@@ -73,7 +76,10 @@ TEST_F(TransformationTestSuite, typeTransformBasicTest) {
   EXPECT_TRUE(typeT->check(in)) << "MetaValue is not supported by TypeTransform";
   Events result = (*typeT)(in);
   ASSERT_GE(result.size(), 1U) << "No Events generated!";
-  EXPECT_EQ(result.front(), out) << "Events not transformed correctly";
+  MetaAttribute* resA = result.front().attribute(Time::value());
+  ASSERT_NE(resA, nullptr);
+  EXPECT_EQ(resA->value().get(0,0).value(), outA.value().get(0,0).value()) <<  resA->value() << " != " << outA.value();
+  EXPECT_EQ(resA->value().get(0,0).uncertainty(), outA.value().get(0,0).uncertainty()) <<  resA->value() << " != " << outA.value();
 }
 
 TEST_F(TransformationTestSuite, castedRescaleTest) {
@@ -95,6 +101,8 @@ TEST_F(TransformationTestSuite, castedRescaleTest) {
     ASSERT_GE(result.size(), 1U) << "No Events generated!";
     MetaAttribute* resA = result.front().attribute(Time::value());
     ASSERT_NE(resA, nullptr);
+    EXPECT_EQ(resA->value().rows(), 1U);
+    EXPECT_EQ(resA->value().cols(), 1U);
     EXPECT_EQ(resA->value().get(0,0).value(), outA.value().get(0,0).value()) <<  resA->value() << " != " << outA.value();
     EXPECT_EQ(resA->value().get(0,0).uncertainty(), outA.value().get(0,0).uncertainty()) <<  resA->value() << " != " << outA.value();
   }
