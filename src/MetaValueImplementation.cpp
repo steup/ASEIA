@@ -89,7 +89,7 @@ Data MetaValueImplementation<T, U>::get( Attributes a ) const {
 																			break;
 		case(Attributes::Cols): 					res.cols = mData.cols();
 																			break;
-		case(Attributes::Rows): 					res.cols = mData.rows();
+		case(Attributes::Rows): 					res.rows = mData.rows();
 																			break;
 		case(Attributes::Size): 					res.size = Elem::size()*mData.cols()*mData.rows();
 																			break;
