@@ -197,7 +197,7 @@ namespace {
       return fromU;
     }
 
-    return modifyU(From(), To());
+    return modifyU(v, toV);
   }
 
   template<typename T>
