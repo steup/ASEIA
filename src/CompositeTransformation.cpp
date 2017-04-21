@@ -39,7 +39,6 @@ struct CompositeTransformer : public Transformer {
         buffer.emplace(v, vector<MetaEvent>());
       }
 
-      /** \todo update according to new transform structure **/
       void finish_vertex(Vertex v, const Graph& g) {
         vector<MetaEvent> temp = g[v]->operator()(input);
         std::move(temp.begin(), temp.end(), back_inserter(buffer[v]));
@@ -236,7 +235,6 @@ VertexList CompositeTransformation::find(const EventType& eT) const {
   return result;
 }
 
-/** \todo implement **/
 ostream& operator<<(ostream& o, const CompositeTransformation& t) {
   const Graph& g=t.graph();
   auto writeVertex = [&g](ostream& o, Vertex v){

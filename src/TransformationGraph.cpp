@@ -116,7 +116,6 @@ struct SpanningTreeVisitor : public default_bfs_visitor {
   }
 };
 
-/** \todo implement spanning tree based search **/
 void TransformationGraph::generate(const EventType& type, const EventIDs& ids, OutIt it) const {
 
   auto gen = [this, &type, &ids](pair<OutIt, OutIt> its, Vertex v){
