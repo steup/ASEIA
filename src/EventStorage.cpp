@@ -4,10 +4,21 @@
 
 using namespace std;
 
-EventStorage::const_iterator::const_iterator(const Storage& storage)
-  : mStoragePtr(&storage) {
-  auto acc =  [](size_t v, const boost::circular_buffer<MetaEvent>& b){ return v*b.size(); };
-  mFactor = accumulate(storage.begin(), storage.end(), 1, acc);
+EventStorage::const_iterator::const_iterator(const Storage& storage, const vector<size_t>& currIndices)
+  : mFactor(0), mCurrIndicesPtr(&currIndices), mStoragePtr(&storage)  {
+  for(size_t currIndex : currIndices)  {
+    size_t temp=1;
+    for(size_t i=0; i<mStoragePtr->size(); i++) {
+      size_t size=1;
+      if(i!=currIndex) {
+        size=(*mStoragePtr)[i].size();
+        if(count(mCurrIndicesPtr->begin(), mCurrIndicesPtr->end(), i))
+          size-=1;
+      }
+      temp*=size;
+    }
+    mFactor+=temp;
+  }
   if(mFactor)
     mIndex = 0;
 }
@@ -16,10 +27,19 @@ vector<const MetaEvent*> EventStorage::const_iterator::operator*() const {
   vector<const MetaEvent*> result;
   size_t index = mIndex;
   size_t factor = mFactor;
-  for(const auto& subStorage: *mStoragePtr) {
-    factor/=subStorage.size();
-    result.push_back(&subStorage[index/factor]);
-    index/=subStorage.size();
+  factor/=mCurrIndicesPtr->size();
+  size_t currIndex = (*mCurrIndicesPtr)[index/factor];
+  index/=mCurrIndicesPtr->size();
+  for(size_t i=0;i<mStoragePtr->size();i++) {
+    size_t mod=count(mCurrIndicesPtr->begin(), mCurrIndicesPtr->end(), i)?1:0;
+    const auto& subStorage = (*mStoragePtr)[i];
+    if(i==currIndex)
+      result.push_back(&subStorage.back());
+    else {
+      factor/=subStorage.size()-mod;
+      result.push_back(&subStorage[index/factor]);
+      index/=subStorage.size()-mod;
+    }
   }
   return result;
 }
@@ -39,7 +59,10 @@ EventStorage::EventStorage(const EventTypes& in, const AbstractPolicy& policy)
 }
 
 void EventStorage::addEvent(const MetaEvent& e) {
+  mCurrIndices.clear();
   for(size_t i=0;i<mInTypes.size();i++)
-    if(mInTypes[i]<=(EventType)e)
+    if(mInTypes[i]<=(EventType)e) {
       mStorage[i].push_front(e);
+      mCurrIndices.push_back(i);
+    }
 }
