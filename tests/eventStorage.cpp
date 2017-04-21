@@ -66,10 +66,8 @@ TEST_F(EventStorageTestSuite, homogeneusDualStorage) {
   copy(s.begin(), s.end(), back_inserter(result));
   EXPECT_THAT(result,
     UnorderedElementsAre(
-      ElementsAre(Pointee(e0), Pointee(e0)),
       ElementsAre(Pointee(e0), Pointee(e1)),
-      ElementsAre(Pointee(e1), Pointee(e0)),
-      ElementsAre(Pointee(e1), Pointee(e1))
+      ElementsAre(Pointee(e1), Pointee(e0))
     )
   );
 }
@@ -111,7 +109,7 @@ TEST_F(EventStorageTestSuite, largeStorage) {
     }
   vector<vector<const MetaEvent*>> result;
   copy(s.begin(), s.end(), back_inserter(result));
-  EXPECT_THAT(result, SizeIs(pow(policy.bufferSize, 3U)));
+  EXPECT_THAT(result, SizeIs(pow(policy.bufferSize, 2U)));
   EXPECT_THAT(result, Each(SizeIs(3)));
 }
 
