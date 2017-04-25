@@ -61,8 +61,6 @@ class CompositeTransformation : public AbstractConfiguredTransformation {
     VertexResult find(TransformationPtr tPtr) const;
     VertexList find(const EventType& eT) const;
     bool contains(TransformationPtr tPtr) const { return find(tPtr).second; }
-
-  friend std::ostream& operator<<(std::ostream&, const ConfiguredTransformation&);
 };
 
 std::ostream& operator<<(std::ostream& o, const CompositeTransformation& t);
