@@ -1,5 +1,6 @@
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include <KnowledgeBase.h>
 #include <AttributeType.h>
 
@@ -18,12 +19,25 @@ namespace test {
  using std::endl;
  using std::vector;
  using std::any_of;
+ using std::to_string;
+ using std::string;
+ using std::transform;
  using boost::filesystem::ofstream;
  using boost::filesystem::current_path;
  using boost::filesystem::path;
+ using boost::vertices;
+
+ using ::testing::Each;
+ using ::testing::Contains;
+ using ::testing::SizeIs;
+ using ::testing::ResultOf;
+ using ::testing::Property;
+ using ::testing::UnorderedElementsAre;
 
 
   struct KnowledgeBaseTestSuite : public ::testing::Test {
+    
+    using  Transformations = KnowledgeBase::Transformations;
 
     struct Test0: public ::id::attribute::Base {
       static constexpr const ::id::attribute::ID value()  { return 251; }
@@ -48,8 +62,9 @@ namespace test {
     struct HetTrans0 : public Transformation {
       const EventType& outE;
       const EventType& inE;
-      HetTrans0(const EventType& outE, const EventType& inE)
-        : Transformation(Type::heterogeneus, 1, EventID({Test2::value()})), outE(outE), inE(inE)
+      const string name;
+      HetTrans0(const EventType& outE, const EventType& inE, const string& name)
+        : Transformation(Type::heterogeneus, 1, EventID({Test2::value()})), outE(outE), inE(inE), name(name)
       {}
       virtual EventIDs in(EventID goal) const  {
         return EventIDs({ EventID({Test3::value()}) });
@@ -61,15 +76,17 @@ namespace test {
           return {};
       }
       virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy) const { return TransPtr(); }
-      virtual void print(std::ostream& o) const { o << "Heterogeneus Transform 1"; }
+      virtual void print(std::ostream& o) const { o << name; }
     };
 
     struct HetTrans1 : public Transformation {
       const EventType& outE;
       const EventType& in0;
       const EventType& in1;
-      HetTrans1(const EventType& outE, const EventType& in0, const EventType& in1)
-        : Transformation(Type::heterogeneus, 2, EventID({Test0::value()})), outE(outE), in0(in0), in1(in1)
+      const string name;
+      HetTrans1(const EventType& outE, const EventType& in0, const EventType& in1, const string& name)
+        : Transformation(Type::heterogeneus, 2, EventID({Test0::value()})), outE(outE), in0(in0), in1(in1), name(name)
+
       {}
       virtual EventIDs in(EventID goal) const  {
         return EventIDs({ EventID({Test1::value()}), EventID({Test2::value()})});
@@ -81,15 +98,17 @@ namespace test {
           return {};
       }
       virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy) const { return TransPtr(); }
-      virtual void print(std::ostream& o) const { o << "Heterogeneus Transform 2"; }
+      virtual void print(std::ostream& o) const { o << name; }
     };
 
     struct HomTrans0 : public Transformation {
       const EventType& outE;
       const EventType& inE;
       const EventType& p;
-      HomTrans0(const EventType& outE, const EventType& inE, const EventType& p)
-        : Transformation(Type::attribute, 1, EventID::any), outE(outE), inE(inE), p(p)
+      const string name;
+      HomTrans0(const EventType& outE, const EventType& inE, const EventType& p, const string& name)
+        : Transformation(Type::attribute, 1, EventID::any), outE(outE), inE(inE), p(p), name(name)
+
       {}
       virtual EventIDs in(EventID goal) const  {
         return EventIDs({ goal });
@@ -101,7 +120,7 @@ namespace test {
           return {};
       }
       virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy) const { return TransPtr(); }
-      virtual void print(std::ostream& o) const { o << "Homogeneus Transform 1"; }
+      virtual void print(std::ostream& o) const { o << name; }
     };
 
     struct HomTrans1 : public Transformation {
@@ -109,8 +128,10 @@ namespace test {
       const EventType& in0;
       const EventType& in1;
       const EventType& p;
-      HomTrans1(const EventType& outE, const EventType& in0, const EventType& in1, const EventType& p)
-        : Transformation(Type::attribute, 2, EventID::any), outE(outE), in0(in0), in1(in1), p(p)
+      const string name;
+      HomTrans1(const EventType& outE, const EventType& in0, const EventType& in1, const EventType& p, const string& name)
+        : Transformation(Type::attribute, 2, EventID::any), outE(outE), in0(in0), in1(in1), p(p), name(name)
+
       {}
       virtual EventIDs in(EventID goal) const  {
         return EventIDs({ goal, EventID({Test4::value()})});
@@ -122,17 +143,17 @@ namespace test {
           return {};
       }
       virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy) const { return TransPtr(); }
-      virtual void print(std::ostream& o) const { o << "Homogeneus Transform 2"; }
+      virtual void print(std::ostream& o) const { o << name; }
     };
 
     EventType eT0, eT1, eT2, eT3, eT4, eT5, eT6, eT7;
 
-    HetTrans0 het0=HetTrans0(eT2, eT3);
-    HetTrans1 het1=HetTrans1(eT0, eT1, eT2);
-    HomTrans0 hom0=HomTrans0(eT3, eT4, eT4);
-    HomTrans1 hom1=HomTrans1(eT1, eT5, eT6, eT5);
-    HomTrans0 hom2=HomTrans0(eT4, eT7, eT7);
-    HomTrans0 hom3=HomTrans0(eT3, eT4, eT7);
+    HetTrans0 het0=HetTrans0(eT2, eT3, "Het [eT3] -> eT2");
+    HetTrans1 het1=HetTrans1(eT0, eT1, eT2, "Het [eT1, eT2] -> eT0");
+    HomTrans0 hom0=HomTrans0(eT3, eT4, eT4, "Hom [eT4] -> eT3(eT4)");
+    HomTrans1 hom1=HomTrans1(eT1, eT5, eT6, eT5, "Hom [eT5, eT6] -> eT1(eT5)");
+    HomTrans0 hom2=HomTrans0(eT4, eT7, eT7, "Hom [eT7] -> eT4(eT7)");
+    HomTrans0 hom3=HomTrans0(eT3, eT4, eT7, "Hom [eT4] -> eT3(eT7)");
 
 
     KnowledgeBaseTestSuite() {
@@ -151,23 +172,24 @@ namespace test {
       eT3.add(AttributeType(Test3::value(), v, Scale<>(), Dimensionless()));
       eT4.add(AttributeType(Test3::value(), v, Scale<ratio<1, 1000>>(), Dimensionless()));
       eT5.add(AttributeType(Test1::value(), v, Scale<ratio<1, 1>, 1>(), Dimensionless()));
-      eT6.add(AttributeType(Test1::value(), v, Scale<ratio<1, 1>, 0>(), Dimensionless()));
-      eT6.add(AttributeType(Test4::value(), v, Scale<ratio<1, 1>, 1>(), Dimensionless()));
+      eT6.add(AttributeType(Test1::value(), v, Scale<ratio<1, 1>, 1>(), Dimensionless()));
+      eT6.add(AttributeType(Test4::value(), v, Scale<ratio<1, 1>, 0>(), Dimensionless()));
       eT7.add(AttributeType(Test3::value(), v2, Scale<ratio<1, 1000>>(), Dimensionless()));
       path file = current_path()/"doc"/"kb.dot";
       ofstream out(file);
       KnowledgeBase::print(out);
     }
-
-    using  Transformations = KnowledgeBase::Transformations;
-
-    bool checkResult(const Transformations& ts, const Transformation & t) {
-      auto pred = [&t](const CompositeTransformation& cT) {
-        return *cT.graph()[cT.root()].trans() == t;
-      };
-      return any_of(ts.begin(), ts.end(), pred);
-    }
   };
+
+  using ConfiguredTransformation = CompositeTransformation::ConfiguredTransformation;
+
+  vector<ConfiguredTransformation> getTrans(const CompositeTransformation& t) {
+    vector<ConfiguredTransformation> result;
+    const CompositeTransformation::Graph& g = t.graph();
+    auto func = [&g](const CompositeTransformation::Vertex v){ return g[v]; };
+    transform(vertices(g).first, vertices(g).second, back_inserter(result), func);
+    return result;
+  }
 
   TEST_F(KnowledgeBaseTestSuite, singleHeterogeneusTransform) {
     EXPECT_EQ(EventID(eT2), het0.out()) << "Wrong Output ID";
@@ -190,55 +212,60 @@ namespace test {
   TEST_F(KnowledgeBaseTestSuite, findSingleHeterogeneusTransform) {
     KnowledgeBase::registerEventType(eT3);
     Transformations ts = KnowledgeBase::findTransforms(eT2);
-    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
-    EXPECT_TRUE(checkResult(ts, het0)) << "Searched Transform not found";
+    EXPECT_THAT(ts, SizeIs(1)); 
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het0) ) ) ) );
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT3)) ));
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT2) ));
   }
 
   TEST_F(KnowledgeBaseTestSuite, findSingleHomogeneusTransform) {
     KnowledgeBase::registerEventType(eT4);
     Transformations ts = KnowledgeBase::findTransforms(eT3);
-    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
-    EXPECT_TRUE(checkResult(ts, hom0)) << "Searched Transform not found";
+    EXPECT_THAT(ts, SizeIs(1));
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &hom0) ) ) ) );
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT4)) ));
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT3) ));
   }
 
   TEST_F(KnowledgeBaseTestSuite, findMultiHeterogeneusTransform) {
     KnowledgeBase::registerEventType(eT1);
     KnowledgeBase::registerEventType(eT2);
     Transformations ts = KnowledgeBase::findTransforms(eT0);
-    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
-    EXPECT_TRUE(checkResult(ts, het1)) << "Searched Transform not found";
+    EXPECT_THAT(ts, SizeIs(1));
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het1) ) ) ) );
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT1, eT2)) ));
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT0) ));
   }
 
   TEST_F(KnowledgeBaseTestSuite, findMultiHomogeneusTransform) {
     KnowledgeBase::registerEventType(eT5);
     KnowledgeBase::registerEventType(eT6);
     Transformations ts = KnowledgeBase::findTransforms(eT1);
-    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
-    EXPECT_TRUE(checkResult(ts, hom1)) << "Searched Transform not found";
+    EXPECT_THAT(ts, SizeIs(1));
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &hom1) ) ) ) );
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT5, eT6)) ));
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT1) ));
   }
 
   TEST_F(KnowledgeBaseTestSuite, findCombinedAttributeTransform) {
     KnowledgeBase::registerEventType(eT7);
     Transformations ts = KnowledgeBase::findTransforms(eT3);
-    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
-    TransformationPtr hom2Ptr(&hom2);
-    TransformationPtr hom3Ptr(&hom3);
-    auto check = [hom2Ptr, hom3Ptr](const CompositeTransformation& cT){
-      const CompositeTransformation::Graph& g = cT.graph();
-      auto pred0 = [hom2Ptr, &g](CompositeTransformation::Vertex v){ return g[v].trans()==hom2Ptr; };
-      auto pred1 = [hom3Ptr, &g](CompositeTransformation::Vertex v){ return g[v].trans()==hom3Ptr; };
-      auto vertices = boost::vertices(g);
-      return any_of(vertices.first, vertices.second, pred0) &&
-             any_of(vertices.first, vertices.second, pred1);
-    };
-    EXPECT_TRUE(any_of(ts.begin(), ts.end(), check));
+    EXPECT_THAT(ts, SizeIs(1));
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &hom2) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &hom3) ) ) ) );
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT7)) ));
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT3) ));
   }
 
   TEST_F(KnowledgeBaseTestSuite, findCombinedHeterogeneusTransform) {
     KnowledgeBase::registerEventType(eT1);
     KnowledgeBase::registerEventType(eT3);
     Transformations ts = KnowledgeBase::findTransforms(eT0);
-    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
+    EXPECT_THAT(ts, SizeIs(1));
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het0) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het1) ) ) ) );
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT1, eT3)) ));
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT0) ));
   }
 
   TEST_F(KnowledgeBaseTestSuite, fullTree) {
@@ -246,6 +273,13 @@ namespace test {
     KnowledgeBase::registerEventType(eT5);
     KnowledgeBase::registerEventType(eT6);
     Transformations ts = KnowledgeBase::findTransforms(eT0);
-    ASSERT_GE(ts.size(), 1U) << "Wrong number of Transformations found";
+    EXPECT_THAT(ts, SizeIs(1));
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het0) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het1) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &hom1) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &hom2) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &hom3) ) ) ) );
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT7, eT5, eT6)) ));
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT0) ));
   }
 }
