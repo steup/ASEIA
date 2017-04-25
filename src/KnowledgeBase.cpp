@@ -94,7 +94,7 @@ class KBImpl {
       EventTypes todo = unfitEvents(cT, ids);
 
       if(todo.empty())
-        *its.first++ = move(cT);
+        return its;
       else {
         for(const EventType& eT : todo) {
           VertexList unfitTrans = cT.find(eT);
@@ -188,41 +188,51 @@ class KBImpl {
       mTypes.unregisterType(eT);
     }
 
+
     /** \brief Find Composite Transformations for EventType
      *  \param goal the output of the Transformations
      *  \return a list of ConfigureTransformation
      **/
     Transformations find(const EventType& goal) {
+      static unsigned int i=0;
       EventIDs ids = mTypes.ids();
       sort(ids.begin(), ids.end(), EventID::comp); //<< Sort EventIDs ascending
 
-      Transformations initial;
+      Transformations temp;
       Transformations result;
 
-      mHetTrans.generate(goal, ids, back_inserter(initial));
-      generateHomTrans(goal, ids, back_inserter(initial));
-      generateAttTrans(goal, ids, back_inserter(initial));
+      mHetTrans.generate(goal, ids, back_inserter(result));
+      generateHomTrans(goal, ids, back_inserter(result));
+      generateAttTrans(goal, ids, back_inserter(result));
 
-/*      bool done;
-      do {
-        Transformations temp;
-        auto fold=[this, &ids](pair<OutIt, OutIt> its, const CompositeTransformation& cT) { return closeTrans(cT, ids, mAttNTrans, its);};
-        accumulate(initial.begin(), initial.end(), make_pair(back_inserter(result), back_inserter(temp)), fold);
-        done = !temp.empty();
-        move(temp.begin(), temp.end(), back_inserter(initial));
-      }while(done);*/
+
+      temp = result;
 
       do {
-        Transformations temp;
+        Transformations curr;
+        auto fold=[this, &ids](pair<OutIt, OutIt> its, const CompositeTransformation& cT) {
+          return closeTrans(cT, ids, mAttNTrans, its);
+        };
+        accumulate(temp.begin(), temp.end(), make_pair(back_inserter(result), back_inserter(curr)), fold);
+        temp.clear();
+        move(curr.begin(), curr.end(), back_inserter(temp));
+        copy(temp.begin(), temp.end(), back_inserter(result));
+      }while(!temp.empty());
+      
+      temp = result;
+      
+      do {
+        Transformations curr;
         auto fold=[this, &ids](pair<OutIt, OutIt> its, const CompositeTransformation& cT) {
           return closeTrans(cT, ids, mAtt1Trans, its);
         };
-        accumulate(initial.begin(), initial.end(), make_pair(back_inserter(result), back_inserter(temp)), fold);
-        initial.clear();
-        move(temp.begin(), temp.end(), back_inserter(initial));
-      }while(!initial.empty());
+        accumulate(temp.begin(), temp.end(), make_pair(back_inserter(result), back_inserter(curr)), fold);
+        temp.clear();
+        move(curr.begin(), curr.end(), back_inserter(temp));
+        copy(temp.begin(), temp.end(), back_inserter(result));
+      }while(!temp.empty());
 
-      auto check = [](const CompositeTransformation& t){ return !t.check(); };
+      auto check = [this, &ids](const CompositeTransformation& t){ return !unfitEvents(t, ids).empty() || !t.check(); };
       result.erase(remove_if(result.begin(), result.end(), check), result.end());
 
       return result;
