@@ -139,18 +139,18 @@ TEST(ValueElementSuite, castTest) {
   using F = ValueElement<float, true>;
   using D = ValueElement<double, true>;
 
-  I8 i8 = {-127, 0};
-  U8 u8 = {255, 0};
-  U32 u32 = {1234, 1};
-  F  f  = {1234.5678, 0};
-  EXPECT_EQ(U8(i8).value(), 0);
-  EXPECT_EQ(U8(i8).uncertainty(), 127);
+  I8  i8  = {-127      , 0U  };
+  U8  u8  = {255U      , 0U  };
+  U32 u32 = {1234U     , 1U  };
+  F   f   = {1234.5678f, 0.0f};
+  EXPECT_EQ(U8(i8).value(), 0U);
+  EXPECT_EQ(U8(i8).uncertainty(), 127U);
   EXPECT_EQ(I8(u8).value(), 127);
   EXPECT_EQ(I8(u8).uncertainty(), 128);
-  EXPECT_EQ(U16(f).value(), 1234);
-  EXPECT_EQ(U16(f).uncertainty(), 1);
-  EXPECT_EQ(U32(f).value(), 1234);
-  EXPECT_EQ(U32(f).uncertainty(), 1);
+  EXPECT_EQ(U16(f).value(), 1234U);
+  EXPECT_EQ(U16(f).uncertainty(), 1U);
+  EXPECT_EQ(U32(f).value(), 1234U);
+  EXPECT_EQ(U32(f).uncertainty(), 1U);
   EXPECT_EQ(D(u32).value(), 1234);
   EXPECT_EQ(D(u32).uncertainty(), 1);
 }
