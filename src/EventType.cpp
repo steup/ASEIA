@@ -54,10 +54,7 @@ AttributeType* EventType::attribute(KeyType key) {
     return &i->second;
 }
 
-bool EventType::operator==(const EventType& b) const{
-  if(mStorage.size() != b.mStorage.size())
-    return false;
-
+bool EventType::operator<=(const EventType& b) const {
   for( const auto& p : mStorage ){
     auto i = b.mStorage.find(p.first);
     if( i == b.mStorage.end())
@@ -66,6 +63,18 @@ bool EventType::operator==(const EventType& b) const{
       return false;
   }
   return true;
+}
+
+bool EventType::operator<(const EventType& b) const {
+  if(mStorage.size() >= b.mStorage.size())
+    return false;
+  return *this <= b;
+}
+
+bool EventType::operator==(const EventType& b) const{
+  if(mStorage.size() != b.mStorage.size())
+    return false;
+  return *this <= b;
 }
 
 size_t EventType::operator-(const EventType& b) const{
@@ -79,12 +88,7 @@ size_t EventType::operator-(const EventType& b) const{
   return value;
 }
 
-/** \todo implement **/
-bool EventType::operator<(const EventType& b) const {
-  return false;
-}
-
-uint8_t EventType::length() const { 
+uint8_t EventType::length() const {
   return mStorage.size();
 }
 
