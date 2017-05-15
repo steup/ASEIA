@@ -234,6 +234,15 @@ class KBImpl {
 
     void print(ostream& o) const {
       o << mHetTrans;
+      o << "Homogeneus Transforms: " << mHomTrans.size() << endl;
+      for(const TransformationPtr& t : mHomTrans)
+        o << *t << endl;
+      o << "Unary Attribute Transforms: " << mAtt1Trans.size() << endl;
+      for(const TransformationPtr& t : mAtt1Trans)
+        o << *t << endl;
+      o << "N-Ary Attribute Transforms: " << mAttNTrans.size() << endl;
+      for(const TransformationPtr& t : mAttNTrans)
+        o << *t << endl;
     }
 };
 
