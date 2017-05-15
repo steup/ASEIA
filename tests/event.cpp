@@ -111,6 +111,9 @@ TEST(EventTestSuite, typeTest) {
 	EXPECT_FALSE(C<B);
 	EXPECT_FALSE(C<=B);
 	EXPECT_FALSE(C==B);
+  EXPECT_TRUE(A==A);
+  EXPECT_TRUE(B==B);
+  EXPECT_TRUE(C==C);
 }
 
 
