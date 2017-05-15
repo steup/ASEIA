@@ -51,19 +51,18 @@ class EventID {
 		}
 
 		/** \brief strict superset test
-     *  \todo may not work
      **/
 		bool operator>(const EventID& b) const {
-			return !((*this)<=b) && b.value();
+			return b<(*this);
 		}
 
 		/** \brief strict subset test **/
 		bool operator<(const EventID& b) const {
 			return (*this)<=b && (*this)!=b;
 		}
-    /** \todo doesnt work **/
+
 		bool operator>=(const EventID& b) const {
-			return (*this)>b || (*this)==b;
+			return b<=(*this);
 		}
 
     static bool comp(EventID a, EventID b) { return a.mID < b.mID; }
