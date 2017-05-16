@@ -140,10 +140,11 @@ class KBImpl {
 
       for(const EventType& in : provided)
         for(TransformationPtr t : trans) {
-          auto result = findGoalEventType(goal, t->in(goal, in));
+          CompositeTransformation cT(t, goal, in);
+          auto result = findGoalEventType(goal, cT.in());
 
           if(result.second && result.first - in < in - goal )
-            *it++ = CompositeTransformation(t, goal, in);
+            *it++ = cT;
         }
     }
 
