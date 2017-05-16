@@ -51,6 +51,7 @@ class KBImpl {
       return provided;
     }
 
+
     EventTypes unfitEvents(const CompositeTransformation& cT, const EventIDs& ids) const {
       EventTypes todo;
       for(const EventType& in :  cT.in()) {
@@ -149,6 +150,13 @@ class KBImpl {
     }
 
   public:
+    EventTypes findCompatible(const EventType& eT) {
+      EventTypes result;
+      for(const EventType& curr : mTypes)
+        if(eT<=curr)
+          result.push_back(curr);
+      return result;
+    }
     void regTrans(const Transformation& trans) {
       TransStorage* storagePtr;
       TransformationPtr tPtr(&trans);
@@ -263,6 +271,10 @@ void KnowledgeBase::registerEventType(const EventType& trans) {
 
 void KnowledgeBase::unregisterEventType(const EventType& trans) {
   KB::instance().unregType(trans);
+}
+
+vector<EventType> KnowledgeBase::findCompatible(const EventType& eT) {
+  return KB::instance().findCompatible(eT);
 }
 
 KnowledgeBase::Transformations KnowledgeBase::findTransforms(const EventType& goal) {

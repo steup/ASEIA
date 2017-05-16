@@ -18,6 +18,7 @@ class KnowledgeBase {
     static void unregisterEventType(const EventType& eT);
     //TODO: query functions
     static Transformations findTransforms(const EventType& goal);
+    static std::vector<EventType> findCompatible(const EventType& eT);
     static void clear();
     static void print(std::ostream& o);
 };
