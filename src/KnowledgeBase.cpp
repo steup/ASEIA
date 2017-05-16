@@ -1,7 +1,7 @@
 #include <KnowledgeBase.h>
-#include <TypeRegistry.h>
 #include <EventTypeHelpers.h>
 #include <TransformationGraph.h>
+#include <AbstractRegistry.h>
 
 #include <Singleton.h>
 

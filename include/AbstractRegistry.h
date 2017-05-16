@@ -67,7 +67,7 @@ class AbstractRegistry {
 
     struct Hash {
       std::size_t operator()(const Key& k) const {
-        return k.first;
+        return k.first.value();
       }
     };
     using Storage = std::unordered_map<Key, T, Hash>;
@@ -130,10 +130,11 @@ class AbstractRegistry {
     }
 
     EventIDs ids() const {
-      EventIDs temp;
-      for(std::size_t i=0; i<mStorage.bucket_count(); i++)
-        if(mStorage.begin(i)!=mStorage.end(i))
-          temp.push_back(mStorage.begin(i)->first.eventID());
+      EventIDs temp(mStorage.size());
+      auto transFunc =  [](const typename Storage::value_type& v){ return v.first.eventID(); };
+      transform(mStorage.begin(), mStorage.end(), temp.begin(), transFunc);
+      sort(temp.begin(), temp.end(), EventID::comp);
+      temp.erase(unique(temp.begin(), temp.end()), temp.end());
       return temp;
     }
 
