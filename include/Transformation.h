@@ -118,8 +118,7 @@ class Transformation {
     Type type() const { return mType; }
 
     virtual ~Transformation();
-    virtual std::vector<EventType> in(const EventType& goal) const { return {}; }
-    virtual std::vector<EventType> in(const EventType& goal, const  EventType& provided) const {return {}; }
+    virtual std::vector<EventType> in(const EventType& goal, const  EventType& provided) const =0;
 
     virtual EventIDs in(EventID goal) const = 0;
     virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy) const =0;

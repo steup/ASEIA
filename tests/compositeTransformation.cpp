@@ -101,7 +101,7 @@ struct CompositeTransformSuite : public ::testing::Test {
       .Times(1).WillOnce(Return(EventTypes({intermediate})));
     EXPECT_CALL(*b, in(intermediate, provided))
       .Times(AtLeast(1)).WillRepeatedly(Return(EventTypes({provided})));
-    EXPECT_CALL(c, in(goal))
+    EXPECT_CALL(c, in(goal, _))
       .Times(1).WillOnce(Return(EventTypes({intermediate, intermediate2})));
     EXPECT_CALL(d, in(intermediate2, provided2))
       .Times(1).WillOnce(Return(EventTypes({provided2})));

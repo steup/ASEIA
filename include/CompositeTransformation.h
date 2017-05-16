@@ -20,10 +20,7 @@ class CompositeTransformation : public AbstractConfiguredTransformation {
         ConfiguredTransformation(TransformationPtr tPtr, const EventType& out, const EventType& provided)
           : mTPtr(tPtr) {
           mOut = out;
-          if(provided==EventType())
-            mIn = tPtr->in(out);
-          else
-            mIn = tPtr->in(out, provided);
+          mIn = tPtr->in(out, provided);
         }
         TransformationPtr trans() const { return mTPtr; }
         TransPtr create(const AbstractPolicy& policy) const { return mTPtr->create(mOut, mIn, policy); }

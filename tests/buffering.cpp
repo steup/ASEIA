@@ -138,9 +138,9 @@ TEST_F(BufferingTestSuite, multiHetTest) {
   TestTransformer a("a", tET0, {inET0, inET1}), b("b", tET1, {inET1, inET2}), c("c", outET, {tET0, tET1});
   TestTransformation aT("aT", 2), bT("bT", 2), cT("cT", 2);
 
-  EXPECT_CALL(aT, in(tET0)).Times(1).WillOnce(Return(EventTypes({inET0, inET1})));
-  EXPECT_CALL(bT, in(tET1)).Times(1).WillOnce(Return(EventTypes({inET1, inET2})));
-  EXPECT_CALL(cT, in(outET)).Times(1).WillOnce(Return(EventTypes({tET0, tET1})));
+  EXPECT_CALL(aT, in(tET0, _)).Times(1).WillOnce(Return(EventTypes({inET0, inET1})));
+  EXPECT_CALL(bT, in(tET1, _)).Times(1).WillOnce(Return(EventTypes({inET1, inET2})));
+  EXPECT_CALL(cT, in(outET, _)).Times(1).WillOnce(Return(EventTypes({tET0, tET1})));
 
   CompositeTransformation compTrans(TransformationPtr(&cT), outET, EventType());
   compTrans.addTransformation(TransformationPtr(&aT), compTrans.root(), tET0, EventType());
@@ -198,9 +198,9 @@ TEST_F(BufferingTestSuite, complexTest) {
   TestTransformer a("a", tET0, {inET0, inET0}), b("b", tET1, {inET1, inET1}), c("c", outET, {tET0, tET1});
   TestTransformation aT("aT", 2), bT("bT", 2), cT("cT", 2);
 
-  EXPECT_CALL(aT, in(tET0)).Times(1).WillOnce(Return(EventTypes({inET0, inET0})));
-  EXPECT_CALL(bT, in(tET1)).Times(1).WillOnce(Return(EventTypes({inET1, inET1})));
-  EXPECT_CALL(cT, in(outET)).Times(1).WillOnce(Return(EventTypes({tET0, tET1})));
+  EXPECT_CALL(aT, in(tET0, _)).Times(1).WillOnce(Return(EventTypes({inET0, inET0})));
+  EXPECT_CALL(bT, in(tET1, _)).Times(1).WillOnce(Return(EventTypes({inET1, inET1})));
+  EXPECT_CALL(cT, in(outET, _)).Times(1).WillOnce(Return(EventTypes({tET0, tET1})));
 
   CompositeTransformation compTrans(TransformationPtr(&cT), outET, EventType());
   compTrans.addTransformation(TransformationPtr(&aT), compTrans.root(), tET0, EventType());

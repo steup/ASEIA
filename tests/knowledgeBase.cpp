@@ -69,7 +69,7 @@ namespace test {
       virtual EventIDs in(EventID goal) const  {
         return EventIDs({ EventID({Test3::value()}) });
       }
-      virtual vector<EventType> in(const EventType& goal) const  {
+      virtual vector<EventType> in(const EventType& goal, const EventType& provided) const  {
         if(goal == outE)
           return {inE};
         else
@@ -91,7 +91,7 @@ namespace test {
       virtual EventIDs in(EventID goal) const  {
         return EventIDs({ EventID({Test1::value()}), EventID({Test2::value()})});
       }
-      virtual vector<EventType> in(const EventType& goal) const  {
+      virtual vector<EventType> in(const EventType& goal, const EventType& provided) const  {
         if(goal == outE)
           return {in0, in1};
         else
@@ -197,7 +197,7 @@ namespace test {
     ASSERT_EQ(het0.in(EventID(eT2)).size(), 1U) << "Wrong number of input IDs";
     EXPECT_EQ(EventID(eT3), het0.in(EventID(eT2)).front()) << "Wrong input ID";
     ASSERT_EQ(het0.in(eT2).size(), 1U) << "Wrong number of input Types";
-    EXPECT_EQ(eT3, het0.in(eT2).front()) << "Wrong input Type";
+    EXPECT_EQ(eT3, het0.in(eT2, EventType()).front()) << "Wrong input Type";
   }
 
   TEST_F(KnowledgeBaseTestSuite, singleHomogeneusTransform) {
@@ -212,7 +212,7 @@ namespace test {
   TEST_F(KnowledgeBaseTestSuite, findSingleHeterogeneusTransform) {
     KnowledgeBase::registerEventType(eT3);
     Transformations ts = KnowledgeBase::findTransforms(eT2);
-    EXPECT_THAT(ts, SizeIs(1)); 
+    EXPECT_THAT(ts, SizeIs(1));
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het0) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT3)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT2) ));

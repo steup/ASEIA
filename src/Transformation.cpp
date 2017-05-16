@@ -24,6 +24,9 @@ class InvalidTransformation : public Transformation {
   public:
     InvalidTransformation() : Transformation(Type::invalid, 0, EventID::any) {
     }
+    virtual vector<EventType> in(const EventType& goal, const EventType& provided) const {
+      return {};
+    }
     virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy) const {
       return TransPtr();
     }
