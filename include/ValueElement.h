@@ -290,8 +290,8 @@ class ValueElementBase {
 			PType res = (PType)this->mValue * (PType)a;
 			if( res > (PType)std::numeric_limits<VType>::max())
 				res = (PType)std::numeric_limits<VType>::max();
-			if( res < (PType)std::numeric_limits<VType>::min())
-				res = (PType)std::numeric_limits<VType>::min();
+			if( res < (PType)std::numeric_limits<VType>::lowest())
+				res = (PType)std::numeric_limits<VType>::lowest();
 			this->mValue = (VType)res;
 			return *this;
 		}
@@ -312,8 +312,8 @@ class ValueElementBase {
 			PType res = (PType)this->mValue / (PType)a;
 			if( res > (PType)std::numeric_limits<VType>::max())
 				res = (PType)std::numeric_limits<VType>::max();
-			if( res < (PType)std::numeric_limits<VType>::min())
-				res = (PType)std::numeric_limits<VType>::min();
+			if( res < (PType)std::numeric_limits<VType>::lowest())
+				res = (PType)std::numeric_limits<VType>::lowest();
 			this->mValue = (VType)res;
 			return *this;
 		}
