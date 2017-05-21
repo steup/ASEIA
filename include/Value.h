@@ -82,7 +82,23 @@ class Value {
     }
     
     static Value Ones() { return Value(DataType::Ones()); }
-    static Value Zeros() { return Value(DataType::Zeros()); }
+    static Value Zeros() { return Value(DataType::Zero()); }
+
+    auto block(size_t i, size_t j, size_t p, size_t q) -> decltype(mData.block(i, j, p, q)) {
+      return mData.block(i,j,p,q);
+    }
+
+    auto block(size_t i, size_t j, size_t p, size_t q) const -> decltype(mData.block(i, j, p, q)) {
+      return mData.block(i,j,p,q);
+    }
+
+    auto col(size_t c) const -> decltype(mData.col(c)) {
+      return mData.col(c);
+    }
+
+    auto transpose() const -> decltype(mData.transpose()) {
+      return mData.transpose();
+    }
 
     std::size_t rows() const { return R==-1?mData.rows():R; }
     std::size_t cols() const { return C==-1?mData.cols():C; }
