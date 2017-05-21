@@ -162,7 +162,7 @@ std::ostream& operator<<(std::ostream& o, const Value<T, R, C, U>& v) {
     o << "(";
     for(std::size_t c = 0; c<v.cols(); c++)
       o << "\t" << v(r, c);
-    o << ")";
+    o << ")" << std::endl;
   }
   return o;
 }
