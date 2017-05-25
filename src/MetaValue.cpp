@@ -1,5 +1,7 @@
 #include <MetaValue.h>
 #include <ValueType.h>
+#include <MetaFactory.h>
+#include <ID.h>
 
 using namespace std;
 using MVB           = MetaValueBaseImplementation;
@@ -13,6 +15,28 @@ using Ptr           = MetaValue::Ptr;
 using ID            = MetaValue::ID;
 
 MetaValue::MetaValue() : mImpl(new MVB()) {}
+
+MetaValue::MetaValue(double v, id::type::ID typeID)
+  : MetaValue({{{v}}}, typeID, 1, 1, false)
+{}
+
+/*MetaValue::MetaValue(ElemInitType l, id::type::ID typeIDid=id::type::Double::value(), bool u=false)
+  : MetaValue({{l}}, id, 1, 1, u)
+{}
+
+MetaValue::MetaValue(RowInitType l, id::type::ID typeIDid=id::type::Double::value(),
+          size_t rows=0, bool u=false)
+  : MetaValue({l}, id, rows, 1, u)
+{}*/
+
+MetaValue::MetaValue(::id::type::ID typeID, size_t rows, size_t cols, bool u)
+  : MetaValue(MetaFactory::instance().create(typeID, rows, cols, u))
+{}
+
+MetaValue::MetaValue(InitType l, ::id::type::ID typeID,
+                     size_t rows, size_t cols, bool u)
+  : MetaValue(MetaFactory::instance().create(l, typeID, rows, cols, u))
+{}
 
 MetaValue::MetaValue(MetaValue::Ptr&& ptr){
 		mImpl = move(ptr);
@@ -47,8 +71,13 @@ MetaValue& MetaValue::operator=(const MetaValue& copy) {
 ValueElement<double, true> MetaValue::get(std::size_t row, std::size_t col) const {
   return mImpl->get(row, col);
 }
-bool MetaValue::set(std::size_t row, std::size_t col, const ValueElement<double, true>& v) {
-  return mImpl->set(row, col, v);
+
+bool MetaValue::set(std::size_t row, std::size_t col, ElemInitType elem) {
+  return mImpl->set(row, col, elem);
+}
+
+bool MetaValue::set(std::size_t row, std::size_t col, double elem) {
+  return mImpl->set(row, col, {elem});
 }
 
 MetaValue& MetaValue::operator+=(const MetaValue& b) {
@@ -132,6 +161,27 @@ MetaValue& MetaValue::operator/=(const MetaScale& b) {
 	mImpl->scale(b, true);
 	return *this;
 }
+MetaValue MetaValue::block(size_t i, size_t j, size_t numI, size_t numJ) const {
+  return MetaValue(move(mImpl->block(i, j, numI, numJ)));
+}
+
+MetaValue& MetaValue::block(size_t i, size_t j, const MetaValue& v) {
+  mImpl->block(i, j, move(v.mImpl->copy()));
+  return *this;
+}
+
+MetaValue& MetaValue::block(size_t i, size_t j, MetaValue&& v) {
+  mImpl->block(i, j, move(v.mImpl));
+  return *this;
+}
+
+MetaValue MetaValue::col(size_t col) const {
+  return MetaValue(move(mImpl->col(col)));
+}
+
+MetaValue MetaValue::row(size_t row) const {
+  return MetaValue(move(mImpl->row(row)));
+}
 
 MetaValue MetaValue::prod() const {
   return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Prod));
@@ -139,6 +189,67 @@ MetaValue MetaValue::prod() const {
 
 MetaValue MetaValue::sum() const {
   return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Sum));
+}
+
+MetaValue MetaValue::transpose() const {
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Transpose));
+}
+
+MetaValue MetaValue::norm() const {
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Norm));
+}
+
+MetaValue MetaValue::identity() const {
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Identity));
+}
+
+MetaValue MetaValue::zero() const {
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Zero));
+}
+
+MetaValue& MetaValue::sin(){
+  mImpl->unaryOp(UnaryOp::Sin);
+  return *this;
+}
+
+MetaValue& MetaValue::cos(){
+  mImpl->unaryOp(UnaryOp::Cos);
+  return *this;
+}
+
+MetaValue& MetaValue::tan(){
+  mImpl->unaryOp(UnaryOp::Tan);
+  return *this;
+}
+
+MetaValue& MetaValue::asin(){
+  mImpl->unaryOp(UnaryOp::ASin);
+  return *this;
+}
+
+MetaValue& MetaValue::acos(){
+  mImpl->unaryOp(UnaryOp::ACos);
+  return *this;
+}
+
+MetaValue& MetaValue::atan(){
+  mImpl->unaryOp(UnaryOp::ATan);
+  return *this;
+}
+
+MetaValue& MetaValue::abs(){
+  mImpl->unaryOp(UnaryOp::ATan);
+  return *this;
+}
+
+MetaValue& MetaValue::min(){
+  mImpl->unaryOp(UnaryOp::Min);
+  return *this;
+}
+
+MetaValue& MetaValue::max(){
+  mImpl->unaryOp(UnaryOp::Max);
+  return *this;
 }
 
 size_t MetaValue::size() const {

@@ -253,7 +253,7 @@ class ValueElementBase {
 		using VType    = T;
 		using UType    = typename make_unsigned<T>::type;
 		using PType    = typename multType<T>::type;
-    using InitType = std::initializer_list<PType>;
+    using InitType = std::initializer_list<VType>;
     using U        = boost::mpl::bool_<false>;
     using TypeID   = typename id::type::t2Type<T>::type;
     using BaseType = T;
@@ -272,7 +272,7 @@ class ValueElementBase {
 		void value( VType v) { mValue = v; }
 		UType uncertainty() const { return std::numeric_limits<UType>::max(); }
     void uncertainty ( T u ) {}
-		
+
 		ValueElementBase& operator+=(T a){
 			satAdd(mValue, a);
 			return *this;

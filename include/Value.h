@@ -81,8 +81,8 @@ class Value {
 			}
     }
     
-    static Value Ones() { return Value(DataType::Ones()); }
-    static Value Zeros() { return Value(DataType::Zero()); }
+    Value identity() const { return Value(DataType::Identity(mData.rows(), mData.cols())); }
+    Value zero() const    { return Value(DataType::Zero(mData.rows(), mData.cols())); }
 
     auto block(size_t i, size_t j, size_t p, size_t q) -> decltype(mData.block(i, j, p, q)) {
       return mData.block(i,j,p,q);
@@ -92,19 +92,45 @@ class Value {
       return mData.block(i,j,p,q);
     }
 
+    auto col(size_t c) -> decltype(mData.col(c)) {
+      return mData.col(c);
+    }
+
     auto col(size_t c) const -> decltype(mData.col(c)) {
       return mData.col(c);
+    }
+
+    auto row(size_t r) -> decltype(mData.row(r)) {
+      return mData.row(r);
+    }
+
+    auto row(size_t r) const -> decltype(mData.row(r)){
+      return mData.row(r);
     }
 
     auto transpose() const -> decltype(mData.transpose()) {
       return mData.transpose();
     }
 
+    Value& cwiseProduct(const Value& b) {
+      mData.cwiseProduct(b.mData);
+      return *this;
+    }
+
+    Value& sin() { mData.array().sin(); return *this; }
+    Value& cos() { mData.array().cos(); return *this; }
+    Value& tan() { mData.array().tan(); return *this; }
+    Value& asin() { mData.array().asin(); return *this; }
+    Value& acos() { mData.array().acos(); return *this; }
+    Value& atan() { mData.array().atan(); return *this; }
+    Value& abs() { mData.array().abs(); return *this; }
+
     std::size_t rows() const { return R==-1?mData.rows():R; }
     std::size_t cols() const { return C==-1?mData.cols():C; }
 
     BaseType prod() const { return mData.prod(); }
     BaseType sum() const { return mData.sum(); }
+    BaseType norm() const { return mData.norm(); }
     BaseType* data() { return mData.data(); }
     const BaseType* data() const { return mData.data(); }
 
@@ -144,7 +170,7 @@ class Value {
     }
 
     Value& operator-=(const Value& b) {
-      mData+=b.mData;
+      mData-=b.mData;
       return *this;
     }
 

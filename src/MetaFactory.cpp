@@ -136,12 +136,19 @@ MetaValue MetaFactoryImplementation::convert(const ValueType& type, const MetaVa
 }
 
 MetaValue MetaFactoryImplementation::create(
-	initializer_list<initializer_list<ValueElement<double>>> l, id::type::ID id, bool u) const{
-	if(l.size()==0 || l.begin()->size()==0)
-		return MetaValue();
+	InitType l, id::type::ID id, size_t rows, size_t cols, bool u) const {
 
-  MetaValue temp = create(id, l.size(), l.begin()->size(), u);
-  
+  rows = l.size()>rows?l.size():rows;
+  for(const auto& col : l) {
+    if(col.size() > cols)
+      cols = col.size()>cols?col.size():cols;
+    for(const auto& elem : col) {
+      u|=elem.size()>1;
+    }
+  }
+
+  MetaValue temp = create(id, rows, cols, u);
+
 	unsigned int i=0;
   for(const auto& col : l) {
 		unsigned int j=0;

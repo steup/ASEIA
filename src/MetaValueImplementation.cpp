@@ -108,9 +108,9 @@ ValueElement<double, true> MetaValueImplementation<T, U>::get(size_t row, size_t
 }
 
 template<typename T, bool U>
-bool MetaValueImplementation<T, U>::set(size_t row, size_t col, const ValueElement<double, true>& v) {
+bool MetaValueImplementation<T, U>::set(size_t row, size_t col, ElemInitType elem) {
   if(row < (size_t)mData.rows() && col < (size_t)mData.cols()) {
-    mData(row, col) = v;
+    mData(row, col) = ValueElement<double, true>(elem);
     return true;
   }
   return false;
@@ -135,6 +135,22 @@ Interface& MetaValueImplementation<T, U>::unaryOp( UnaryOp op)  {
 	switch(op) {
 		case(UnaryOp::Neg): mData = -mData;
 												break;
+    case(UnaryOp::Sin): mData.sin();
+                         break;
+    case(UnaryOp::Cos): mData.cos();
+                         break;
+    case(UnaryOp::Tan): mData.tan();
+                         break;
+    case(UnaryOp::ASin): mData.asin();
+                         break;
+    case(UnaryOp::ACos): mData.acos();
+                         break;
+    case(UnaryOp::ATan): mData.atan();
+                         break;
+    case(UnaryOp::Abs): mData.abs();
+                         break;
+    case(UnaryOp::Min):
+    case(UnaryOp::Max): /** \todo implement **/
 		default           : return Interface::unaryOp(op);
 	}
 	return *this;
@@ -156,6 +172,24 @@ Ptr MetaValueImplementation<T, U>::unaryConstOp( UnaryConstOp op) const {
       temp.mData(0)=mData.sum();
       ptr = temp.copy(); }
 			break;
+      case(UnaryConstOp::Norm): {
+      MetaValueImplementation<T, U> temp;
+      temp.mData.resize(1,1);
+      temp.mData(0,0)=mData.norm();
+      ptr = temp.copy(); }
+      break;
+    case(UnaryConstOp::Transpose): {
+      MetaValueImplementation<T, U> temp(Base(mData.transpose()));
+      ptr = temp.copy(); }
+      break;
+    case(UnaryConstOp::Zero): {
+      MetaValueImplementation<T, U> temp(mData.zero());
+      ptr = temp.copy(); }
+      break;
+    case(UnaryConstOp::Identity): {
+      MetaValueImplementation<T, U> temp(mData.identity());
+      ptr = temp.copy(); }
+      break;
 		default           : return Interface::unaryConstOp(op);
 	}
 	return ptr;
@@ -164,19 +198,41 @@ Ptr MetaValueImplementation<T, U>::unaryConstOp( UnaryConstOp op) const {
 template<typename T, bool U>
 Interface& MetaValueImplementation<T, U>::binaryOp( BinaryOp op, const Interface& b)  {
 	switch(op) {
-      case(BinaryOp::Add): mData += reinterpret_cast<const Impl&>(b).mData;
-													 break;
-			case(BinaryOp::Sub): mData -= reinterpret_cast<const Impl&>(b).mData;
-													 break;
-			case(BinaryOp::Mul): /** \todo handle scalar multiplication and eWise product; */
-													 break;
-			case(BinaryOp::Div): if(b.get(Interface::Attributes::Rows).rows == 1 &&
-                              b.get(Interface::Attributes::Cols).cols == 1)
-                            mData /= reinterpret_cast<const Impl&>(b).mData(0,0);
+      case(BinaryOp::Add): if(b.get(Interface::Attributes::Rows).rows == mData.rows() &&
+                              b.get(Interface::Attributes::Cols).cols == mData.cols()) {
+                            mData += reinterpret_cast<const Impl&>(b).mData;
+													  return *this;
+                           }
                            break;
-			default            : return Interface::binaryOp(op, b);
+			case(BinaryOp::Sub): if(b.get(Interface::Attributes::Rows).rows == mData.rows() &&
+                              b.get(Interface::Attributes::Cols).cols == mData.cols()) {
+                            mData -= reinterpret_cast<const Impl&>(b).mData;
+													  return *this;
+                           }
+                           break;
+			case(BinaryOp::Mul): if(b.get(Interface::Attributes::Rows).rows == 1 &&
+                              b.get(Interface::Attributes::Cols).cols == 1) {
+                            mData *= reinterpret_cast<const Impl&>(b).mData(0,0);
+                            return *this;
+                           }
+                           if(mData.cols() == b.get(Interface::Attributes::Rows).rows) {
+                            mData*= reinterpret_cast<const Impl&>(b).mData;
+                            return *this;
+                           }
+                           break;
+			case(BinaryOp::Div): if(b.get(Interface::Attributes::Rows).rows == 1 &&
+                              b.get(Interface::Attributes::Cols).cols == 1) {
+                              mData /= reinterpret_cast<const Impl&>(b).mData(0,0);
+                              return *this;
+                           }
+                           break;
+      case(BinaryOp::EMul):if(b.get(Interface::Attributes::Rows).rows == mData.rows() &&
+                              b.get(Interface::Attributes::Cols).cols == mData.cols()) {
+                              mData.cwiseProduct(reinterpret_cast<const Impl&>(b).mData);
+                              return *this;
+                           }
 	}
-	return *this;
+  return Interface::binaryOp(op, b);
 }
 
 template<typename T, bool U>
@@ -194,6 +250,8 @@ Ptr MetaValueImplementation<T, U>::binaryConstOp( BinaryConstOp op, const Interf
 	}
 }
 
+
+
 template<typename T, bool U>
 Interface& MetaValueImplementation<T, U>::scale(const MetaScale& scale, bool invert) {
   if(invert) {
@@ -204,6 +262,26 @@ Interface& MetaValueImplementation<T, U>::scale(const MetaScale& scale, bool inv
 	  mData  /= scale.denom();
   }
 	return *this;
+}
+/** \todo implement **/
+template<typename T, bool U>
+bool MetaValueImplementation<T, U>::block(size_t i, size_t j, Ptr&& ptr) {
+  return false;
+}
+
+template<typename T, bool U>
+Ptr MetaValueImplementation<T, U>::block(size_t i, size_t j, size_t numI, size_t numJ) const {
+  return Ptr(new MetaValueImplementation<T, U>(Base(mData.block(i,j,numI, numJ))));
+}
+
+template<typename T, bool U>
+Ptr MetaValueImplementation<T, U>::col(size_t col) const {
+  return Ptr(new MetaValueImplementation<T, U>(Base(mData.col(col))));
+}
+
+template<typename T, bool U>
+Ptr MetaValueImplementation<T, U>::row(size_t row) const {
+  return Ptr(new MetaValueImplementation<T, U>(Base(mData.row(row))));
 }
 
 template<typename T, bool U>

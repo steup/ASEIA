@@ -30,19 +30,33 @@ class MetaValueBaseImplementation {
 		};
 
 		enum class UnaryOp {
-			Neg
+			Neg,
+      Sin,
+      Cos,
+      Tan,
+      ASin,
+      ACos,
+      ATan,
+      Abs,
+      Min,
+      Max
     };
 
     enum class UnaryConstOp {
 			Prod,
-      Sum
+      Sum,
+      Norm,
+      Transpose,
+      Zero,
+      Identity,
     };
 
 		enum class BinaryOp {
 			Add,
 			Sub,
 			Mul,
-			Div
+			Div,
+      EMul
 		};
 
 		enum class BinaryConstOp {
@@ -68,6 +82,7 @@ class MetaValueBaseImplementation {
 		virtual uint8_t* end() {return nullptr;}
 
   public:
+    using ElemInitType = std::initializer_list<double>;
     MetaValueBaseImplementation() = default;
 
     virtual ~MetaValueBaseImplementation() = default;
@@ -84,7 +99,7 @@ class MetaValueBaseImplementation {
 
 		virtual bool set(Attributes a, Data d);
 
-    virtual bool set(std::size_t row, std::size_t col, const ValueElement<double, true>& v);
+    virtual bool set(std::size_t row, std::size_t col, ElemInitType elem);
 
 		virtual Interface& unaryOp( UnaryOp op);
 
@@ -93,6 +108,11 @@ class MetaValueBaseImplementation {
 		virtual Interface& binaryOp( BinaryOp op, const Interface& b);
 
 		virtual Ptr binaryConstOp( BinaryConstOp op, const Interface& b ) const;
+
+    virtual bool block(size_t i, size_t j, Ptr&&);
+    virtual Ptr block(size_t i, size_t j, size_t numI, size_t numJ) const;
+    virtual Ptr col(size_t col) const;
+    virtual Ptr row(size_t row) const;
 
 		virtual Interface& scale(const MetaScale& scale, bool invert = false);
 

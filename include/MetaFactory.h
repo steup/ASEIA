@@ -42,12 +42,13 @@ class MetaFactoryImplementation {
   public:
     using Converter = ConverterStorage::value_type;
     using Creator   = CreatorStorage::value_type;
-    
+    using InitType  = MetaValue::InitType;
+
     MetaValue create(const ValueType& type) const;
     MetaAttribute create(const AttributeType& type) const;
     MetaEvent create(const EventType& type) const;
-    MetaValue create(id::type::ID id, std::size_t rows, std::size_t cols, bool u) const;
-    MetaValue create(std::initializer_list<std::initializer_list<ValueElement<double>>> l, id::type::ID id=id::type::Double::value(), bool u = true) const;
+    MetaValue create(id::type::ID id, std::size_t rows, std::size_t cols=1, bool u=true) const;
+    MetaValue create(InitType l, id::type::ID id=id::type::Double::value(), size_t rows=0, size_t cols=0, bool u = true) const;
     MetaValue convert(const ValueType& type, const MetaValue& value) const;
     MetaAttribute convert(const AttributeType& type, const MetaAttribute& value) const;
     MetaEvent convert(const EventType& type, const MetaEvent& value) const;

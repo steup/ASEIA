@@ -215,7 +215,7 @@ TEST_F(MetaDeSerializationSuite, complexNetworkTest) {
 	ASSERT_TRUE(pubPtr)  << "No publisher id in BaseEvent<>";
   posPtr->value() = f.create({{{0.0, 1.0}}, {{2.0, 3.0}}, {{4.0, 5.0}}}, Float::value());
   timePtr->value() = f.create({{{128U, 256U}}}, UInt32::value());
-  pubPtr->value() = f.create({{{1024U}}}, UInt32::value(), false);
+  pubPtr->value() = f.create({{{1024U}}}, UInt32::value(), 1, 1, false);
 	EXPECT_EQ(eT, (EventType)ref) << "Referenz MetaEvent does not fit StaticEvent!";
 	S s(back_inserter(buffer));
 	s << e;

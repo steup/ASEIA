@@ -40,7 +40,7 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
 
 		virtual bool set(Attributes a, Data d);
 
-    virtual bool set(std::size_t row, std::size_t col, const ValueElement<double, true>& v); 
+    virtual bool set(std::size_t row, std::size_t col, ElemInitType elem); 
 
 		virtual Interface& unaryOp( UnaryOp op);
 
@@ -49,6 +49,11 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
 		virtual Interface& binaryOp( BinaryOp op, const Interface& b);
 
 		virtual Ptr binaryConstOp( BinaryConstOp op, const Interface& b ) const;
+
+    virtual bool block(size_t i, size_t j, Ptr&& ptr);
+    virtual Ptr block(size_t i, size_t j, size_t numI, size_t numJ) const;
+    virtual Ptr col(size_t col) const;
+    virtual Ptr row(size_t row) const;
 
 		virtual Interface& scale(const MetaScale& scale, bool invert = false);
     
