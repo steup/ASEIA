@@ -68,9 +68,14 @@ class MetaValueBaseImplementation {
 			NotEqual,
 			ApproxEqual
 		};
-
+  private:
+    static MetaValueBaseImplementation sInstance;
+    struct Deleter {
+      void operator()(Interface* ptr);
+    };
+    static Deleter sDel;
 	public:
-    using Ptr = std::unique_ptr<Interface>;
+    using Ptr = std::unique_ptr<Interface, Deleter>;
 
 	protected:
 
@@ -81,10 +86,10 @@ class MetaValueBaseImplementation {
 		virtual const uint8_t* end() const {return nullptr;}
 		virtual uint8_t* end() {return nullptr;}
 
+    MetaValueBaseImplementation() = default;
   public:
     using ElemInitType = std::initializer_list<double>;
-    MetaValueBaseImplementation() = default;
-
+    static Ptr instance() { return Ptr(&sInstance, sDel); }
     virtual ~MetaValueBaseImplementation() = default;
 
 		Interface& operator=(const Interface& copy) = delete;
@@ -101,11 +106,11 @@ class MetaValueBaseImplementation {
 
     virtual bool set(std::size_t row, std::size_t col, ElemInitType elem);
 
-		virtual Interface& unaryOp( UnaryOp op);
+		virtual bool unaryOp( UnaryOp op);
 
     virtual Ptr unaryConstOp( UnaryConstOp op) const;
 
-		virtual Interface& binaryOp( BinaryOp op, const Interface& b);
+		virtual bool binaryOp( BinaryOp op, const Interface& b);
 
 		virtual Ptr binaryConstOp( BinaryConstOp op, const Interface& b ) const;
 
@@ -114,7 +119,7 @@ class MetaValueBaseImplementation {
     virtual Ptr col(size_t col) const;
     virtual Ptr row(size_t row) const;
 
-		virtual Interface& scale(const MetaScale& scale, bool invert = false);
+		virtual bool scale(const MetaScale& scale, bool invert = false);
 
     virtual std::ostream& print( std::ostream& o ) const;
 

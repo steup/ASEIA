@@ -14,7 +14,7 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
     Base mData;
 
     static Ptr factoryCreate(std::size_t rows, std::size_t cols, bool u);
-		
+
     MetaValueImplementation() = default;
 		MetaValueImplementation(const MetaValueImplementation& copy) = default;
 		MetaValueImplementation(const Base& copy);
@@ -27,26 +27,26 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
     MetaValueImplementation(std::size_t rows, std::size_t cols);
 
     MetaValueImplementation(typename Base::InitType values);
-    
+
 		virtual ~MetaValueImplementation() = default;
 
 		virtual Interface& operator=( Interface&& movee);
-	
+
     virtual Ptr copy() const;
 
     virtual Data get( Attributes a ) const;
-    
+
     virtual ValueElement<double, true> get(std::size_t row, std::size_t col) const;
 
 		virtual bool set(Attributes a, Data d);
 
-    virtual bool set(std::size_t row, std::size_t col, ElemInitType elem); 
+    virtual bool set(std::size_t row, std::size_t col, ElemInitType elem);
 
-		virtual Interface& unaryOp( UnaryOp op);
+		virtual bool unaryOp( UnaryOp op);
 
     virtual Ptr unaryConstOp( UnaryConstOp op) const;
 
-		virtual Interface& binaryOp( BinaryOp op, const Interface& b);
+		virtual bool binaryOp( BinaryOp op, const Interface& b);
 
 		virtual Ptr binaryConstOp( BinaryConstOp op, const Interface& b ) const;
 
@@ -55,11 +55,11 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
     virtual Ptr col(size_t col) const;
     virtual Ptr row(size_t row) const;
 
-		virtual Interface& scale(const MetaScale& scale, bool invert = false);
-    
+		virtual bool scale(const MetaScale& scale, bool invert = false);
+
     virtual explicit operator bool() const { return (bool)mData.prod(); }
-		
-		std::ostream& print(std::ostream& o) const;
+
+    std::ostream& print(std::ostream& o) const;
 
     friend class MetaFactoryImplementation;
     friend class MetaValueRegisterer;
@@ -101,7 +101,7 @@ struct Converter{
     T1Impl& outC = reinterpret_cast<T1Impl&>(out);
     outC.mData = inC.mData.template cast< typename T1Impl::Base::BaseType >();
   }
-  
+
   operator MetaFactory::Converter(){
     return {{id::type::id(T0()), id::type::id(T1())}, &Converter::convert};
   }

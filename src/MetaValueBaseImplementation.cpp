@@ -7,8 +7,8 @@ using Interface = MVBI::Interface;
 using Ptr       = MVBI::Ptr;
 using Data      = MVBI::Data;
 
-Interface& MVBI::operator=( Interface&& movee) { 
-	return *this; 
+Interface& MVBI::operator=( Interface&& movee) {
+	return *this;
 }
 
 Ptr MVBI::copy() const {
@@ -44,21 +44,21 @@ bool MetaValueBaseImplementation::set(std::size_t row, std::size_t col, ElemInit
   return false;
 }
 
-Interface& MVBI::unaryOp( UnaryOp op) {
-	return *this; 
+bool MVBI::unaryOp( UnaryOp op) {
+	return false;
 }
 
-Ptr MVBI::unaryConstOp( UnaryConstOp op ) const { 
+Ptr MVBI::unaryConstOp( UnaryConstOp op ) const {
 	return copy();
-} 
-
-Interface& MVBI::binaryOp( BinaryOp op, const Interface& b) { 
-	return *this;	
 }
 
-Ptr MVBI::binaryConstOp( BinaryConstOp op, const Interface& b ) const { 
-	return copy();
-} 
+bool MVBI::binaryOp( BinaryOp op, const Interface& b) {
+	return false;
+}
+
+Ptr MVBI::binaryConstOp( BinaryConstOp op, const Interface& b ) const {
+  return copy();
+}
 
 MVBI::Ptr MVBI::block(size_t i, size_t j, size_t numI, size_t numJ) const {
   return copy();
@@ -73,14 +73,23 @@ MVBI::Ptr MVBI::col(size_t col) const {
 MVBI::Ptr MVBI::row(size_t row) const {
   return copy();
 }
-Interface& MVBI::scale(const MetaScale& scale, bool invert){
-	return *this;
+
+bool MVBI::scale(const MetaScale& scale, bool invert){
+	return false;
 }
-		
-ostream& MVBI::print( ostream& o ) const { 
-      return o << "void"; 
+
+ostream& MVBI::print( ostream& o ) const {
+      return o << "void";
 }
 
 ostream& operator<<( ostream& o, const MVBI& mvbi) {
   return mvbi.print(o);
 }
+
+void MVBI::Deleter::operator()(MVBI* ptr) {
+  if( ptr!= &sInstance)
+    delete ptr;
+}
+
+MVBI MVBI::sInstance;
+MVBI::Deleter MVBI::sDel;

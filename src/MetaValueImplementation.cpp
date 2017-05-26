@@ -131,7 +131,7 @@ bool MetaValueImplementation<T, U>::set(Attributes a, Data d) {
 }
 
 template<typename T, bool U>
-Interface& MetaValueImplementation<T, U>::unaryOp( UnaryOp op)  {
+bool MetaValueImplementation<T, U>::unaryOp( UnaryOp op)  {
 	switch(op) {
 		case(UnaryOp::Neg): mData = -mData;
 												break;
@@ -153,7 +153,7 @@ Interface& MetaValueImplementation<T, U>::unaryOp( UnaryOp op)  {
     case(UnaryOp::Max): /** \todo implement **/
 		default           : return Interface::unaryOp(op);
 	}
-	return *this;
+	return true;
 }
 
 template<typename T, bool U>
@@ -196,43 +196,44 @@ Ptr MetaValueImplementation<T, U>::unaryConstOp( UnaryConstOp op) const {
 }
 
 template<typename T, bool U>
-Interface& MetaValueImplementation<T, U>::binaryOp( BinaryOp op, const Interface& b)  {
+bool MetaValueImplementation<T, U>::binaryOp( BinaryOp op, const Interface& b)  {
 	switch(op) {
       case(BinaryOp::Add): if(b.get(Interface::Attributes::Rows).rows == mData.rows() &&
                               b.get(Interface::Attributes::Cols).cols == mData.cols()) {
                             mData += reinterpret_cast<const Impl&>(b).mData;
-													  return *this;
+													  return true;
                            }
                            break;
 			case(BinaryOp::Sub): if(b.get(Interface::Attributes::Rows).rows == mData.rows() &&
                               b.get(Interface::Attributes::Cols).cols == mData.cols()) {
                             mData -= reinterpret_cast<const Impl&>(b).mData;
-													  return *this;
+													  return true;
                            }
                            break;
 			case(BinaryOp::Mul): if(b.get(Interface::Attributes::Rows).rows == 1 &&
                               b.get(Interface::Attributes::Cols).cols == 1) {
                             mData *= reinterpret_cast<const Impl&>(b).mData(0,0);
-                            return *this;
+                            return true;
                            }
                            if(mData.cols() == b.get(Interface::Attributes::Rows).rows) {
                             mData*= reinterpret_cast<const Impl&>(b).mData;
-                            return *this;
+                            return true;
                            }
                            break;
 			case(BinaryOp::Div): if(b.get(Interface::Attributes::Rows).rows == 1 &&
                               b.get(Interface::Attributes::Cols).cols == 1) {
                               mData /= reinterpret_cast<const Impl&>(b).mData(0,0);
-                              return *this;
+                              return true;
                            }
                            break;
       case(BinaryOp::EMul):if(b.get(Interface::Attributes::Rows).rows == mData.rows() &&
                               b.get(Interface::Attributes::Cols).cols == mData.cols()) {
                               mData.cwiseProduct(reinterpret_cast<const Impl&>(b).mData);
-                              return *this;
+                              return true;
                            }
-	}
-  return Interface::binaryOp(op, b);
+      default:             return Interface::binaryOp(op, b);
+   }
+   return false;
 }
 
 template<typename T, bool U>
@@ -253,7 +254,7 @@ Ptr MetaValueImplementation<T, U>::binaryConstOp( BinaryConstOp op, const Interf
 
 
 template<typename T, bool U>
-Interface& MetaValueImplementation<T, U>::scale(const MetaScale& scale, bool invert) {
+bool MetaValueImplementation<T, U>::scale(const MetaScale& scale, bool invert) {
   if(invert) {
 	  mData  *= scale.denom();
 	  mData  /= scale.num();
@@ -261,7 +262,7 @@ Interface& MetaValueImplementation<T, U>::scale(const MetaScale& scale, bool inv
 	  mData  *= scale.num();
 	  mData  /= scale.denom();
   }
-	return *this;
+	return true;
 }
 /** \todo implement **/
 template<typename T, bool U>

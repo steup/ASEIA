@@ -14,7 +14,7 @@ using BinaryConstOp = MVB::BinaryConstOp;
 using Ptr           = MetaValue::Ptr;
 using ID            = MetaValue::ID;
 
-MetaValue::MetaValue() : mImpl(new MVB()) {}
+MetaValue::MetaValue() : mImpl(MVB::instance()) {}
 
 MetaValue::MetaValue(double v, id::type::ID typeID)
   : MetaValue({{{v}}}, typeID, 1, 1, false)
@@ -81,72 +81,64 @@ bool MetaValue::set(std::size_t row, std::size_t col, double elem) {
 }
 
 MetaValue& MetaValue::operator+=(const MetaValue& b) {
-  if(compatible(b))
-    mImpl->binaryOp(BinaryOp::Add, *b.mImpl);
-   else
-    resize(0,0);
+  if( !compatible(b) || !mImpl->binaryOp(BinaryOp::Add, *b.mImpl) )
+    mImpl = MVB::instance();
   return *this;
 }
 
 MetaValue& MetaValue::operator-=(const MetaValue& b) {
-  if(compatible(b))
-    mImpl->binaryOp(BinaryOp::Sub, *b.mImpl);
-   else
-    resize(0,0);
+  if(!compatible(b) || !mImpl->binaryOp(BinaryOp::Sub, *b.mImpl))
+    mImpl = MVB::instance();
   return *this;
 }
 MetaValue& MetaValue::operator*=(const MetaValue& b) {
-  if(compatible(b))
-    mImpl->binaryOp(BinaryOp::Mul, *b.mImpl);
-   else
-    resize(0,0);
+  if( !compatible(b) || !mImpl->binaryOp(BinaryOp::Mul, *b.mImpl))
+    mImpl = MVB::instance();
   return *this;
 }
 MetaValue& MetaValue::operator/=(const MetaValue& b) {
-  if(compatible(b))
-    mImpl->binaryOp(BinaryOp::Div, *b.mImpl);
-   else
-    resize(0,0);
+  if( !compatible(b) || !mImpl->binaryOp(BinaryOp::Div, *b.mImpl))
+    mImpl = MVB::instance();
   return *this;
 }
 
 MetaValue MetaValue::operator==(const MetaValue& b) const {
-  if(compatible(b))
+  if(compatible(b) && rows() == b.rows() && cols() == b.cols())
     return MetaValue(mImpl->binaryConstOp(BinaryConstOp::Equal, *b.mImpl));
   else
     return MetaValue();
 }
 
 MetaValue MetaValue::operator!=(const MetaValue& b) const {
-  if(compatible(b))
+  if(compatible(b) && rows() == b.rows() && cols() == b.cols())
     return MetaValue(mImpl->binaryConstOp(BinaryConstOp::NotEqual, *b.mImpl));
   else
     return MetaValue();
 }
 
 MetaValue MetaValue::operator<=(const MetaValue& b) const {
-  if(compatible(b))
+  if(compatible(b) && rows() == b.rows() && cols() == b.cols())
     return MetaValue(mImpl->binaryConstOp(BinaryConstOp::SmallEqual, *b.mImpl));
   else
     return MetaValue();
 }
 
 MetaValue MetaValue::operator>=(const MetaValue& b) const {
-  if(compatible(b))
+  if(compatible(b) && rows() == b.rows() && cols() == b.cols())
     return MetaValue(mImpl->binaryConstOp(BinaryConstOp::GreatEqual, *b.mImpl));
   else
     return MetaValue();
 }
 
 MetaValue MetaValue::operator<(const MetaValue& b) const {
-  if(compatible(b))
+  if(compatible(b) && rows() == b.rows() && cols() == b.cols())
     return MetaValue(mImpl->binaryConstOp(BinaryConstOp::Smaller, *b.mImpl));
   else
     return MetaValue();
 }
 
 MetaValue MetaValue::operator>(const MetaValue& b) const {
-  if(compatible(b))
+  if(compatible(b) && rows() == b.rows() && cols() == b.cols())
     return MetaValue(mImpl->binaryConstOp(BinaryConstOp::Greater, *b.mImpl));
   else
     return MetaValue();
@@ -273,11 +265,12 @@ bool MetaValue::hasUncertainty() const {
 }
 
 bool MetaValue::valid() const {
-  return typeId() != id::type::Base::value();
+  ValueType vT=(ValueType)*this;
+  return vT.typeId() != id::type::Base::value() && vT.rows()>0 && cols() >0;
 }
 
 bool MetaValue::compatible(const MetaValue& b) const {
-  return valid() && typeId() == b.typeId() && cols() == b.cols() && rows() == b.rows();
+  return valid() && b.valid() && typeId() == b.typeId() && hasUncertainty() == b.hasUncertainty();
 }
 MetaValue::operator ValueType() const {
   return ValueType(typeId(), rows(), cols(), hasUncertainty());
