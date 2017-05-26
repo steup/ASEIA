@@ -19,7 +19,7 @@ class MetaValue {
 
 	private:
     Ptr mImpl;
-
+    
 	public:
     explicit MetaValue(Ptr&& ref);
     Ptr& implementation() { return mImpl; }

@@ -80,68 +80,75 @@ bool MetaValue::set(std::size_t row, std::size_t col, double elem) {
   return mImpl->set(row, col, {elem});
 }
 
+static bool binaryOp(BinaryOp op, MetaValue& a, const MetaValue& b) {
+  if(!a.valid() || !b.valid())
+    return false;
+  if( a.compatible(b) || a.implementation()->cast(*b.implementation()))
+    return a.implementation()->binaryOp(op, *b.implementation());
+  Ptr tempB = b.implementation()->copy();
+  if(tempB->cast(*a.implementation()))
+    return a.implementation()->binaryOp(op, *tempB);
+  return false;
+}
+
+static MetaValue binaryConstOp(BinaryConstOp op, const MetaValue& a, const MetaValue& b){
+  if(!a.valid() || !b.valid() || a.rows() != b.rows() || a.cols() != b.cols())
+    return MetaValue();
+  if( a.compatible(b))
+    return MetaValue(a.implementation()->binaryConstOp(op, *b.implementation()));
+  Ptr tempA = a.implementation()->copy();
+  if(tempA->cast(*b.implementation()))
+    return MetaValue(tempA->binaryConstOp(op, *b.implementation()));
+  Ptr tempB = b.implementation()->copy();
+  if(tempB->cast(*a.implementation()))
+    return MetaValue(a.implementation()->binaryConstOp(op, *tempB));
+  return MetaValue();
+}
+
 MetaValue& MetaValue::operator+=(const MetaValue& b) {
-  if( !compatible(b) || !mImpl->binaryOp(BinaryOp::Add, *b.mImpl) )
-    mImpl = MVB::instance();
+  if(!binaryOp(BinaryOp::Add, *this, b))
+    mImpl=MVB::instance();
   return *this;
 }
 
 MetaValue& MetaValue::operator-=(const MetaValue& b) {
-  if(!compatible(b) || !mImpl->binaryOp(BinaryOp::Sub, *b.mImpl))
-    mImpl = MVB::instance();
+  if(!binaryOp(BinaryOp::Sub, *this, b))
+    mImpl=MVB::instance();
   return *this;
 }
 MetaValue& MetaValue::operator*=(const MetaValue& b) {
-  if( !compatible(b) || !mImpl->binaryOp(BinaryOp::Mul, *b.mImpl))
-    mImpl = MVB::instance();
+  if(!binaryOp(BinaryOp::Mul, *this, b))
+    mImpl=MVB::instance();
   return *this;
 }
 MetaValue& MetaValue::operator/=(const MetaValue& b) {
-  if( !compatible(b) || !mImpl->binaryOp(BinaryOp::Div, *b.mImpl))
-    mImpl = MVB::instance();
+  if(!binaryOp(BinaryOp::Div, *this, b))
+    mImpl=MVB::instance();
   return *this;
 }
 
 MetaValue MetaValue::operator==(const MetaValue& b) const {
-  if(compatible(b) && rows() == b.rows() && cols() == b.cols())
-    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::Equal, *b.mImpl));
-  else
-    return MetaValue();
+  return binaryConstOp(BinaryConstOp::Equal, *this, b);
 }
 
 MetaValue MetaValue::operator!=(const MetaValue& b) const {
-  if(compatible(b) && rows() == b.rows() && cols() == b.cols())
-    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::NotEqual, *b.mImpl));
-  else
-    return MetaValue();
+  return binaryConstOp(BinaryConstOp::NotEqual, *this, b);
 }
 
 MetaValue MetaValue::operator<=(const MetaValue& b) const {
-  if(compatible(b) && rows() == b.rows() && cols() == b.cols())
-    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::SmallEqual, *b.mImpl));
-  else
-    return MetaValue();
+  return binaryConstOp(BinaryConstOp::SmallEqual, *this, b);
 }
 
 MetaValue MetaValue::operator>=(const MetaValue& b) const {
-  if(compatible(b) && rows() == b.rows() && cols() == b.cols())
-    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::GreatEqual, *b.mImpl));
-  else
-    return MetaValue();
+  return binaryConstOp(BinaryConstOp::GreatEqual, *this, b);
 }
 
 MetaValue MetaValue::operator<(const MetaValue& b) const {
-  if(compatible(b) && rows() == b.rows() && cols() == b.cols())
-    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::Smaller, *b.mImpl));
-  else
-    return MetaValue();
+  return binaryConstOp(BinaryConstOp::Smaller, *this, b);
 }
 
 MetaValue MetaValue::operator>(const MetaValue& b) const {
-  if(compatible(b) && rows() == b.rows() && cols() == b.cols())
-    return MetaValue(mImpl->binaryConstOp(BinaryConstOp::Greater, *b.mImpl));
-  else
-    return MetaValue();
+  return binaryConstOp(BinaryConstOp::Greater, *this, b);
 }
 
 MetaValue& MetaValue::operator*=(const MetaScale& b) { 
