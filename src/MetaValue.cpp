@@ -80,15 +80,36 @@ bool MetaValue::set(std::size_t row, std::size_t col, double elem) {
   return mImpl->set(row, col, {elem});
 }
 
+// \todo Implement
+static bool autoCast(ValueType& aT, ValueType& bT) {
+  if(aT.hasUncertainty() || bT.hasUncertainty()) {
+    aT.hasUncertainty(true);
+    bT.hasUncertainty(true);
+  }
+  if(aT.typeId() == bT.typeId())
+    return true;
+  if(::id::type::smaller(aT.typeId(), bT.typeId())) {
+    aT.typeId(bT.typeId());
+    return true;
+  }
+  if(id::type::smaller(bT.typeId(), aT.typeId())) {
+    bT.typeId(aT.typeId());
+    return true;
+  }
+  return false;
+}
+
 static bool binaryOp(BinaryOp op, MetaValue& a, const MetaValue& b) {
   if(!a.valid() || !b.valid())
     return false;
-  if( a.compatible(b) || a.implementation()->cast(*b.implementation()))
+  if( a.compatible(b))
     return a.implementation()->binaryOp(op, *b.implementation());
-  Ptr tempB = b.implementation()->copy();
-  if(tempB->cast(*a.implementation()))
-    return a.implementation()->binaryOp(op, *tempB);
-  return false;
+  ValueType aT=(ValueType)a, bT=(ValueType)b;
+  if(!autoCast(aT, bT))
+    return false;
+  a = MetaFactory::instance().convert(aT, a);
+  MetaValue tempB = MetaFactory::instance().convert(bT, b);
+  return a.implementation()->binaryOp(op, *tempB.implementation());
 }
 
 static MetaValue binaryConstOp(BinaryConstOp op, const MetaValue& a, const MetaValue& b){
@@ -96,13 +117,12 @@ static MetaValue binaryConstOp(BinaryConstOp op, const MetaValue& a, const MetaV
     return MetaValue();
   if( a.compatible(b))
     return MetaValue(a.implementation()->binaryConstOp(op, *b.implementation()));
-  Ptr tempA = a.implementation()->copy();
-  if(tempA->cast(*b.implementation()))
-    return MetaValue(tempA->binaryConstOp(op, *b.implementation()));
-  Ptr tempB = b.implementation()->copy();
-  if(tempB->cast(*a.implementation()))
-    return MetaValue(a.implementation()->binaryConstOp(op, *tempB));
-  return MetaValue();
+  ValueType aT=(ValueType)a, bT=(ValueType)b;
+  if(!autoCast(aT, bT))
+    return MetaValue();
+  MetaValue tempA = MetaFactory::instance().convert(aT, a);
+  MetaValue tempB = MetaFactory::instance().convert(bT, b);
+  return MetaValue(tempA.implementation()->binaryConstOp(op, *tempB.implementation()));
 }
 
 MetaValue& MetaValue::operator+=(const MetaValue& b) {

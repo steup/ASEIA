@@ -77,9 +77,6 @@ MVBI::Ptr MVBI::row(size_t row) const {
 bool MVBI::scale(const MetaScale& scale, bool invert){
 	return false;
 }
-bool MVBI::cast(const Interface& b) {
-  return false;
-}
 
 ostream& MVBI::print( ostream& o ) const {
       return o << "void";

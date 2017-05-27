@@ -120,7 +120,6 @@ class MetaValueBaseImplementation {
     virtual Ptr row(size_t row) const;
 
 		virtual bool scale(const MetaScale& scale, bool invert = false);
-    virtual bool cast(const Interface& b);
 
     virtual std::ostream& print( std::ostream& o ) const;
 

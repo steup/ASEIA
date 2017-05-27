@@ -161,6 +161,53 @@ namespace id{
     static constexpr const ID id( bool     ) { return Bool  ::value(); }
 
     template<typename T> struct t2Type { using type = typename id2Type< id( T() ) >::type; };
+    inline bool smaller(ID a, ID b) {
+      switch(a) {
+        case(UInt8::value()):
+          switch(b) {
+            case(UInt8::value()): return false;
+            default    : return true;
+          }
+        case(Int8::value()):
+          switch(b) {
+            case(UInt8::value()): return false;
+            case(Int8::value()) : return false;
+            default    : return true;
+          }
+        case(UInt16::value()):
+          switch(b) {
+            case(UInt8::value()): return false;
+            case(Int8::value()) : return false;
+            default    : return true;
+          }
+        case(Int16::value()):
+          switch(b) {
+            case(UInt8::value()): return false;
+            case(Int8::value()) : return false;
+            case(UInt16::value()): return false;
+            default    : return true;
+          }
+        case(UInt32::value()):
+          switch(b) {
+            case(UInt8::value()): return false;
+            case(Int8::value()) : return false;
+            case(UInt16::value()): return false;
+            case(Int16::value()): return false;
+            default    : return true;
+          }
+        case(Int32::value()):
+          switch(b) {
+            case(UInt8::value()): return false;
+            case(Int8::value()) : return false;
+            case(UInt16::value()): return false;
+            case(Int16::value()): return false;
+            case(UInt32::value()): return false;
+            default    : return true;
+          }
+        case(Float::value()): return b!=Double::value();
+        default             : return false;
+      }
+    }
   }
 
   namespace unit{
