@@ -41,6 +41,7 @@ class MetaEvent{
     bool operator!=(const MetaEvent& a) const { return !(*this==a); }
 
     explicit operator EventType() const;
+    size_t size() const { return mStorage.size(); }
 
 		iterator begin() noexcept;
 		const_iterator begin() const noexcept;
@@ -54,14 +55,20 @@ std::ostream& operator<<(std::ostream& o, const MetaEvent& me);
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, const MetaEvent& me){
-	for(const MetaAttribute& attr : me)
-		s << attr;
+  id::attribute::ID attrs[me.size()];
+  std::transform(me.begin(), me.end(), attrs, [](const MetaAttribute& mA){ return mA.id(); });
+  std::sort(attrs, attrs+me.size());
+  for(id::attribute::ID attr : attrs)
+		s << *me.attribute(attr);
   return s;
 }
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& d, MetaEvent& me){
-	for(MetaAttribute& attr : me)
-		d >> attr;
+  id::attribute::ID attrs[me.size()];
+  std::transform(me.begin(), me.end(), attrs, [](const MetaAttribute& mA){ return mA.id(); });
+  std::sort(attrs, attrs+me.size());
+  for(id::attribute::ID attr : attrs)
+		d >> *me.attribute(attr);
   return d;
 }
