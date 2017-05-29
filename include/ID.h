@@ -204,7 +204,11 @@ namespace id{
             case(UInt32::value()): return false;
             default    : return true;
           }
-        case(Float::value()): return b!=Double::value();
+        case(Float::value()):
+          switch(b) {
+            case(Double::value()) : return true;
+            default               : return false;
+          }
         default             : return false;
       }
     }

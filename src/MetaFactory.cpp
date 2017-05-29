@@ -118,7 +118,7 @@ MetaValue MetaFactoryImplementation::create(id::type::ID id, std::size_t rows, s
 }
 
 MetaValue MetaFactoryImplementation::convert(const ValueType& type, const MetaValue& value) const {
-  if(value.typeId() == type.typeId())
+  if(value.typeId() == type.typeId() && value.hasUncertainty() == type.hasUncertainty())
     return value;
 	ValueType dst = type;
 	ValueType src = (ValueType)value;
