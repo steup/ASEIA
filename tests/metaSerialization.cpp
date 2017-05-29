@@ -61,6 +61,20 @@ TEST_F(MetaSerializationSuite, 1value32Test) {
   check(comp);
 }
 
+TEST_F(MetaSerializationSuite, 4value32Test) {
+  MetaValue v = f.create({{{1,2}, {4, 8}}, {{16, 32}, {64, 128}}}, UInt32::value());
+  Buffer comp={0x01, 0x00, 0x00, 0x00,
+               0x02, 0x00, 0x00, 0x00,
+               0x10, 0x00, 0x00, 0x00,
+               0x20, 0x00, 0x00, 0x00,
+               0x04, 0x00, 0x00, 0x00,
+               0x08, 0x00, 0x00, 0x00,
+               0x40, 0x00, 0x00, 0x00,
+               0x80, 0x00, 0x00, 0x00};
+  s << v;
+  check(comp);
+}
+
 /** \todo More Test Cases **/
 
 TEST_F(MetaSerializationSuite, attributeTest) {

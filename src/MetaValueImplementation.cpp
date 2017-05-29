@@ -33,7 +33,7 @@ const uint8_t* MetaValueImplementation<T, U>::begin() const{
 
 template<typename T, bool U>
 const uint8_t* MetaValueImplementation<T, U>::end() const{
-  return reinterpret_cast<const uint8_t*>(mData.data()+mData.rows()*mData.cols());
+  return reinterpret_cast<const uint8_t*>(mData.data())+ValueElement<T, U>::size()*mData.rows()*mData.cols();
 
 }
 
@@ -45,7 +45,7 @@ uint8_t* MetaValueImplementation<T, U>::begin(){
 
 template<typename T, bool U>
 uint8_t* MetaValueImplementation<T, U>::end(){
-  return reinterpret_cast<uint8_t*>(mData.data()+mData.rows()*mData.cols());
+  return reinterpret_cast<uint8_t*>(mData.data())+ValueElement<T, U>::size()*mData.rows()*mData.cols();
 
 }
 
