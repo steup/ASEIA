@@ -67,6 +67,8 @@ class MetaValue {
     MetaValue& block(size_t i, size_t j, MetaValue&& v);
     MetaValue col(size_t col) const;
     MetaValue row(size_t row) const;
+    MetaValue value() const;
+    MetaValue uncertainty() const;
 
     MetaValue& sin();
     MetaValue& cos();

@@ -137,12 +137,14 @@ TEST(ValueElementSuite, castTest) {
   using U16 = ValueElement<uint16_t, true>;
   using U32 = ValueElement<uint32_t, true>;
   using F = ValueElement<float, true>;
+  using FC = ValueElement<float, false>;
   using D = ValueElement<double, true>;
 
   I8  i8  = {-127      , 0U  };
   U8  u8  = {255U      , 0U  };
   U32 u32 = {1234U     , 1U  };
   F   f   = {1234.5678f, 0.0f};
+  FC   fc = {1234.5678f};
   EXPECT_EQ(U8(i8).value(), 0U);
   EXPECT_EQ(U8(i8).uncertainty(), 127U);
   EXPECT_EQ(I8(u8).value(), 127);
@@ -151,6 +153,8 @@ TEST(ValueElementSuite, castTest) {
   EXPECT_EQ(U16(f).uncertainty(), 1U);
   EXPECT_EQ(U32(f).value(), 1234U);
   EXPECT_EQ(U32(f).uncertainty(), 1U);
+  EXPECT_EQ(F(fc).value(), 1234.5678f);
+  EXPECT_EQ(F(fc).uncertainty(), 0.0f);
   EXPECT_EQ(D(u32).value(), 1234);
   EXPECT_EQ(D(u32).uncertainty(), 1);
 }

@@ -49,6 +49,8 @@ class MetaValueBaseImplementation {
       Transpose,
       Zero,
       Identity,
+      Value,
+      Uncertainty
     };
 
 		enum class BinaryOp {

@@ -190,6 +190,14 @@ Ptr MetaValueImplementation<T, U>::unaryConstOp( UnaryConstOp op) const {
       MetaValueImplementation<T, U> temp(mData.identity());
       ptr = temp.copy(); }
       break;
+    case(UnaryConstOp::Value): {
+      MetaValueImplementation<T, false> temp(mData.value());
+      ptr = temp.copy(); };
+      break;
+    case(UnaryConstOp::Uncertainty): {
+      MetaValueImplementation<T, false> temp(mData.uncertainty());
+      ptr = temp.copy(); };
+      break;
 		default           : return Interface::unaryConstOp(op);
 	}
 	return ptr;

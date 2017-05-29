@@ -195,7 +195,7 @@ TEST(MetaValueSuite, mulTest) {
 TEST(MetaValueSuite, divTest) {
   MetaValue a = {{{5, 1}, {3,0}, {4, 0}}, {{6, 1}, {7, 0}, {8, 0}}};
   EXPECT_EQ(a/MetaValue({{{5, 0}}}), MetaValue({{{5.0/5, 1.0/5}, {3.0/5,0}, {4.0/5, 0}}, {{6.0/5, 1}, {7.0/5, 0}, {8.0/5, 0}}}));
-  EXPECT_EQ(a/5, MetaValue({{{5.0/5, 1.0/5}, {3.0/5,0}, {4.0/5, 0}}, {{6.0/5, 1}, {7.0/5, 0}, {8.0/5, 0}}}));
+  EXPECT_EQ(a/5, MetaValue({{{5.0/5, 1.0/5}, {3.0/5,0}, {4.0/5, 0}}, {{6.0/5, 1.0/5}, {7.0/5, 0}, {8.0/5, 0}}}));
   EXPECT_FALSE((a/MetaValue({{{5}, {1}}})).valid()) << (a/MetaValue({{{5}, {1}}}));
 }
 
@@ -210,6 +210,28 @@ TEST(MetaValueSuite, normTest) {
   MetaValue diu = {{{5, 1}}, {{6, 2}}, {{7, 1}}, {{8, 2}}};
   MetaValue aiRef = 5;
   EXPECT_TRUE((ai.norm() - aiRef)<0.1) << ai.norm() << " != " << aiRef;
+}
+
+TEST(MetaValueSuite, autoCastTest) {
+  MetaValue d11 = 5;
+  MetaValue d11u = {{{5, 1}}};
+  EXPECT_TRUE((d11*d11u).valid()) << d11 << " x " << d11u << " = invalid";
+  EXPECT_EQ((ValueType)(d11*d11u), ValueType(Double::value(), 1, 1, true));
+  EXPECT_LE((d11*d11u).value()-MetaValue(25), 0.1);
+  EXPECT_LE((d11*d11u).uncertainty()-MetaValue(5), 0.1);
+  MetaValue f11(5, Float::value());
+  MetaValue f11u({{{5, 1}}}, Float::value());
+  EXPECT_TRUE((f11*f11u).valid()) << f11 << " x " << f11u << " = invalid";
+  EXPECT_EQ((ValueType)(f11*f11u), ValueType(Float::value(), 1, 1, true));
+  EXPECT_LE((f11*f11u).value()-MetaValue(25), 0.1);
+  EXPECT_LE((f11*f11u).uncertainty()-MetaValue(5, Float::value()), 0.1);
+  EXPECT_TRUE((f11*d11).valid()) << f11 << " x " << d11 << " = invalid";
+  EXPECT_EQ((ValueType)(f11*d11), ValueType(Double::value(), 1, 1, false));
+  EXPECT_LE((f11*d11).value()-MetaValue(25), 0.1);
+  EXPECT_TRUE((f11u*d11u).valid()) << f11u << " x " << d11u << " = invalid";
+  EXPECT_EQ((ValueType)(f11u*d11u), ValueType(Double::value(), 1, 1, true));
+  EXPECT_LE((f11*d11u).value()-MetaValue(25), 0.1);
+  EXPECT_LE((f11*d11u).uncertainty()-MetaValue(5), 0.1);
 }
 
 }}

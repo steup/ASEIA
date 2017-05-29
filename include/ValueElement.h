@@ -270,7 +270,7 @@ class ValueElementBase {
 
 		VType value() const { return mValue; }
 		void value( VType v) { mValue = v; }
-		UType uncertainty() const { return std::numeric_limits<UType>::max(); }
+		UType uncertainty() const { return 0; }
     void uncertainty ( T u ) {}
 
 		ValueElementBase& operator+=(T a){
@@ -632,7 +632,7 @@ class ValueElement<T, true> : public ValueElementBase<T>{
     
     template<typename T2>
     ValueElement(const ValueElement<T2, false>& data) : ValueElement() {
-      checkBounds(data.mValue, this->mValue);
+      mUncertainty = checkBounds(data.mValue, this->mValue);
     }
 
     UType uncertainty() const{ return mUncertainty; }

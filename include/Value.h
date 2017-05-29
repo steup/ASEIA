@@ -273,6 +273,19 @@ class Value {
       return Value<typename VE::VType, R, C, VE::U::value>(mData.template cast<VE>());
     }
 
+    Value<T, R, C, false> value() const {
+      return cast<ValueElement<T, false>>();
+    }
+
+    Value<T, R, C, false> uncertainty() const {
+      Value<T, R, C, false> temp;
+      temp.resize(rows(), cols());
+      for(size_t i=0; i<temp.rows();i++)
+        for(size_t j=0; j<temp.cols(); j++)
+          temp.mData(i,j).value(mData(i,j).uncertainty());
+      return temp;
+    }
+
 		constexpr const bool hasUncertainty() const noexcept {return BaseType().hasUncertainty();}
 
     static constexpr const std::size_t staticSize() { return R * C * BaseType::size(); }
@@ -280,6 +293,7 @@ class Value {
 
     template<typename TF, int32_t RF, int32_t CF, bool UF, int32_t C2F>
     friend Value<TF, RF, C2F, UF> operator*(const Value<TF, RF, CF, UF>&, const Value<TF, CF, C2F, UF>&);
+    template<typename T2, int32_t R2, int32_t C2, bool U2> friend class Value;
 
 };
 

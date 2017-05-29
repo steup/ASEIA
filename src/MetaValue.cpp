@@ -80,6 +80,14 @@ bool MetaValue::set(std::size_t row, std::size_t col, double elem) {
   return mImpl->set(row, col, {elem});
 }
 
+MetaValue MetaValue::value() const{
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Value));
+}
+
+MetaValue MetaValue::uncertainty() const{
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Uncertainty));
+}
+
 // \todo Implement
 static bool autoCast(ValueType& aT, ValueType& bT) {
   if(aT.hasUncertainty() || bT.hasUncertainty()) {
