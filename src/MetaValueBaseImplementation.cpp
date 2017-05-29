@@ -85,11 +85,3 @@ ostream& MVBI::print( ostream& o ) const {
 ostream& operator<<( ostream& o, const MVBI& mvbi) {
   return mvbi.print(o);
 }
-
-void MVBI::Deleter::operator()(MVBI* ptr) {
-  if( ptr!= &sInstance)
-    delete ptr;
-}
-
-MVBI MVBI::sInstance;
-MVBI::Deleter MVBI::sDel;

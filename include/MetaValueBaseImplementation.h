@@ -70,14 +70,8 @@ class MetaValueBaseImplementation {
 			NotEqual,
 			ApproxEqual
 		};
-  private:
-    static MetaValueBaseImplementation sInstance;
-    struct Deleter {
-      void operator()(Interface* ptr);
-    };
-    static Deleter sDel;
 	public:
-    using Ptr = std::unique_ptr<Interface, Deleter>;
+    using Ptr = std::unique_ptr<Interface>;
 
 	protected:
 
@@ -91,7 +85,7 @@ class MetaValueBaseImplementation {
     MetaValueBaseImplementation() = default;
   public:
     using ElemInitType = std::initializer_list<double>;
-    static Ptr instance() { return Ptr(&sInstance, sDel); }
+    static Ptr instance() { return Ptr(new MetaValueBaseImplementation()); }
     virtual ~MetaValueBaseImplementation() = default;
 
 		Interface& operator=(const Interface& copy) = delete;
