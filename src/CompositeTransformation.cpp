@@ -27,32 +27,6 @@ struct CompositeTransformer : public Transformer {
     using Vertex= Graph::vertex_descriptor;
     using Edge= Graph::edge_descriptor;
 
-    struct CallVisitor : public default_dfs_visitor {
-
-      Events& results;
-      map<Vertex, vector<MetaEvent>> buffer;
-
-      const MetaEvent& input;
-
-      CallVisitor(Events& results, const MetaEvent& input) : results(results), input(input) {}
-
-      void initialize_vertex(Vertex v, const Graph& g) {
-        buffer.emplace(v, vector<MetaEvent>());
-      }
-
-      void finish_vertex(Vertex v, const Graph& g) {
-        vector<MetaEvent> temp = g[v]->operator()(input);
-        std::move(temp.begin(), temp.end(), back_inserter(buffer[v]));
-        auto edges = out_edges(v, g);
-        for(auto it=edges.first; it!=edges.second; it++)
-          for(const MetaEvent& e: buffer[target(*it, g)]) {
-            temp = g[v]->operator()(e);
-            std::move(temp.begin(), temp.end(), back_inserter(buffer[v]));
-          }
-        results = buffer[v];
-      }
-    };
-
     Graph graph;
     Vertex root;
     /** \brief Generate CompositeTransformer from CompositeTransformation
@@ -80,15 +54,39 @@ struct CompositeTransformer : public Transformer {
       return false;
     }
 
+using It = back_insert_iterator<Events>;
+
+static It call(Vertex v, const MetaEvent& e, const Graph& graph, It it) {
+    if(graph[v] == nullptr)
+      return it;
+    Transformer& t = *graph[v];
+    Events temp = t(e);
+    if(in_degree(v, graph)==0)
+      return std::move(temp.begin(), temp.end(), it);
+    else {
+      auto edges = in_edges(v, graph);
+      for(auto eIt = edges.first; eIt != edges.second; eIt++)
+        for(const MetaEvent& nextE : temp)
+          it=call(source(*eIt, graph), nextE, graph, it);
+    }
+    return it;
+}
+
     /** \brief execute transformer on input events
      *  \param events input events
      *  \return result of the transformer graph
      **/
     virtual Events operator()(const MetaEvent& event) {
       Events result;
-      vector<default_color_type> colors(num_vertices(graph));
-      depth_first_visit(graph, root, CallVisitor(result, event),
-                        make_iterator_property_map(colors.begin(), get(vertex_index, graph)));
+      EventType eT=(EventType)event;
+      auto eTCompat = [eT](const EventType& eTin) {
+        return eTin<=eT;
+      };
+      for(auto it=vertices(graph).first; it!=vertices(graph).second;it++) {
+        Transformer& t = *graph[*it];
+        if(find_if(t.in().begin(), t.in().end(), eTCompat) != t.in().end())
+          call(*it, event, graph, back_inserter(result));
+      }
       return result;
     }
 
