@@ -133,6 +133,11 @@ static MetaValue binaryConstOp(BinaryConstOp op, const MetaValue& a, const MetaV
   return MetaValue(tempA.implementation()->binaryConstOp(op, *tempB.implementation()));
 }
 
+
+MetaValue MetaValue::operator-() const {
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Neg));
+}
+
 MetaValue& MetaValue::operator+=(const MetaValue& b) {
   if(!binaryOp(BinaryOp::Add, *this, b))
     mImpl=MVB::instance();
@@ -153,6 +158,10 @@ MetaValue& MetaValue::operator/=(const MetaValue& b) {
   if(!binaryOp(BinaryOp::Div, *this, b))
     mImpl=MVB::instance();
   return *this;
+}
+
+MetaValue MetaValue::dot(const MetaValue& b) const {
+  return ((*this)*b).sum();
 }
 
 MetaValue MetaValue::operator==(const MetaValue& b) const {

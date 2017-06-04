@@ -56,13 +56,13 @@ class Value {
     using Iterator      = BaseType*;
     using ConstIterator = const BaseType*;
 
-		Iterator begin() { return Iterator(this->data()); }
+		Iterator begin() { return Iterator(this->data().data()); }
 
-		Iterator end()   { return Iterator(this->data()+this->cols()*this->rows()); }
+		Iterator end()   { return Iterator(this->data().data()+this->cols()*this->rows()); }
 
-		ConstIterator begin() const { return ConstIterator(this->data()); }
+		ConstIterator begin() const { return ConstIterator(this->data().data()); }
 
-		ConstIterator end() const { return ConstIterator(this->data()+this->cols()*this->rows()); }
+		ConstIterator end() const { return ConstIterator(this->data().data()+this->cols()*this->rows()); }
 
     void resize(std::size_t rows, std::size_t cols=1) { mData.resize(rows, cols); }
     void conservativeResize(std::size_t rows, std::size_t cols=1) { mData.conservativeResize(rows, cols); }
@@ -113,7 +113,7 @@ class Value {
     }
 
     Value& cwiseProduct(const Value& b) {
-      mData.cwiseProduct(b.mData);
+      mData=mData.cwiseProduct(b.mData);
       return *this;
     }
 
@@ -131,8 +131,8 @@ class Value {
     BaseType prod() const { return mData.prod(); }
     BaseType sum() const { return mData.sum(); }
     BaseType norm() const { return mData.norm(); }
-    BaseType* data() { return mData.data(); }
-    const BaseType* data() const { return mData.data(); }
+    const DataType& data() const { return mData; }
+    DataType& data() { return mData; }
 
     template<std::intmax_t num, std::intmax_t den>
     Value operator*(std::ratio<num, den> r) {
@@ -187,6 +187,11 @@ class Value {
 
     Value& operator/=(const BaseType& s) {
       mData/=s;
+      return *this;
+    }
+    
+    Value& operator/=(const Value& b) {
+      mData.cwiseQuotient(b.mData);
       return *this;
     }
 

@@ -30,7 +30,6 @@ class MetaValueBaseImplementation {
 		};
 
 		enum class UnaryOp {
-			Neg,
       Sin,
       Cos,
       Tan,
@@ -43,6 +42,7 @@ class MetaValueBaseImplementation {
     };
 
     enum class UnaryConstOp {
+			Neg,
 			Prod,
       Sum,
       Norm,

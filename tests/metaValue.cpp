@@ -179,7 +179,9 @@ TEST(MetaValueSuite, mulTest) {
   EXPECT_EQ((ValueType)(e*f), ValueType(Double::value(), 1, 1 ,true));
   MetaValue g = {{{5, 1}, {6, 0}}};
   MetaValue h = {{{6, 0}, {5, 1}}};
-  EXPECT_FALSE((g*h).valid()) << (g*h);
+  EXPECT_TRUE((g*h).valid()) << (g*h); //Element wise multiplication, because no other valid operation defined for v*v
+  EXPECT_EQ(g*h, MetaValue({{{30, 6}, {30, 6}}}));
+  EXPECT_EQ((ValueType)(g*h), ValueType(Double::value(), 1, 2 ,true));
   MetaValue i = {{{5, 1}, {6, 0}}, {{1, 0}, {0, 0}}};
   MetaValue j = {{{6, 0}}, {{5, 1}}};
   EXPECT_TRUE((i*j).valid()) << (i*j);

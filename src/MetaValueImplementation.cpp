@@ -28,24 +28,24 @@ using Bool = MetaValueImplementation<bool, U>;
 
 template<typename T, bool U>
 const uint8_t* MetaValueImplementation<T, U>::begin() const{
-  return reinterpret_cast<const uint8_t*>(mData.data());
+  return reinterpret_cast<const uint8_t*>(mData.data().data());
 }
 
 template<typename T, bool U>
 const uint8_t* MetaValueImplementation<T, U>::end() const{
-  return reinterpret_cast<const uint8_t*>(mData.data())+ValueElement<T, U>::size()*mData.rows()*mData.cols();
+  return reinterpret_cast<const uint8_t*>(mData.data().data())+ValueElement<T, U>::size()*mData.rows()*mData.cols();
 
 }
 
 template<typename T, bool U>
 uint8_t* MetaValueImplementation<T, U>::begin(){
-  return reinterpret_cast<uint8_t*>(mData.data());
+  return reinterpret_cast<uint8_t*>(mData.data().data());
 
 }
 
 template<typename T, bool U>
 uint8_t* MetaValueImplementation<T, U>::end(){
-  return reinterpret_cast<uint8_t*>(mData.data())+ValueElement<T, U>::size()*mData.rows()*mData.cols();
+  return reinterpret_cast<uint8_t*>(mData.data().data())+ValueElement<T, U>::size()*mData.rows()*mData.cols();
 
 }
 
@@ -133,8 +133,6 @@ bool MetaValueImplementation<T, U>::set(Attributes a, Data d) {
 template<typename T, bool U>
 bool MetaValueImplementation<T, U>::unaryOp( UnaryOp op)  {
 	switch(op) {
-		case(UnaryOp::Neg): mData = -mData;
-												break;
     case(UnaryOp::Sin): mData.sin();
                          break;
     case(UnaryOp::Cos): mData.cos();
@@ -160,6 +158,11 @@ template<typename T, bool U>
 Ptr MetaValueImplementation<T, U>::unaryConstOp( UnaryConstOp op) const {
   Ptr ptr;
 	switch(op) {
+    case(UnaryConstOp::Neg): {
+      MetaValueImplementation<T, U> temp;
+      temp.mData = -mData;
+      ptr = temp.copy(); }
+			break;
 		case(UnaryConstOp::Prod): {
       MetaValueImplementation<T, U> temp = *this;
       temp.mData.resize(1,1);
@@ -204,39 +207,54 @@ Ptr MetaValueImplementation<T, U>::unaryConstOp( UnaryConstOp op) const {
 }
 
 template<typename T, bool U>
-bool MetaValueImplementation<T, U>::binaryOp( BinaryOp op, const Interface& b)  {
+bool MetaValueImplementation<T, U>::binaryOp( BinaryOp op, const Interface& bTemp)  {
+  const MetaValueImplementation<T, U>& b = reinterpret_cast<const Impl&>(bTemp);
 	switch(op) {
-      case(BinaryOp::Add): if(b.get(Interface::Attributes::Rows).rows == mData.rows() &&
-                              b.get(Interface::Attributes::Cols).cols == mData.cols()) {
-                            mData += reinterpret_cast<const Impl&>(b).mData;
+      case(BinaryOp::Add): if(b.mData.rows() == mData.rows() &&
+                              b.mData.cols() == mData.cols()) {
+                            mData += b.mData;
 													  return true;
                            }
                            break;
-			case(BinaryOp::Sub): if(b.get(Interface::Attributes::Rows).rows == mData.rows() &&
-                              b.get(Interface::Attributes::Cols).cols == mData.cols()) {
-                            mData -= reinterpret_cast<const Impl&>(b).mData;
+			case(BinaryOp::Sub): if(b.mData.rows() == mData.rows() &&
+                              b.mData.cols() == mData.cols()) {
+                            mData -= b.mData;
 													  return true;
                            }
                            break;
-			case(BinaryOp::Mul): if(b.get(Interface::Attributes::Rows).rows == 1 &&
-                              b.get(Interface::Attributes::Cols).cols == 1) {
-                            mData *= reinterpret_cast<const Impl&>(b).mData(0,0);
+			case(BinaryOp::Mul): if(b.mData.rows() == 1 &&
+                              b.mData.cols() == 1) {
+                            mData *= b.mData(0,0);
                             return true;
                            }
-                           if(mData.cols() == b.get(Interface::Attributes::Rows).rows) {
-                            mData*= reinterpret_cast<const Impl&>(b).mData;
+                           if(mData.rows() == 1 &&
+                              mData.cols() == 1) {
+                            mData = b.mData*mData(0,0);
+                            return true;
+                           }
+                           if(mData.cols() == b.mData.rows()) {
+                            mData*= b.mData;
+                            return true;
+                           }
+                           if((mData.cols() == 1 && b.mData.cols() == 1 && mData.rows() == b.mData.rows()) ||
+                              (mData.rows() == 1 && b.mData.rows() == 1 && mData.cols() == b.mData.cols())) {
+                            mData=mData.cwiseProduct(b.mData);
                             return true;
                            }
                            break;
-			case(BinaryOp::Div): if(b.get(Interface::Attributes::Rows).rows == 1 &&
-                              b.get(Interface::Attributes::Cols).cols == 1) {
-                              mData /= reinterpret_cast<const Impl&>(b).mData(0,0);
+			case(BinaryOp::Div): if(b.mData.rows() == 1 &&
+                              b.mData.cols() == 1) {
+                              mData /= b.mData(0,0);
+                              return true;
+                           }if(b.mData.rows() == mData.rows() &&
+                              b.mData.cols() == mData.cols()) {
+                              mData /= b.mData;
                               return true;
                            }
                            break;
-      case(BinaryOp::EMul):if(b.get(Interface::Attributes::Rows).rows == mData.rows() &&
-                              b.get(Interface::Attributes::Cols).cols == mData.cols()) {
-                              mData.cwiseProduct(reinterpret_cast<const Impl&>(b).mData);
+      case(BinaryOp::EMul):if(b.mData.rows() == mData.rows() &&
+                              b.mData.cols() == mData.cols()) {
+                              mData=mData.cwiseProduct(b.mData);
                               return true;
                            }
       default:             return Interface::binaryOp(op, b);
@@ -275,7 +293,13 @@ bool MetaValueImplementation<T, U>::scale(const MetaScale& scale, bool invert) {
 /** \todo implement **/
 template<typename T, bool U>
 bool MetaValueImplementation<T, U>::block(size_t i, size_t j, Ptr&& ptr) {
-  return false;
+  Data typeID = ptr->get(Attributes::TypeID);
+  Data u = ptr->get(Attributes::HasUncertainty);
+  if(ValueType(mData).typeId() != typeID.typeID || ValueType(mData).hasUncertainty() != u.hasUncertainty)
+    return false;
+  MetaValueImplementation<T, U>& b = reinterpret_cast<MetaValueImplementation<T, U>&>(*ptr);
+  mData.block(i,j, b.mData.rows(), b.mData.cols()) = b.mData.data();
+  return true;
 }
 
 template<typename T, bool U>
