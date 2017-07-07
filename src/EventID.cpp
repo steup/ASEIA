@@ -17,4 +17,18 @@ EventID::IDType EventID::idGen(const EventID::InitType& attrs) {
   return id;
 }
 
+EventID& EventID::operator/=(id::attribute::ID attr) {
+  IDType attrID = PrimeGenerator::prime(attr);
+  if(mID % attrID == 0)
+    mID /= attrID;
+  return *this;
+}
+
+EventID& EventID::operator*=(id::attribute::ID attr){
+  IDType attrID = PrimeGenerator::prime(attr);
+  if(mID % attrID != 0)
+    mID *= attrID;
+  return *this;
+}
+
 const EventID EventID::any;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ID.h>
+
 #include <cstdint>
 #include <initializer_list>
 
@@ -64,6 +66,9 @@ class EventID {
 		bool operator>=(const EventID& b) const {
 			return b<=(*this);
 		}
+
+    EventID& operator/=(id::attribute::ID attr);
+    EventID& operator*=(id::attribute::ID attr);
 
     static bool comp(EventID a, EventID b) { return a.mID < b.mID; }
 
