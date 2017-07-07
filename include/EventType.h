@@ -42,6 +42,8 @@ class EventType{
       return true;
     }
 
+    void remove(KeyType k) { mStorage.erase(k); }
+
     const AttributeType* attribute(KeyType key) const;
     AttributeType* attribute(KeyType key);
 
