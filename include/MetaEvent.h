@@ -37,6 +37,8 @@ class MetaEvent{
     bool add(MetaAttribute&& mA);
     bool remove(ID id) { return mStorage.erase(id); }
 
+    MetaEvent& operator=(const MetaEvent& copy);
+
     bool operator==(const MetaEvent& a) const;
     bool operator!=(const MetaEvent& a) const { return !(*this==a); }
 

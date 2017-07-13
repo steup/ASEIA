@@ -30,6 +30,19 @@ MetaEvent::MetaEvent(const EventType& eT) {
 		add(MetaAttribute(aT));
 }
 
+MetaEvent& MetaEvent::operator=(const MetaEvent& copy) {
+  if(mStorage.size()==0) {
+    mStorage = copy.mStorage;
+    return *this;
+  }
+
+  for(Storage::value_type& v : mStorage) {
+    Storage::const_iterator it = copy.mStorage.find(v.first);
+    if(it!=copy.mStorage.end())
+      v.second = it->second;
+  }
+  return *this;
+}
 MetaAttribute* MetaEvent::attribute(id::attribute::ID id){
 	Storage::iterator iter = mStorage.find(id);
 	if(iter != mStorage.end())
