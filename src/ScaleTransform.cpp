@@ -22,7 +22,7 @@ class ScaleTransformer : public SimpleTransformer {
       Storage  result;
       for(const AttributeType& aT : a) {
         const AttributeType* temp = b.attribute(aT.id());
-        if(!temp)
+        if(!temp || (aT.scale().num() == temp->scale().num() && aT.scale().denom() == temp->scale().denom()))
           continue;
         ScaleType bS(temp->scale().num(), temp->scale().denom(), aT.scale().reference());
 				MetaScale mod=aT.scale();
