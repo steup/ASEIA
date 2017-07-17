@@ -12,6 +12,8 @@ namespace id {
         case(Orientation::value()) : return "Orientation   ";
         case(Angle::value())       : return "Angle         ";
         case(Reference::value())   : return "Reference     ";
+        case(Object::value())      : return "Object        ";
+        case(Speed::value())       : return "Speed         ";
         default                    : return "Unspecified   ";
       }
     }

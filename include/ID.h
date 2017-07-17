@@ -10,57 +10,28 @@ namespace id{
 
     using ID = std::uint8_t;
 
-    struct Base : public Tag{
-      static constexpr const ID value(){return 0;}
+    template<uint8_t id>
+    struct AttrID : public Tag {
+      static constexpr const ID value(){ return id; }
+      operator ID(){return id;}
     };
 
-    struct Position : public Base{
-      static constexpr const ID value(){return 1;}
-    };
-    
-    struct Time : public Base{
-      static constexpr const ID value(){return 2;}
-    };
-    
-    struct PublisherID : public Base{
-      static constexpr const ID value(){return 3;}
-    };
-    
-    struct Validity : public Base{
-      static constexpr const ID value(){return 4;}
-    };
-
-    struct Distance : public Base{
-      static constexpr const ID value(){return 5;}
-    };
-
-    struct Orientation : public Base{
-      static constexpr const ID value(){return 6;}
-    };
-
-    struct Angle : public Base{
-      static constexpr const ID value(){return 7;}
-    };
-
-    struct Reference : public Base{
-      static constexpr const ID value(){return 8;}
-    };
-
-    struct Object : public Base{
-      static constexpr const ID value(){return 9; }
-    };
+    using Base        = AttrID<0>;
+    using Position    = AttrID<1>;
+    using Time        = AttrID<2>;
+    using PublisherID = AttrID<3>;
+    using Validity    = AttrID<4>;
+    using Distance    = AttrID<5>;
+    using Orientation = AttrID<6>;
+    using Angle       = AttrID<7>;
+    using Reference   = AttrID<8>;
+    using Object      = AttrID<9>;
+    using Speed       = AttrID<10>;
 
     template<ID id>
-    struct attribute;
-
-    template<> struct attribute<Position::value()>    { using type = Position;    };
-    template<> struct attribute<Time::value()>        { using type = Time;        };
-    template<> struct attribute<PublisherID::value()> { using type = PublisherID; };
-    template<> struct attribute<Validity::value()>    { using type = Validity;    };
-    template<> struct attribute<Distance::value()>    { using type = Distance;    };
-    template<> struct attribute<Orientation::value()> { using type = Orientation; };
-    template<> struct attribute<Angle::value()>       { using type = Angle;       };
-    template<> struct attribute<Reference::value()>   { using type = Reference;   };
+    struct attribute {
+      using type = AttrID<id>;
+    };
   }
 
   namespace type{
