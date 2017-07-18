@@ -28,32 +28,46 @@ bool MetaAttribute::check(const MetaAttribute& b) const {
 MetaAttribute& MetaAttribute::operator+=(const MetaAttribute& b) {
 	if(!check(b))
 		mValue = MetaValue();
-  else
-    mValue += b.value();
-	return *this;
+  else {
+    if (mScale != b.mScale) {
+      MetaAttribute temp(b);
+      temp*=mScale/b.mScale;
+      mValue += temp.mValue;
+    } else
+      mValue += b.mValue;
+	} return *this;
 }
 
 MetaAttribute& MetaAttribute::operator-=(const MetaAttribute& b) {
 	if(!check(b))
 		mValue = MetaValue();
   else
-    mValue -=  b.value();
+    if (mScale != b.mScale) {
+      MetaAttribute temp(b);
+      temp*=mScale/b.mScale;
+      mValue -= temp.mValue;
+    } else
+      mValue -= b.mValue;
 	return *this;
 }
 
 MetaAttribute& MetaAttribute::operator*=(const MetaAttribute& b) {
 	if(!check(b))
 		mValue = MetaValue();
-  else
+  else {
+    mScale *= b.mScale;
     mValue *= b.value();
+  }
 	return *this;
 }
 
 MetaAttribute& MetaAttribute::operator/=(const MetaAttribute& b) {
 	if(!check(b))
 		mValue = MetaValue();
-  else
+  else {
+    mScale /= b.mScale;
     mValue /= b.value();
+  }
 	return *this;
 }
 
@@ -69,43 +83,78 @@ MetaAttribute& MetaAttribute::operator/=(const MetaScale& scale){
   return *this;
 }
 
-MetaAttribute operator+(const MetaAttribute& a, const MetaAttribute& b){
-  MetaAttribute temp(a);
-  return temp+=b;
+MetaValue MetaAttribute::operator<(const MetaAttribute& b) const {
+	if(!check(b))
+    return MetaValue();
+
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=b.mScale/mScale;
+    return mValue < temp.mValue;
+  } else
+    return mValue < b.mValue;
 }
 
-MetaAttribute operator-(const MetaAttribute& a, const MetaAttribute& b){
-  MetaAttribute temp(a);
-  return temp-=b;
+MetaValue MetaAttribute::operator<=(const MetaAttribute& b) const {
+	if(!check(b))
+    return MetaValue();
+
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=b.mScale/mScale;
+    return mValue <= temp.mValue;
+  } else
+    return mValue <= b.mValue;
 }
 
-MetaAttribute operator*(const MetaAttribute& a, const MetaAttribute& b){
-  MetaAttribute temp(a);
-  return temp*=b;
+MetaValue MetaAttribute::operator>(const MetaAttribute& b) const {
+	if(!check(b))
+    return MetaValue();
+
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=b.mScale/mScale;
+    return mValue > temp.mValue;
+  } else
+    return mValue > b.mValue;
 }
 
-MetaAttribute operator/(const MetaAttribute& a, const MetaAttribute& b){
-  MetaAttribute temp(a);
-  return temp/=b;
+MetaValue MetaAttribute::operator>=(const MetaAttribute& b) const {
+	if(!check(b))
+    return MetaValue();
+
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=b.mScale/mScale;
+    return mValue >= temp.mValue;
+  } else
+    return mValue >= b.mValue;
 }
 
-MetaAttribute operator*(const MetaAttribute& a, const MetaScale& scale){
-  MetaAttribute temp(a);
-  return temp*=scale;
+MetaValue MetaAttribute::operator==(const MetaAttribute& b) const {
+	if(!check(b))
+    return MetaValue();
+
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=b.mScale/mScale;
+    return mValue == temp.mValue;
+  } else
+    return mValue == b.mValue;
 }
 
-MetaAttribute operator/(const MetaAttribute& a, const MetaScale& scale){
-  MetaAttribute temp(a);
-  return temp/=scale;
+MetaValue MetaAttribute::operator!=(const MetaAttribute& b) const {
+	if(!check(b))
+    return MetaValue();
+
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=b.mScale/mScale;
+    return mValue != temp.mValue;
+  } else
+    return mValue != b.mValue;
 }
 
-MetaAttribute operator*(const MetaScale& scale, const MetaAttribute& a){
-  return a*scale;
-}
-
-bool MetaAttribute::operator==(const MetaAttribute& b) const {
-	return check(b) && mValue == b.mValue;
-}
 
 MetaAttribute::operator AttributeType() const {
   return AttributeType(id(), ValueType(value()), scale(), unit());

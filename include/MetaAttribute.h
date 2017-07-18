@@ -37,8 +37,8 @@ class MetaAttribute {
     MetaValue operator>(const MetaAttribute& b) const;
     MetaValue operator<=(const MetaAttribute& b) const;
     MetaValue operator>=(const MetaAttribute& b) const;
-    bool operator==(const MetaAttribute& b) const;
-    bool operator!=(const MetaAttribute& b) const { return !(*this==b); }
+    MetaValue operator==(const MetaAttribute& b) const;
+    MetaValue operator!=(const MetaAttribute& b) const;
 
           ID            id() const { return mID;    }
 
@@ -59,17 +59,20 @@ class MetaAttribute {
   template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, const MetaValue&);
 };
 
-MetaAttribute operator+(const MetaAttribute& a, const MetaAttribute& b);
-MetaAttribute operator-(const MetaAttribute& a, const MetaAttribute& b);
-MetaAttribute operator*(const MetaAttribute& a, const MetaAttribute& b);
-MetaAttribute operator/(const MetaAttribute& a, const MetaAttribute& b);
-MetaAttribute operator*(const MetaAttribute& a, const MetaAttribute& b);
-MetaAttribute operator/(const MetaAttribute& a, const MetaAttribute& b);
-MetaAttribute operator*(const MetaAttribute& a, const MetaScale& scale);
-MetaAttribute operator*(const MetaScale& scale, const MetaAttribute& a);
-MetaAttribute operator*(const MetaAttribute& a, const MetaValue& b);
-MetaAttribute operator/(const MetaAttribute& a, const MetaValue& b);
+inline MetaAttribute operator+(const MetaAttribute& a, const MetaAttribute& b) {return MetaAttribute(a)+=b; };
+inline MetaAttribute operator-(const MetaAttribute& a, const MetaAttribute& b) {return MetaAttribute(a)-=b; };
+inline MetaAttribute operator*(const MetaAttribute& a, const MetaAttribute& b) {return MetaAttribute(a)*=b; };
+inline MetaAttribute operator/(const MetaAttribute& a, const MetaAttribute& b) {return MetaAttribute(a)/=b; };
+
+inline MetaAttribute operator*(const MetaAttribute& a, const MetaScale& scale) {return MetaAttribute(a)*=scale; };
+inline MetaAttribute operator/(const MetaAttribute& a, const MetaScale& scale) {return MetaAttribute(a)/=scale; };
+inline MetaAttribute operator*(const MetaScale& scale, const MetaAttribute& a) {return MetaAttribute(a)*=scale; };
+
+inline MetaAttribute operator*(const MetaAttribute& a, const MetaValue& b)     {return MetaAttribute(a)*=b; };
+inline MetaAttribute operator/(const MetaAttribute& a, const MetaValue& b)     {return MetaAttribute(a)/=b; };
 MetaAttribute operator*(const MetaValue& a    , const MetaAttribute& b);
+
+
 
 std::ostream& operator<<(std::ostream& o, const MetaAttribute& ma);
 
