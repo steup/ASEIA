@@ -13,7 +13,7 @@ namespace id{
     template<uint8_t id>
     struct AttrID : public Tag {
       static constexpr const ID value(){ return id; }
-      operator ID(){return id;}
+      operator ID() const { return id; }
     };
 
     using Base        = AttrID<0>;
@@ -40,69 +40,30 @@ namespace id{
 
     using ID = std::uint8_t;
 
-    struct Base : public Tag{
-      using Type = void;
-      static constexpr const ID value(){return 0;}
+    template<uint8_t id, typename T>
+    struct TypeID : public Tag {
+      static constexpr const ID value(){ return id; }
+      operator ID() const { return id; }
+      using Type = T;
     };
 
-    struct UInt8 : public Base{
-      using Type = std::uint8_t;
-      static constexpr const ID value(){return 1;}
-    };
+    using Base   = TypeID<0, void>;
+    using UInt8  = TypeID<1, uint8_t>;
+    using UInt16 = TypeID<2, uint16_t>;
+    using UInt32 = TypeID<3, uint32_t>;
+    using Int8   = TypeID<4, int8_t>;
+    using Int16  = TypeID<5, int16_t>;
+    using Int32  = TypeID<6, int32_t>;
+    using Float  = TypeID<7, float>;
+    using Double = TypeID<8, double>;
+    using Bool   = TypeID<9, bool>;
 
-    struct UInt16 : public Base{
-      using Type = uint16_t;
-      static constexpr const ID value(){return 2;}
-    };
-
-    struct UInt32 : public Base{
-      using Type = uint32_t;
-      static constexpr const ID value(){return 3;}
-    };
-
-
-    struct Int8 : public Base{
-      using Type = std::int8_t;
-      static constexpr const ID value(){return 4;}
-    };
-
-    struct Int16 : public Base{
-      using Type = int16_t;
-      static constexpr const ID value(){return 5;}
-    };
-
-    struct Int32 : public Base{
-      using Type = int32_t;
-      static constexpr const ID value(){return 6;}
-    };
-
-
-    struct Float : public Base{
-      using Type = float;
-      static constexpr const ID value(){return 7;}
-    };
-
-    struct Double : public Base{
-      using Type = double;
-      static constexpr const ID value(){return 8;}
-    };
-
-    struct Bool : public Base{
-      using Type = bool;
-      static constexpr const ID value(){return 9;}
-    };
-
-/*    doesn work because of uncertainty computation and numeric_limits errors
-      struct UInt64 : public Base{
-      using Type = uint64_t;
-      static constexpr const ID value(){return 4;}
-    };*/
-/*    doesn work because of uncertainty computation and numeric_limits errors
-    struct Int64 : public Base{
-      using Type = int64_t;
-      static constexpr const ID value(){return 8;}
-    };*/
-
+/*  doesn work because of uncertainty computation and numeric_limits errors
+    using Base = TypeID<10, void>;
+ */
+/*  doesn work because of uncertainty computation and numeric_limits errors
+    using Base = TypeID<11, void>;
+ */
 
     template<ID id>
     struct id2Type;
