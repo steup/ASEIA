@@ -108,6 +108,12 @@ MetaAttribute::operator AttributeType() const {
   return AttributeType(id(), ValueType(value()), scale(), unit());
 }
 
+MetaAttribute operator*(const MetaValue& a, const MetaAttribute& b) {
+  MetaAttribute temp(b);
+  temp.value()=a*temp.value();
+  return temp;
+}
+
 ostream& operator<<(ostream& o, const MetaAttribute& ma) {
   return o << id::attribute::name(ma.id()) << ": " << ma.value() << " " << ma.scale() << " " << ma.unit();
 }

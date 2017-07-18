@@ -47,6 +47,10 @@ class EventType{
     const AttributeType* attribute(KeyType key) const;
     AttributeType* attribute(KeyType key);
 
+
+    const AttributeType& operator[](KeyType key) const { return *attribute(key); }
+    AttributeType& operator[](KeyType key)             { return *attribute(key); }
+
     std::size_t operator-(const EventType& b) const;
     bool operator==(const EventType& b) const;
     bool operator!=(const EventType& b) const { return !(*this == b);}

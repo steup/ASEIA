@@ -33,11 +33,20 @@ class MetaEvent{
 		explicit MetaEvent(const EventType& eT);
 		MetaAttribute* attribute(ID id);
 		const MetaAttribute* attribute(ID id) const;
+		MetaAttribute& operator[](ID id)             { return *attribute(id); }
+		const MetaAttribute& operator[](ID id) const { return *attribute(id); }
     bool add(const MetaAttribute&);
     bool add(MetaAttribute&& mA);
     bool remove(ID id) { return mStorage.erase(id); }
 
     MetaEvent& operator=(const MetaEvent& copy);
+    MetaEvent& operator+=(const MetaEvent& b);
+    MetaEvent& operator-=(const MetaEvent& b);
+    MetaEvent& operator*=(const MetaValue& b);
+    MetaEvent& operator/=(const MetaValue& b);
+
+    bool compatible(const MetaEvent& b) const;
+    bool valid() const;
 
     bool operator==(const MetaEvent& a) const;
     bool operator!=(const MetaEvent& a) const { return !(*this==a); }
@@ -54,6 +63,12 @@ class MetaEvent{
 };
 
 std::ostream& operator<<(std::ostream& o, const MetaEvent& me);
+
+inline MetaEvent operator+(const MetaEvent& a, const MetaEvent& b) { return MetaEvent(a)+=b; }
+inline MetaEvent operator-(const MetaEvent& a, const MetaEvent& b) { return MetaEvent(a)-=b; }
+inline MetaEvent operator*(const MetaEvent& a, const MetaValue& b) { return MetaEvent(a)*=b; }
+inline MetaEvent operator/(const MetaEvent& a, const MetaValue& b) { return MetaEvent(a)/=b; }
+MetaEvent operator*(const MetaValue& a, const MetaEvent& b);
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, const MetaEvent& me){

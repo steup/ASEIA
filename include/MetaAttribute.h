@@ -30,6 +30,13 @@ class MetaAttribute {
     MetaAttribute& operator/=(const MetaAttribute& b);
     MetaAttribute& operator*=(const MetaScale& scale);
     MetaAttribute& operator/=(const MetaScale& b);
+    MetaAttribute& operator*=(const MetaValue& b);
+    MetaAttribute& operator/=(const MetaValue& b);
+    MetaAttribute norm() const;
+    MetaValue operator<(const MetaAttribute& b) const;
+    MetaValue operator>(const MetaAttribute& b) const;
+    MetaValue operator<=(const MetaAttribute& b) const;
+    MetaValue operator>=(const MetaAttribute& b) const;
     bool operator==(const MetaAttribute& b) const;
     bool operator!=(const MetaAttribute& b) const { return !(*this==b); }
 
@@ -44,6 +51,8 @@ class MetaAttribute {
           MetaValue& value()       { return mValue; }
     const MetaValue& value() const { return mValue; }
 
+    bool valid() const { return mValue.valid(); }
+
     explicit operator AttributeType() const;
 
 	//friend class MetaFactory;
@@ -54,8 +63,13 @@ MetaAttribute operator+(const MetaAttribute& a, const MetaAttribute& b);
 MetaAttribute operator-(const MetaAttribute& a, const MetaAttribute& b);
 MetaAttribute operator*(const MetaAttribute& a, const MetaAttribute& b);
 MetaAttribute operator/(const MetaAttribute& a, const MetaAttribute& b);
+MetaAttribute operator*(const MetaAttribute& a, const MetaAttribute& b);
+MetaAttribute operator/(const MetaAttribute& a, const MetaAttribute& b);
 MetaAttribute operator*(const MetaAttribute& a, const MetaScale& scale);
 MetaAttribute operator*(const MetaScale& scale, const MetaAttribute& a);
+MetaAttribute operator*(const MetaAttribute& a, const MetaValue& b);
+MetaAttribute operator/(const MetaAttribute& a, const MetaValue& b);
+MetaAttribute operator*(const MetaValue& a    , const MetaAttribute& b);
 
 std::ostream& operator<<(std::ostream& o, const MetaAttribute& ma);
 

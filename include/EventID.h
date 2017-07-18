@@ -69,6 +69,8 @@ class EventID {
 
     EventID& operator/=(id::attribute::ID attr);
     EventID& operator*=(id::attribute::ID attr);
+    EventID operator/(id::attribute::ID attr) const { return EventID(*this)/=attr; }
+    EventID operator*(id::attribute::ID attr) const { return EventID(*this)*=attr; }
 
     static bool comp(EventID a, EventID b) { return a.mID < b.mID; }
 
