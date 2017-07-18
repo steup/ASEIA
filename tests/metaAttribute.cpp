@@ -37,7 +37,7 @@ TEST_F(MetaAttributeSuite, scaleTest) {
 
   ref.value() = f.create({{{0,1}, {1,1}, {2,1}}});
   ref.scale() = Scale<>();
-  
+
   EXPECT_EQ(scaled, ref);
   /**\todo test for exact equality */
 }
@@ -50,9 +50,9 @@ TEST_F(MetaAttributeSuite, certainscaleTest) {
 
   ref.value() = f.create({{{0}, {1}, {2}}}, id::type::UInt16::value(), false);
   ref.scale() = Scale<>();
-  
+
   EXPECT_EQ(scaled, ref);
   /**\todo test for exact equality */
 }
-	
+
 }}
