@@ -19,7 +19,10 @@ MetaAttribute::MetaAttribute(const AttributeType& at) {
 }
 
 bool MetaAttribute::check(const MetaAttribute& b) const {
-  return mUnit == b.mUnit && mScale == b.mScale && (ValueType)mValue == (ValueType)b.mValue && mID == b.mID;
+  const bool idTest = mID == b.mID;
+  const bool unitTest = mUnit == b.mUnit;
+  const bool scaleTest = mScale.reference() == b.mScale.reference();
+  return  idTest && unitTest && scaleTest;
 }
 
 MetaAttribute& MetaAttribute::operator+=(const MetaAttribute& b) {
