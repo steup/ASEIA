@@ -52,7 +52,7 @@ class MetaEvent{
     bool operator!=(const MetaEvent& a) const { return !(*this==a); }
 
     explicit operator EventType() const;
-    size_t size() const { return mStorage.size(); }
+    size_t length() const { return mStorage.size(); }
 
 		iterator begin() noexcept;
 		const_iterator begin() const noexcept;
@@ -72,9 +72,9 @@ MetaEvent operator*(const MetaValue& a, const MetaEvent& b);
 
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, const MetaEvent& me){
-  id::attribute::ID attrs[me.size()];
+  id::attribute::ID attrs[me.length()];
   std::transform(me.begin(), me.end(), attrs, [](const MetaAttribute& mA){ return mA.id(); });
-  std::sort(attrs, attrs+me.size());
+  std::sort(attrs, attrs+me.length());
   for(id::attribute::ID attr : attrs)
 		s << *me.attribute(attr);
   return s;
@@ -82,9 +82,9 @@ Serializer<PB>& operator<<(Serializer<PB>& s, const MetaEvent& me){
 
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& d, MetaEvent& me){
-  id::attribute::ID attrs[me.size()];
+  id::attribute::ID attrs[me.length()];
   std::transform(me.begin(), me.end(), attrs, [](const MetaAttribute& mA){ return mA.id(); });
-  std::sort(attrs, attrs+me.size());
+  std::sort(attrs, attrs+me.length());
   for(id::attribute::ID attr : attrs)
 		d >> *me.attribute(attr);
   return d;
