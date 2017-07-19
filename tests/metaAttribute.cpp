@@ -67,13 +67,17 @@ TEST_F(MetaAttributeSuite, operatorTest) {
   MetaAttribute resTimes = Position::value();
   resTimes.value() = {{{1000,1000}, {10000, 1000}, {40000, 1000}}};
   resTimes.scale() = Scale<std::ratio<1, 10000>>();
-  resTimes.unit() = Meter();
+  resTimes.unit() = Meter()*Meter();
   EXPECT_EQ(a*b, resTimes);
   MetaAttribute resQuot = Position::value();
   resQuot.value() = {{{0,1000}, {100, 1000}, {100, 1000}}};
   resQuot.scale() = Scale<std::centi>();
-  resQuot.unit() = Meter();
   EXPECT_EQ(a/b, resQuot);
+  MetaAttribute resNorm = Position::value();
+  resNorm.value() = MetaValue({{{sqrt(1*1+10*10+20*20)}}}, UInt16(), 1, 1, false);
+  resNorm.scale() = Scale<std::deci>();
+  resNorm.unit() = Meter();
+  EXPECT_EQ(b.norm(), resNorm);
 }
 
 TEST_F(MetaAttributeSuite, compTest) {
