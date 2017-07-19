@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <Channel.h>
+#include <BaseEvent.h>
 
 namespace test {
 
@@ -24,6 +25,7 @@ struct ChannelTestSuite : public ::testing::Test{
     TestChannel() : Channel(TransPtr(new TestTransformer())) { }
 
     MOCK_CONST_METHOD1(publishEvent, void(const MetaEvent& e));
+    MOCK_CONST_METHOD2(error, void(Errors, const MetaEvent&));
     void handleEvent() { Channel::handleEvent(MetaEvent()); }
     Transformer* trans() { return mTrans.get(); }
   } c;
@@ -31,6 +33,7 @@ struct ChannelTestSuite : public ::testing::Test{
 
 TEST_F(ChannelTestSuite, failedSingleTransformTest) {
   ASSERT_TRUE(c.trans());
+	EXPECT_CALL(c, error(_,_)).Times(0);
 	EXPECT_CALL(dynamic_cast<TestTransformer&>(*c.trans()), execute(_))
 		.Times(0);
   EXPECT_CALL(dynamic_cast<const TestTransformer&>(*c.trans()), check(_))
@@ -42,10 +45,9 @@ TEST_F(ChannelTestSuite, failedSingleTransformTest) {
 }
 
 TEST_F(ChannelTestSuite, succededTransformTest) {
-	MetaEvent e;
-	MetaAttribute a;
-	e.add(a);
+	MetaEvent e((EventType)BaseEvent<>());
   ASSERT_TRUE(c.trans());
+	EXPECT_CALL(c, error(_,_)).Times(0);
 	EXPECT_CALL(dynamic_cast<TestTransformer&>(*c.trans()), execute(_))
 		.Times(1)
 		.WillRepeatedly(Return(e));
