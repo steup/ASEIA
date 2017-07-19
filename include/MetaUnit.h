@@ -17,6 +17,8 @@ class MetaUnit : public UnitType{
       return *this = MetaUnit(copy);
     }
 
-    MetaUnit operator*(const MetaUnit& b) const;
-    MetaUnit operator/(const MetaUnit& b) const;
+    MetaUnit& operator*=(const MetaUnit& b);
+    MetaUnit& operator/=(const MetaUnit& b);
+    MetaUnit operator*(const MetaUnit& b) const { return MetaUnit(*this)*=b; }
+    MetaUnit operator/(const MetaUnit& b) const { return MetaUnit(*this)/=b; }
 };

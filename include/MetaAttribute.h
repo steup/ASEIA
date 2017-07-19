@@ -14,7 +14,7 @@ class MetaAttribute {
   public:
     using ID = id::attribute::ID;
   protected:
-    ID         mID    ;
+    const ID   mID    ;
     MetaValue  mValue ;
     MetaUnit   mUnit  ;
     MetaScale  mScale ;
@@ -24,6 +24,10 @@ class MetaAttribute {
   public:
     MetaAttribute(ID id = id::attribute::Base::value()) : mID(id) {}
     MetaAttribute(const AttributeType& at);
+    MetaAttribute(const MetaAttribute& b);
+    MetaAttribute(MetaAttribute&& b);
+    MetaAttribute& operator=(const MetaAttribute& b);
+    MetaAttribute& operator=(MetaAttribute&& b);
     MetaAttribute& operator+=(const MetaAttribute& b);
     MetaAttribute& operator-=(const MetaAttribute& b);
     MetaAttribute& operator*=(const MetaAttribute& b);

@@ -34,6 +34,7 @@ class MetaValue {
     using InitType = std::initializer_list<RowInitType>;
     MetaValue();
 
+    MetaValue(const ValueType& vT);
     MetaValue(id::type::ID typeID, size_t rows, size_t cols=1, bool u=false);
     MetaValue(double v, id::type::ID typeIDid=id::type::Double::value());
     //MetaValue(ElemInitType l, id::type::ID typeIDid=id::type::Double::value(), bool u=false);

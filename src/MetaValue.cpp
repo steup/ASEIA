@@ -33,6 +33,10 @@ MetaValue::MetaValue(::id::type::ID typeID, size_t rows, size_t cols, bool u)
   : MetaValue(MetaFactory::instance().create(typeID, rows, cols, u))
 {}
 
+MetaValue::MetaValue(const ValueType& vT)
+  : MetaValue(vT.typeId(), vT.rows(), vT.cols(), vT.hasUncertainty())
+{}
+
 MetaValue::MetaValue(InitType l, ::id::type::ID typeID,
                      size_t rows, size_t cols, bool u)
   : MetaValue(MetaFactory::instance().create(l, typeID, rows, cols, u))
@@ -309,8 +313,7 @@ bool MetaValue::hasUncertainty() const {
 }
 
 bool MetaValue::valid() const {
-  ValueType vT=(ValueType)*this;
-  return vT.typeId() != id::type::Base::value() && vT.rows()>0 && cols() >0;
+  return typeId() != ::id::type::Base() && rows()>0 && cols() >0;
 }
 
 bool MetaValue::compatible(const MetaValue& b) const {
