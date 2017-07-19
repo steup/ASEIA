@@ -16,6 +16,7 @@ using ID            = MetaValue::ID;
 
 MetaValue::MetaValue() : mImpl(MVB::instance()) {}
 
+
 MetaValue::MetaValue(double v, id::type::ID typeID)
   : MetaValue({{{v}}}, typeID, 1, 1, false)
 {}
@@ -214,6 +215,7 @@ MetaValue& MetaValue::block(size_t i, size_t j, MetaValue&& v) {
   mImpl->block(i, j, move(v.mImpl));
   return *this;
 }
+
 
 MetaValue MetaValue::col(size_t col) const {
   return MetaValue(move(mImpl->col(col)));
