@@ -275,10 +275,10 @@ TEST_F(FilterTestSuite, metaFilterBasicTest) {
 
 	std::vector<MetaEvent> trueEvents(2);
 	std::vector<MetaEvent> falseEvents(2);
-	trueEvents[0]=MetaFactory::instance().create((EventType)trueEvent);
-	trueEvents[1]=MetaFactory::instance().create((EventType)compEvent);
-	falseEvents[0]=MetaFactory::instance().create((EventType)falseEvent);
-	falseEvents[1]=MetaFactory::instance().create((EventType)compEvent);
+	trueEvents[0]=MetaEvent((EventType)trueEvent);
+	trueEvents[1]=MetaEvent((EventType)compEvent);
+	falseEvents[0]=MetaEvent((EventType)falseEvent);
+	falseEvents[1]=MetaEvent((EventType)compEvent);
 
 	buffer.clear();
 	auto s0 = Serializer<decltype(back_inserter(buffer))>(back_inserter(buffer));

@@ -58,11 +58,10 @@ TEST(MetaValueSuite, createTest) {
 }
 
 TEST(MetaValueSuite, constantTest) {
-  MetaFactory& f = MetaFactory::instance();
-  MetaValue i11 = f.create(id::type::Int32::value(), 1, 1, false);
-  MetaValue i12 = f.create(id::type::Int32::value(), 1, 2, false);
-  MetaValue i21 = f.create(id::type::Int32::value(), 2, 1, false);
-  MetaValue i22 = f.create(id::type::Int32::value(), 2, 2, false);
+  MetaValue i11(id::type::Int32::value(), 1, 1, false);
+  MetaValue i12(id::type::Int32::value(), 1, 2, false);
+  MetaValue i21(id::type::Int32::value(), 2, 1, false);
+  MetaValue i22(id::type::Int32::value(), 2, 2, false);
   EXPECT_EQ(i11.identity(), MetaValue({{{1}}}, Int32::value()));
   EXPECT_EQ(i11.zero(), MetaValue({{{0}}}, Int32::value()));
   EXPECT_EQ(i12.identity(), MetaValue({{{1}, {0}}}, Int32::value()));
