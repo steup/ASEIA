@@ -105,7 +105,7 @@ PKG_LIBS    := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --libs-only
 PKG_LDPATHS := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --libs-only-L))
 PKG_LDFLAGS := $(foreach pkg, ${PACKAGES}, $(shell pkg-config ${pkg} --libs-only-other))
 
-BASE_OBJECTS := AttributeType EventID EventType FormatID ID Prime IO IDIO
+BASE_OBJECTS := AttributeType EventID EventType FormatID Prime
 IO_OBJECTS   := IO IDIO
 OBJECTS      := $(wildcard ${SRC}/*.cpp)
 
