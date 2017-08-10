@@ -1,7 +1,6 @@
 #include <Prime.h>
 
-PrimeGenerator::Prime PrimeGenerator::prime(std::size_t i) {
-	const Prime primes[] = {
+static const Prime primes[] = {
 0,
 2,
 3,
@@ -259,10 +258,13 @@ PrimeGenerator::Prime PrimeGenerator::prime(std::size_t i) {
 1609,
 1613
 };
-	if(i < sizeof(primes)/sizeof(Prime))
+
+PrimeGenerator::Prime PrimeGenerator::prime(std::size_t i) {
+
+	if(i < size())
 		return primes[i];
 	else
 		return 0;
 }
 
-std::size_t PrimeGenerator::size() { return 100; }
+std::size_t PrimeGenerator::size() { return sizeof(primes)/sizeof(Prime); }
