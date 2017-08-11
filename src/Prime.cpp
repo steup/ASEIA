@@ -1,6 +1,6 @@
 #include <Prime.h>
 
-static const Prime primes[] = {
+static const PrimeGenerator::Prime primes[] = {
 0,
 2,
 3,
