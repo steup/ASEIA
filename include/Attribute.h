@@ -45,6 +45,16 @@ class Attribute
       return temp;
     }
 
+    Attribute& operator+=(const Attribute& b) {
+      value()+=b.value();
+      return *this;
+    }
+
+    Attribute& operator-=(const Attribute& b) {
+      value()-=b.value();
+      return *this;
+    }
+
     bool operator>(const Attribute& b) const {
       return (value() > b.value()).prod();
     }
