@@ -48,6 +48,8 @@ class MetaValueBaseImplementation {
       Norm,
       Transpose,
       Zero,
+      Ones,
+      ZeroValue,
       Identity,
       Value,
       Uncertainty

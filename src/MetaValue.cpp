@@ -249,6 +249,14 @@ MetaValue MetaValue::zero() const {
   return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Zero));
 }
 
+MetaValue MetaValue::ones() const {
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Ones));
+}
+
+MetaValue MetaValue::zeroValue() const {
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::ZeroValue));
+}
+
 MetaValue& MetaValue::sin(){
   mImpl->unaryOp(UnaryOp::Sin);
   return *this;

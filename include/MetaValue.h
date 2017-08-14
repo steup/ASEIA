@@ -87,6 +87,8 @@ class MetaValue {
 
     MetaValue identity() const;
     MetaValue zero() const;
+    MetaValue ones() const;
+    MetaValue zeroValue() const;
     MetaValue prod() const;
     MetaValue sum() const;
     MetaValue norm() const;

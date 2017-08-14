@@ -82,7 +82,9 @@ class Value {
     }
     
     Value identity() const { return Value(DataType::Identity(mData.rows(), mData.cols())); }
+    Value ones() const { return Value(DataType::Constant(mData.rows(), mData.cols(), 1)); }
     Value zero() const    { return Value(DataType::Zero(mData.rows(), mData.cols())); }
+    Value zeroValue() const    { Value temp = *this; for(auto& elem : temp) elem.value(0); return temp; }
 
     auto block(size_t i, size_t j, size_t p, size_t q) -> decltype(mData.block(i, j, p, q)) {
       return mData.block(i,j,p,q);
