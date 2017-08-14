@@ -38,7 +38,8 @@ class MetaValueBaseImplementation {
       ATan,
       Abs,
       Min,
-      Max
+      Max,
+      Sqrt
     };
 
     enum class UnaryConstOp {

@@ -84,6 +84,7 @@ class MetaValue {
     MetaValue& abs();
     MetaValue& min();
     MetaValue& max();
+    MetaValue& sqrt();
 
     MetaValue identity() const;
     MetaValue zero() const;

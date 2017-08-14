@@ -149,6 +149,9 @@ bool MetaValueImplementation<T, U>::unaryOp( UnaryOp op)  {
                          break;
     case(UnaryOp::Min):
     case(UnaryOp::Max): /** \todo implement **/
+                        break;
+    case(UnaryOp::Sqrt): mData.sqrt();
+                         break;
 		default           : return Interface::unaryOp(op);
 	}
 	return true;

@@ -302,6 +302,11 @@ MetaValue& MetaValue::max(){
   return *this;
 }
 
+MetaValue& MetaValue::sqrt(){
+  mImpl->unaryOp(UnaryOp::Sqrt);
+  return *this;
+}
+
 size_t MetaValue::size() const {
 	return mImpl->get(Attributes::Size).size;
 }

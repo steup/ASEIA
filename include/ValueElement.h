@@ -396,6 +396,16 @@ class ValueElement<bool, false> : public ValueElementBase<bool>{
 		using typename Base::PType;
     using typename Base::U;
 		using Bool = ValueElement<bool, false>;
+    ValueElement abs()  const { return *this; }
+    ValueElement ceil() const { return *this; }
+    ValueElement log()  const { return *this; }
+    ValueElement sqrt() const { return *this; }
+    ValueElement sin()  const { return *this; }
+    ValueElement cos()  const { return *this; }
+    ValueElement tan()  const { return *this; }
+    ValueElement asin() const { return *this; }
+    ValueElement acos() const { return *this; }
+    ValueElement atan() const { return *this; }
 
 		constexpr ValueElement() = default;
 		ValueElement(const T v) : Base(v) {}
@@ -452,6 +462,16 @@ class ValueElement<bool, true> : public ValueElementBase<bool>{
 		using typename Base::PType;
     using U = boost::mpl::bool_<true>;
 		using Bool = ValueElement<bool, true>;
+    ValueElement abs()  const { return *this; }
+    ValueElement ceil() const { return *this; }
+    ValueElement log()  const { return *this; }
+    ValueElement sqrt() const { return *this; }
+    ValueElement sin()  const { return *this; }
+    ValueElement cos()  const { return *this; }
+    ValueElement tan()  const { return *this; }
+    ValueElement asin() const { return *this; }
+    ValueElement acos() const { return *this; }
+    ValueElement atan() const { return *this; }
   protected:
     UType mUncertainty;
   public:
@@ -477,7 +497,7 @@ class ValueElement<bool, true> : public ValueElementBase<bool>{
     template<typename T2>
     ValueElement(const ValueElement<T2, true>& data){
       this->mValue = data.value();
-			this->mUncertainty = data.uncertainty()>(typename ValueElement<T2>::UType)(abs(data.mValue));
+			this->mUncertainty = data.uncertainty()>(typename ValueElement<T2>::UType)(::abs(data.mValue));
     }
     
     template<typename T2>
@@ -586,7 +606,16 @@ class ValueElement<T, false> : public ValueElementBase<T>{
 			Base::operator/=(a.mValue);
 			return *this;
 		}
-		
+		ValueElement abs() const  { return ::abs(this->mValue); }
+    ValueElement ceil() const { return ::ceil(this->mValue); }
+    ValueElement log() const  { return ::log(this->mValue); }
+    ValueElement sqrt() const { return ::sqrt(this->mValue); }
+    ValueElement sin() const  { return ::sin(this->mValue); }
+    ValueElement cos() const  { return ::cos(this->mValue); }
+    ValueElement tan() const  { return ::tan(this->mValue); }
+    ValueElement asin() const { return ::asin(this->mValue); }
+    ValueElement acos() const { return ::acos(this->mValue); }
+    ValueElement atan() const { return ::atan(this->mValue); }
 };
 
 template<typename T>
@@ -783,6 +812,55 @@ class ValueElement<T, true> : public ValueElementBase<T>{
       satAdd(mUncertainty, opError(this->mValue));
       return *this;
     }
+    ValueElement abs() const  {
+        UType temp = this->mValue<0?-this->mValue:this->mValue;
+        if(mUncertainty>(UType)this->mValue)
+          return ValueElement((temp+mUncertainty)/2, (temp+mUncertainty)/2);
+        else
+          return ValueElement(temp, mUncertainty);
+    }
+    ValueElement ceil() const {
+      VType tempV = ::ceil(this->mValue);
+      return ValueElement(tempV, satAdd(::ceil(mUncertainty), tempV==this->mValue?0:1));
+    }
+    ValueElement log() const  {
+      PType minV = ::log(this->mValue-mUncertainty);
+      PType maxV = ::log(this->mValue-mUncertainty);
+      if(minV<=0)
+        return ValueElement((minV+maxV)/2, std::numeric_limits<UType>::max());
+      else
+        return ValueElement((minV+maxV)/2, (maxV-minV)/2);
+    }
+    ValueElement sqrt() const {
+      double tempMinV = ::sqrt((double)this->mValue-mUncertainty);
+      double tempMaxV = ::sqrt((double)this->mValue+mUncertainty);
+      PType minV = tempMinV;
+      PType maxV = tempMaxV;
+      ValueElement v;
+      UType error=0;
+      if(std::numeric_limits<T>::is_integer) {
+        maxV = ::ceil(tempMaxV);
+        error = opErrDiv((PType)(maxV-minV), (PType)2, (PType)2, (PType)2);
+      }
+      v.mValue=(minV+maxV)/2;
+      v.mUncertainty=(maxV-minV)/2;
+      satAdd(v.mUncertainty, error);
+      if(minV<0)
+        v.uncertainty(std::numeric_limits<UType>::max());
+      return v;
+    }
+    /** \todo: implement **/
+    ValueElement sin() const  { return ::sin(this->mValue); }
+    /** \todo: implement **/
+    ValueElement cos() const  { return ::cos(this->mValue); }
+    /** \todo: implement **/
+    ValueElement tan() const  { return ::tan(this->mValue); }
+    /** \todo: implement **/
+    ValueElement asin() const { return ::asin(this->mValue); }
+    /** \todo: implement **/
+    ValueElement acos() const { return ::acos(this->mValue); }
+    /** \todo: implement **/
+    ValueElement atan() const { return ::atan(this->mValue); }
 
     constexpr const static std::size_t size() noexcept {return sizeof(VType)+sizeof(UType);}
     constexpr const bool hasUncertainty() const    noexcept {return U::value;}

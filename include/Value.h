@@ -30,17 +30,37 @@ template<typename T, bool U>
 ValueElement<T, U> imag(const ValueElement<T, U>&)    { return 0.; }
 
 template<typename T, bool U>
-ValueElement<T, U> abs(const ValueElement<T, U>&  x)  { return ValueElement<T, U>({{std::abs(x.value()), x.uncertainty()}}); }
+ValueElement<T, U> abs(const ValueElement<T, U>&  x)  { return x.abs(); }
 
 template<typename T, bool U>
-ValueElement<T, U> abs2(const ValueElement<T, U>& x)  { return x*x; }
+ValueElement<T, U> abs2(const ValueElement<T, U>& x)  { return (x*x).abs(); }
 
 template<typename T, bool U>
-ValueElement<T, U> ceil(const ValueElement<T, U>& x)  { return ValueElement<T, U>({{ceil(x.value()), x.uncertainty()}}); }
+ValueElement<T, U> ceil(const ValueElement<T, U>& x)  { return x.ceil(); }
 
 template<typename T, bool U>
-ValueElement<T, U> log(const ValueElement<T, U>& x)  { return ValueElement<T, U>({{log(x.value()), log(x.uncertainty())}}); }
+ValueElement<T, U> log(const ValueElement<T, U>& x)  { return x.log(); }
 
+template<typename T, bool U>
+ValueElement<T, U> sqrt(const ValueElement<T, U>& x)  { return x.sqrt(); }
+
+template<typename T, bool U>
+ValueElement<T, U> sin(const ValueElement<T, U>& x)  { return x.sin(); }
+
+template<typename T, bool U>
+ValueElement<T, U> cos(const ValueElement<T, U>& x)  { return x.cos(); }
+
+template<typename T, bool U>
+ValueElement<T, U> tan(const ValueElement<T, U>& x)  { return x.tan(); }
+
+template<typename T, bool U>
+ValueElement<T, U> asin(const ValueElement<T, U>& x)  { return x.asin(); }
+
+template<typename T, bool U>
+ValueElement<T, U> acos(const ValueElement<T, U>& x)  { return x.acos(); }
+
+template<typename T, bool U>
+ValueElement<T, U> atan(const ValueElement<T, U>& x)  { return x.atan(); }
 
 template<typename T, int32_t R, int32_t C = 1, bool U=true>
 class Value {
@@ -52,7 +72,7 @@ class Value {
 		using InitType      = std::initializer_list<RowInitType>;
 		using TypeID        = typename BaseType::TypeID;
     using DataType      = Eigen::Matrix<BaseType, R, C>;
-		using Bool          = Eigen::Matrix<ValueElement<bool, U>, R, C>;
+		using Bool          = Value<bool, R, C, U>;
     using Iterator      = BaseType*;
     using ConstIterator = const BaseType*;
 
@@ -119,20 +139,21 @@ class Value {
       return *this;
     }
 
-    Value& sin() { mData.array().sin(); return *this; }
-    Value& cos() { mData.array().cos(); return *this; }
-    Value& tan() { mData.array().tan(); return *this; }
-    Value& asin() { mData.array().asin(); return *this; }
-    Value& acos() { mData.array().acos(); return *this; }
-    Value& atan() { mData.array().atan(); return *this; }
-    Value& abs() { mData.array().abs(); return *this; }
+    Value& sin()  { mData = mData.array().sin();  return *this; }
+    Value& cos()  { mData = mData.array().cos();  return *this; }
+    Value& tan()  { mData = mData.array().tan();  return *this; }
+    Value& asin() { mData = mData.array().asin(); return *this; }
+    Value& acos() { mData = mData.array().acos(); return *this; }
+    Value& atan() { mData = mData.array().atan(); return *this; }
+    Value& abs()  { mData = mData.array().abs().cast<BaseType>(); return *this; }
+    Value& sqrt() { mData = mData.array().sqrt(); return *this; }
 
     std::size_t rows() const { return R==-1?mData.rows():R; }
     std::size_t cols() const { return C==-1?mData.cols():C; }
 
     BaseType prod() const { return mData.prod(); }
     BaseType sum() const { return mData.sum(); }
-    BaseType norm() const { return mData.norm(); }
+    BaseType norm() const { return ::sqrt(Value(mData.cwiseProduct(mData)).sum()); }
     const DataType& data() const { return mData; }
     DataType& data() { return mData; }
 
@@ -211,6 +232,9 @@ class Value {
       return mData(row, col);
     }
 
+    operator bool() const {
+      return mData.prod();
+    }
 		explicit operator ValueType() const {
 			return ValueType(BaseType::TypeID::value(),
 											 rows(), cols(),
@@ -267,7 +291,7 @@ class Value {
 
     Bool approxEqual(const Value& b) const {
       if(rows() != b.rows() || cols() != b.cols())
-        return Bool::Zero(rows(), cols());
+        return Bool(rows(), cols()).zero();
       Bool res(rows(), cols());
       for(unsigned int i=0;i<rows();i++)
         for(unsigned int j=0;j<cols();j++)
