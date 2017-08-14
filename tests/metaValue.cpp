@@ -210,7 +210,26 @@ TEST(MetaValueSuite, normTest) {
   MetaValue di = {{{5}}, {{6}}, {{7}}, {{8}}};
   MetaValue diu = {{{5, 1}}, {{6, 2}}, {{7, 1}}, {{8, 2}}};
   MetaValue aiRef = 5;
+  MetaValue aiuRef = 1;
   EXPECT_TRUE((ai.norm() - aiRef)<0.1) << ai.norm() << " != " << aiRef;
+  EXPECT_TRUE((aiu.norm().value() - aiRef).abs()<0.1) << aiu.norm() << " != " << aiRef;
+  EXPECT_TRUE((aiuRef - aiu.norm().uncertainty()).abs()<0.1) << aiu.norm().uncertainty() << " != " << aiuRef;
+}
+
+TEST(MetaValueSuite, sqrtTest) {
+  MetaValue ai = {{{5}}};
+  MetaValue aiu = {{{5, 1}}};
+  MetaValue bi = {{{5}, {6}}};
+  MetaValue biu = {{{5, 1}, {6, 2}}};
+  MetaValue ci = {{{5}}, {{6}}};
+  MetaValue ciu = {{{5, 1}}, {{6, 2}}};
+  MetaValue di = {{{5}}, {{6}}, {{7}}, {{8}}};
+  MetaValue diu = {{{5, 1}}, {{6, 2}}, {{7, 1}}, {{8, 2}}};
+  MetaValue aiRef = 2.2;
+  MetaValue aiuRef =0.225;
+  EXPECT_TRUE((ai.sqrt() - aiRef)<0.1) << ai << " != " << aiRef;
+  EXPECT_TRUE((aiuRef - aiu.sqrt().uncertainty()).abs()<0.1) << aiu << " - " << aiu.uncertainty() << " != " << aiuRef;
+  EXPECT_TRUE((aiu.value() - aiRef).abs()<0.1) << aiu.value() << " != " << aiRef;
 }
 
 TEST(MetaValueSuite, autoCastTest) {
