@@ -832,7 +832,11 @@ class ValueElement<T, true> : public ValueElementBase<T>{
         return ValueElement((minV+maxV)/2, (maxV-minV)/2);
     }
     ValueElement sqrt() const {
-      double tempMinV = ::sqrt((double)this->mValue-mUncertainty);
+      double tempMinV;
+      if(this->mValue-mUncertainty < 0)
+        tempMinV=0;
+      else
+        tempMinV = ::sqrt((double)this->mValue-mUncertainty);
       double tempMaxV = ::sqrt((double)this->mValue+mUncertainty);
       PType minV = tempMinV;
       PType maxV = tempMaxV;
