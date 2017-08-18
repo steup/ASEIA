@@ -214,7 +214,24 @@ class KBImpl {
       generateHomTrans(goal, ids, back_inserter(result));
       generateAttTrans(goal, ids, back_inserter(result));
 
-
+      /** \TODO: start dirty hack including homogeneus transforms as final trans **/
+      for(const Transformation& homTrans: mHomTrans)
+        for(const CompositeTransformation& cT: result) {
+          CompositeTransformation homCT(homTrans, cT.out(), EventType());
+          EventTypes inETs =homCT.in();
+          if(inETs.empty()) continue;
+          homCT.insert(cT.out, cT);
+          for(const EventType inET: inETs) {
+            if(inET == cT.out()) continue;
+            vector<CompositeTransformation> genTrans;
+            mHetTrans.generate(inET, ids, back_inserter(genTrans));
+            CompositeTransformation newCT = homCT;
+            for(const CompositeTransformation& genCT: genTrans)
+              newCT.insert(genCT);
+            result.push_back(newCT);
+          }
+        }
+      /** \TODO: end dirty hack including homogeneus transforms as final trans **/
 
       auto close = [&result, &ids, this](const TransStorage& trans){
         Transformations temp = result;
@@ -241,6 +258,7 @@ class KBImpl {
     void clear() {
       mTypes.clear();
       mHetTrans.clear();
+      mHomTrans.clear();
       mAtt1Trans.clear();
       mAttNTrans.clear();
     }

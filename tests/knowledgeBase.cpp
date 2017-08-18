@@ -154,7 +154,7 @@ namespace test {
       const EventType& inOutE;
       const EventType& in1;
       const string name;
-      HomTrans1(const EventType& inOutE, const EventType& in0, const string& name)
+      HomTrans1(const EventType& inOutE, const EventType& in1, const string& name)
         : Transformation(Type::homogeneus, 2, EventID::any), inOutE(inOutE), in1(in1), name(name)
 
       {}
