@@ -125,7 +125,11 @@ class KBImpl {
      *  \todo implement
      **/
     void generateHomTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
-
+      for(TransformationPtr t : mHomTrans) {
+        CompositeTransformation cT(t, goal, EventType());
+        if(!cT.in().empty())
+          *it++ = cT;
+      }
     }
 
     /** \brief find attribute transforms leading directly to goal

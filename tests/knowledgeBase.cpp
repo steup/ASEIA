@@ -192,6 +192,7 @@ namespace test {
       KnowledgeBase::registerTransformation(attr1);
       KnowledgeBase::registerTransformation(attr2);
       KnowledgeBase::registerTransformation(attr3);
+      KnowledgeBase::registerTransformation(hom0);
       eT0.add(AttributeType(Test0::value(), v, Scale<>(), Dimensionless()));
       eT1.add(AttributeType(Test1::value(), v, Scale<>(), Dimensionless()));
       eT2.add(AttributeType(Test2::value(), v, Scale<>(), Dimensionless()));
