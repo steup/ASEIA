@@ -105,17 +105,17 @@ struct CompositeTransformSuite : public ::testing::Test {
       .Times(1).WillOnce(Return(EventTypes({intermediate, intermediate2})));
     EXPECT_CALL(d, in(intermediate2, provided2))
       .Times(1).WillOnce(Return(EventTypes({provided2})));
-    auto r0 = compTrans.addRootTransformation(&a, goal, provided);
+    auto r0 = compTrans.add(&a, goal, provided);
     ASSERT_TRUE(r0.second);
-    auto r1 = compTrans.addTransformation(b.get(), r0.first, intermediate, provided);
+    auto r1 = compTrans.add(b.get(), r0.first, intermediate, provided);
     ASSERT_TRUE(r1.second);
     ofstream out(current_path()/"doc"/"linTransformation.dot");
     out << compTrans;
-    auto r2 = compTrans2.addRootTransformation(&c, goal, EventType());
+    auto r2 = compTrans2.add(&c, goal, EventType());
     ASSERT_TRUE(r2.second);
-    auto r3 = compTrans2.addTransformation(b.get(), r2.first, intermediate, provided);
+    auto r3 = compTrans2.add(b.get(), r2.first, intermediate, provided);
     ASSERT_TRUE(r3.second);
-    auto r4 = compTrans2.addTransformation(&d, r2.first, intermediate2, provided2);
+    auto r4 = compTrans2.add(&d, r2.first, intermediate2, provided2);
     ASSERT_TRUE(r4.second);
     out.close();
     out.open(current_path()/"doc"/"treeTransformation.dot");

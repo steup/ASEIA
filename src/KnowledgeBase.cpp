@@ -107,7 +107,7 @@ class KBImpl {
                 EventTypeResult result = findGoalEventType(eT, tPtr->in(eT, provided));
                 if( result.second && result.first - provided < provided - eT) {
                   CompositeTransformation newCT = cT;
-                  if( newCT.addTransformation(tPtr, v, eT, provided).second)
+                  if( newCT.add(tPtr, v, eT, provided).second)
                     *it++ = newCT;
                 }
               }
@@ -215,19 +215,19 @@ class KBImpl {
       generateAttTrans(goal, ids, back_inserter(result));
 
       /** \TODO: start dirty hack including homogeneus transforms as final trans **/
-      for(const Transformation& homTrans: mHomTrans)
+      for(const Transformation* homTrans: mHomTrans)
         for(const CompositeTransformation& cT: result) {
           CompositeTransformation homCT(homTrans, cT.out(), EventType());
           EventTypes inETs =homCT.in();
           if(inETs.empty()) continue;
-          homCT.insert(cT.out, cT);
+          homCT.add(move(CompositeTransformation(cT)), homCT.root(), cT.out());
           for(const EventType inET: inETs) {
             if(inET == cT.out()) continue;
             vector<CompositeTransformation> genTrans;
             mHetTrans.generate(inET, ids, back_inserter(genTrans));
             CompositeTransformation newCT = homCT;
-            for(const CompositeTransformation& genCT: genTrans)
-              newCT.insert(genCT);
+            for(CompositeTransformation& genCT: genTrans)
+              newCT.add(move(genCT), homCT.root(), inET);
             result.push_back(newCT);
           }
         }

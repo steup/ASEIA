@@ -45,10 +45,12 @@ class CompositeTransformation : public AbstractConfiguredTransformation {
     CompositeTransformation(TransformationPtr tPtr, const EventType& goal,
                             const EventType& provided);
 
-    VertexResult addRootTransformation(TransformationPtr tPtr, const EventType& goal,
-                                       const EventType& provided);
-    VertexResult addTransformation(TransformationPtr tPtr, Vertex v,
-                                   const EventType& goal, const EventType& provided);
+    VertexResult add(CompositeTransformation&& cT, Vertex v, const EventType& goal,
+                     const EventType& provided = EventType());
+    VertexResult add(TransformationPtr tPtr, const EventType& goal,
+                     const EventType& provided = EventType());
+    VertexResult add(TransformationPtr tPtr, Vertex v, const EventType& goal,
+                     const EventType& provided = EventType());
     EventIDs inIDs() const;
     TransPtr create(const AbstractPolicy& policy) const;
     bool check() const;

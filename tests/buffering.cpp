@@ -143,8 +143,8 @@ TEST_F(BufferingTestSuite, multiHetTest) {
   EXPECT_CALL(cT, in(outET, _)).Times(1).WillOnce(Return(EventTypes({tET0, tET1})));
 
   CompositeTransformation compTrans(TransformationPtr(&cT), outET, EventType());
-  compTrans.addTransformation(TransformationPtr(&aT), compTrans.root(), tET0, EventType());
-  compTrans.addTransformation(TransformationPtr(&bT), compTrans.root(), tET1, EventType());
+  compTrans.add(TransformationPtr(&aT), compTrans.root(), tET0, EventType());
+  compTrans.add(TransformationPtr(&bT), compTrans.root(), tET1, EventType());
 
   using TransPtr = Transformation::TransPtr;
 
@@ -203,8 +203,8 @@ TEST_F(BufferingTestSuite, complexTest) {
   EXPECT_CALL(cT, in(outET, _)).Times(1).WillOnce(Return(EventTypes({tET0, tET1})));
 
   CompositeTransformation compTrans(TransformationPtr(&cT), outET, EventType());
-  compTrans.addTransformation(TransformationPtr(&aT), compTrans.root(), tET0, EventType());
-  compTrans.addTransformation(TransformationPtr(&bT), compTrans.root(), tET1, EventType());
+  compTrans.add(TransformationPtr(&aT), compTrans.root(), tET0, EventType());
+  compTrans.add(TransformationPtr(&bT), compTrans.root(), tET1, EventType());
 
   using TransPtr = Transformation::TransPtr;
 

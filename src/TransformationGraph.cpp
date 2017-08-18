@@ -110,7 +110,7 @@ struct SpanningTreeVisitor : public default_bfs_visitor {
     EventTypeResult eRes = findGoalEventType(g[e], newCT.in());
     VertexResult vRes = newCT.find(g[s]);
     if(eRes.second && vRes.second) {
-      newCT.addTransformation(g[t], vRes.first, eRes.first, EventType());
+      newCT.add(g[t], vRes.first, eRes.first);
       vTrans[t]=move(newCT);
     }
   }

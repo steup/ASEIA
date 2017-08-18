@@ -120,7 +120,7 @@ using TransList    = CompositeTransformation::TransList;
 
 CompositeTransformation::CompositeTransformation(TransformationPtr tPtr, const EventType& goal,
                                                  const EventType& provided) {
-  VertexResult res = addRootTransformation(tPtr, goal, provided);
+  VertexResult res = add(tPtr, goal, provided);
   if(res.second)
     mRoot = res.first;
 }
@@ -136,8 +136,8 @@ bool CompositeTransformation::check() const {
   return boost::num_vertices(mGraph);
 }
 
-VertexResult CompositeTransformation::addRootTransformation(TransformationPtr tPtr, const EventType& tempGoal,
-                                                            const EventType& provided) {
+VertexResult CompositeTransformation::add(TransformationPtr tPtr, const EventType& tempGoal,
+                                          const EventType& provided) {
   if(num_vertices(mGraph)==0) {
     mRoot = boost::add_vertex(mGraph);
     mGraph[mRoot] = ConfiguredTransformation(tPtr, tempGoal, provided);
@@ -148,9 +148,14 @@ VertexResult CompositeTransformation::addRootTransformation(TransformationPtr tP
     return make_pair(Vertex(), false);
 }
 
-VertexResult CompositeTransformation::addTransformation(TransformationPtr tPtr, Vertex v,
-                                                        const EventType& intermediate,
-                                                        const EventType& provided) {
+VertexResult CompositeTransformation::add(CompositeTransformation&& cT, Vertex v, const EventType& goal,
+                     const EventType& provided) {
+  return make_pair(Vertex(), false);
+}
+
+VertexResult CompositeTransformation::add(TransformationPtr tPtr, Vertex v,
+                                          const EventType& intermediate,
+                                          const EventType& provided) {
   const EventTypes& tempIn = mGraph[v].in();
   if(!count(tempIn.begin(), tempIn.end(), intermediate))
     return make_pair(Vertex(), false);
