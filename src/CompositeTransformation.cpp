@@ -137,10 +137,10 @@ bool CompositeTransformation::check() const {
 }
 
 VertexResult CompositeTransformation::add(TransformationPtr tPtr, const EventType& tempGoal,
-                                          const EventType& provided) {
+                                          const EventType& provided, const MetaFilter& filter) {
   if(num_vertices(mGraph)==0) {
     mRoot = boost::add_vertex(mGraph);
-    mGraph[mRoot] = ConfiguredTransformation(tPtr, tempGoal, provided);
+    mGraph[mRoot] = ConfiguredTransformation(tPtr, tempGoal, provided, filter);
     mIn=mGraph[mRoot].in();
     mOut=mGraph[mRoot].out();
     return make_pair(mRoot, true);

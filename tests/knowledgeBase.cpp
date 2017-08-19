@@ -70,16 +70,16 @@ namespace test {
       HetTrans0(const EventType& outE, const EventType& inE, const string& name)
         : Transformation(Type::heterogeneus, 1, EventID({Test2::value()})), outE(outE), inE(inE), name(name)
       {}
-      virtual EventIDs in(EventID goal) const  {
+      virtual EventIDs in(EventID goal, const MetaFilter& filter = MetaFilter()) const  {
         return EventIDs({ EventID({Test3::value()}) });
       }
-      virtual vector<EventType> in(const EventType& goal, const EventType& provided) const  {
+      virtual vector<EventType> in(const EventType& goal, const EventType& provided, const MetaFilter& filter = MetaFilter()) const  {
         if(goal == outE)
           return {inE};
         else
           return {};
       }
-      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy) const { return TransPtr(); }
+      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy, const MetaFilter& filter = MetaFilter()) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << name; }
     };
 
@@ -92,16 +92,16 @@ namespace test {
         : Transformation(Type::heterogeneus, 2, EventID({Test0::value()})), outE(outE), in0(in0), in1(in1), name(name)
 
       {}
-      virtual EventIDs in(EventID goal) const  {
+      virtual EventIDs in(EventID goal, const MetaFilter& filter = MetaFilter()) const  {
         return EventIDs({ EventID({Test1::value()}), EventID({Test2::value()})});
       }
-      virtual vector<EventType> in(const EventType& goal, const EventType& provided) const  {
+      virtual vector<EventType> in(const EventType& goal, const EventType& provided, const MetaFilter& filter = MetaFilter()) const  {
         if(goal == outE)
           return {in0, in1};
         else
           return {};
       }
-      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy) const { return TransPtr(); }
+      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy, const MetaFilter& filter = MetaFilter()) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << name; }
     };
 
@@ -114,16 +114,16 @@ namespace test {
         : Transformation(Type::attribute, 1, EventID::any), outE(outE), inE(inE), p(p), name(name)
 
       {}
-      virtual EventIDs in(EventID goal) const  {
+      virtual EventIDs in(EventID goal, const MetaFilter& filter = MetaFilter()) const  {
         return EventIDs({ goal });
       }
-      virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
+      virtual vector<EventType> in(const EventType& goal,  const EventType& provided, const MetaFilter& filter = MetaFilter()) const  {
         if(goal == outE && provided == p)
           return {inE};
         else
           return {};
       }
-      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy) const { return TransPtr(); }
+      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy, const MetaFilter& filter = MetaFilter()) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << name; }
     };
 
@@ -137,16 +137,16 @@ namespace test {
         : Transformation(Type::attribute, 2, EventID::any), outE(outE), in0(in0), in1(in1), p(p), name(name)
 
       {}
-      virtual EventIDs in(EventID goal) const  {
+      virtual EventIDs in(EventID goal, const MetaFilter& filter = MetaFilter()) const  {
         return EventIDs({ goal, EventID({Test4::value()})});
       }
-      virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
+      virtual vector<EventType> in(const EventType& goal,  const EventType& provided, const MetaFilter& filter = MetaFilter()) const  {
         if(goal == outE && provided == p)
           return {in0, in1};
         else
           return {};
       }
-      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy) const { return TransPtr(); }
+      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy, const MetaFilter& filter = MetaFilter()) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << name; }
     };
     
@@ -158,16 +158,16 @@ namespace test {
         : Transformation(Type::homogeneus, 2, EventID::any), inOutE(inOutE), in1(in1), name(name)
 
       {}
-      virtual EventIDs in(EventID goal) const  {
+      virtual EventIDs in(EventID goal, const MetaFilter& filter = MetaFilter()) const  {
         return EventIDs({ goal, EventID({Test4::value()})});
       }
-      virtual vector<EventType> in(const EventType& goal,  const EventType& provided) const  {
+      virtual vector<EventType> in(const EventType& goal,  const EventType& provided, const MetaFilter& filter = MetaFilter()) const  {
         if(goal == inOutE)
           return {inOutE, in1};
         else
           return {};
       }
-      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy) const { return TransPtr(); }
+      virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy, const MetaFilter& filter = MetaFilter()) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << name; }
     };
 

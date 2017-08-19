@@ -3,6 +3,7 @@
 #include <EventID.h>
 #include <EventType.h>
 #include <EventStorage.h>
+#include <MetaFilter.h>
 
 #include <iosfwd>
 #include <vector>
@@ -19,9 +20,11 @@ class AbstractConfiguredTransformation {
   protected:
     EventType mOut;
     EventTypes mIn;
+    MetaFilter mFilter;
   public:
     const EventType& out() const { return mOut; }
     const EventTypes& in() const { return mIn; }
+    const MetaFilter& filter() const { return mFilter; } 
     bool operator==(const AbstractConfiguredTransformation& b) const;
 };
 
@@ -118,10 +121,10 @@ class Transformation {
     Type type() const { return mType; }
 
     virtual ~Transformation();
-    virtual std::vector<EventType> in(const EventType& goal, const  EventType& provided) const =0;
+    virtual std::vector<EventType> in(const EventType& goal, const  EventType& provided = EventType(), const MetaFilter& filter = MetaFilter()) const =0;
 
-    virtual EventIDs in(EventID goal) const = 0;
-    virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy) const =0;
+    virtual EventIDs in(EventID goal, const MetaFilter& filter = MetaFilter()) const = 0;
+    virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy, const MetaFilter& filter = MetaFilter()) const =0;
     virtual void print(std::ostream& o) const = 0;
 
     bool operator==(const Transformation& b) const { return this == &b; }

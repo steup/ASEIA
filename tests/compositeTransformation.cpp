@@ -50,10 +50,9 @@ struct CompositeTransformSuite : public ::testing::Test {
     TestTransformation(const string& name, size_t arity)
       : Transformation(Type::attribute, arity, EventID::any), name(name) { }
 
-    MOCK_CONST_METHOD1(in, EventTypes(const EventType& goal));
-    MOCK_CONST_METHOD2(in, EventTypes(const EventType& goal, const EventType& provided));
-    MOCK_CONST_METHOD1(in, EventIDs(EventID goal));
-    MOCK_CONST_METHOD3(create, TransPtr(const EventType& out, const EventTypes& in, const AbstractPolicy& policy));
+    MOCK_CONST_METHOD3(in, EventTypes(const EventType& goal, const EventType& provided, const MetaFilter& filter));
+    MOCK_CONST_METHOD2(in, EventIDs(EventID goal, const MetaFilter& filter));
+    MOCK_CONST_METHOD4(create, TransPtr(const EventType& out, const EventTypes& in, const AbstractPolicy& policy, const MetaFilter& filter));
     virtual void print(ostream& o) const { o << name; }
   };
 
@@ -97,13 +96,13 @@ struct CompositeTransformSuite : public ::testing::Test {
     provided2.add(prov2AT);
 
     ASSERT_NE(b, nullptr);
-    EXPECT_CALL(a, in(goal, provided))
+    EXPECT_CALL(a, in(goal, provided, _))
       .Times(1).WillOnce(Return(EventTypes({intermediate})));
-    EXPECT_CALL(*b, in(intermediate, provided))
+    EXPECT_CALL(*b, in(intermediate, provided, _))
       .Times(AtLeast(1)).WillRepeatedly(Return(EventTypes({provided})));
-    EXPECT_CALL(c, in(goal, _))
+    EXPECT_CALL(c, in(goal, _, _))
       .Times(1).WillOnce(Return(EventTypes({intermediate, intermediate2})));
-    EXPECT_CALL(d, in(intermediate2, provided2))
+    EXPECT_CALL(d, in(intermediate2, provided2, _))
       .Times(1).WillOnce(Return(EventTypes({provided2})));
     auto r0 = compTrans.add(&a, goal, provided);
     ASSERT_TRUE(r0.second);
@@ -179,10 +178,10 @@ TEST_F(CompositeTransformSuite, treeInTest) {
 
 TEST_F(CompositeTransformSuite, linearCreateTest) {
   using Events = Transformer::Events;
-  EXPECT_CALL(a, create(goal, EventTypes({intermediate}), _))
+  EXPECT_CALL(a, create(goal, EventTypes({intermediate}), _, _))
     .Times(1).WillOnce(Return(TransPtr(new TestTransformer("a", goal, EventTypes({intermediate}), trans))));
   ASSERT_NE(b, nullptr);
-  EXPECT_CALL(*b, create(intermediate, EventTypes({provided}), _))
+  EXPECT_CALL(*b, create(intermediate, EventTypes({provided}), _, _))
     .Times(1).WillOnce(Return(TransPtr(new TestTransformer("b", intermediate, EventTypes({provided}),trans))));
   TransPtr result = compTrans.create(AbstractPolicy());
   ASSERT_NE(result, nullptr);
@@ -208,12 +207,12 @@ TEST_F(CompositeTransformSuite, linearCreateTest) {
 
 TEST_F(CompositeTransformSuite, treeCreateTest) {
   using Events = Transformer::Events;
-  EXPECT_CALL(c, create(goal, EventTypes({intermediate, intermediate2}), _))
+  EXPECT_CALL(c, create(goal, EventTypes({intermediate, intermediate2}), _, _))
     .Times(1).WillOnce(Return(TransPtr(new TestTransformer("c", goal, EventTypes({intermediate, intermediate2}), trans))));
   ASSERT_NE(b, nullptr);
-  EXPECT_CALL(*b, create(intermediate, EventTypes({provided}), _))
+  EXPECT_CALL(*b, create(intermediate, EventTypes({provided}), _, _))
     .Times(1).WillOnce(Return(TransPtr(new TestTransformer("b", intermediate, EventTypes({provided}),trans))));
-  EXPECT_CALL(d, create(intermediate2, EventTypes({provided2}), _))
+  EXPECT_CALL(d, create(intermediate2, EventTypes({provided2}), _, _))
     .Times(1).WillOnce(Return(TransPtr(new TestTransformer("d", intermediate2, EventTypes({provided2}), trans))));
   TransPtr result = compTrans2.create(AbstractPolicy());
   ASSERT_NE(result, nullptr);

@@ -24,16 +24,16 @@ class InvalidTransformation : public Transformation {
   public:
     InvalidTransformation() : Transformation(Type::invalid, 0, EventID::any) {
     }
-    virtual vector<EventType> in(const EventType& goal, const EventType& provided) const {
+    virtual vector<EventType> in(const EventType& goal, const EventType& provided, const MetaFilter& filter) const {
       return {};
     }
-    virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy) const {
+    virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy, const MetaFilter& filter) const {
       return TransPtr();
     }
     virtual void print(std::ostream& o) const {
       o << "invalid";
     }
-    virtual EventIDs in(EventID goal) const {
+    virtual EventIDs in(EventID goal, const MetaFilter& filter) const {
       return EventIDs();
     }
 } invalidInstance;

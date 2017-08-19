@@ -2,6 +2,7 @@
 
 #include <Transformation.h>
 #include <CompositeTransformation.h>
+#include <MetaFilter.h>
 
 #include <vector>
 #include <iosfwd>
@@ -17,7 +18,7 @@ class KnowledgeBase {
     static void registerEventType(const EventType& eT);
     static void unregisterEventType(const EventType& eT);
     //TODO: query functions
-    static Transformations findTransforms(const EventType& goal);
+    static Transformations findTransforms(const EventType& goal, const MetaFilter& filter = MetaFilter());
     static std::vector<EventType> findCompatible(const EventType& eT);
     static void clear();
     static void print(std::ostream& o);

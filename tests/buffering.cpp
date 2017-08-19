@@ -37,10 +37,9 @@ namespace test {
     TestTransformation(const string& name, size_t arity)
       : Transformation(Type::attribute, arity, EventID::any), name(name) { }
 
-    MOCK_CONST_METHOD1(in, EventTypes(const EventType& goal));
-    MOCK_CONST_METHOD2(in, EventTypes(const EventType& goal, const EventType& provided));
-    MOCK_CONST_METHOD1(in, EventIDs(EventID goal));
-    MOCK_CONST_METHOD3(create, TransPtr(const EventType& out, const EventTypes& in, const AbstractPolicy& policy));
+    MOCK_CONST_METHOD3(in, EventTypes(const EventType& goal, const EventType& provided, const MetaFilter& filter));
+    MOCK_CONST_METHOD2(in, EventIDs(EventID goal, const MetaFilter& filter));
+    MOCK_CONST_METHOD4(create, TransPtr(const EventType& out, const EventTypes& in, const AbstractPolicy& policy, const MetaFilter& filter));
     virtual void print(ostream& o) const { o << name; }
   };
 
@@ -138,9 +137,9 @@ TEST_F(BufferingTestSuite, multiHetTest) {
   TestTransformer a("a", tET0, {inET0, inET1}), b("b", tET1, {inET1, inET2}), c("c", outET, {tET0, tET1});
   TestTransformation aT("aT", 2), bT("bT", 2), cT("cT", 2);
 
-  EXPECT_CALL(aT, in(tET0, _)).Times(1).WillOnce(Return(EventTypes({inET0, inET1})));
-  EXPECT_CALL(bT, in(tET1, _)).Times(1).WillOnce(Return(EventTypes({inET1, inET2})));
-  EXPECT_CALL(cT, in(outET, _)).Times(1).WillOnce(Return(EventTypes({tET0, tET1})));
+  EXPECT_CALL(aT, in(tET0, _, _)).Times(1).WillOnce(Return(EventTypes({inET0, inET1})));
+  EXPECT_CALL(bT, in(tET1, _, _)).Times(1).WillOnce(Return(EventTypes({inET1, inET2})));
+  EXPECT_CALL(cT, in(outET, _, _)).Times(1).WillOnce(Return(EventTypes({tET0, tET1})));
 
   CompositeTransformation compTrans(TransformationPtr(&cT), outET, EventType());
   compTrans.add(TransformationPtr(&aT), compTrans.root(), tET0, EventType());
@@ -148,11 +147,11 @@ TEST_F(BufferingTestSuite, multiHetTest) {
 
   using TransPtr = Transformation::TransPtr;
 
-  EXPECT_CALL(aT, create(tET0,EventTypes({inET0, inET1}),_))
+  EXPECT_CALL(aT, create(tET0,EventTypes({inET0, inET1}),_, _))
     .Times(1).WillOnce(Return(TransPtr(&a, nothing)));
-  EXPECT_CALL(bT, create(tET1,EventTypes({inET1, inET2}),_))
+  EXPECT_CALL(bT, create(tET1,EventTypes({inET1, inET2}),_, _))
     .Times(1).WillOnce(Return(TransPtr(&b, nothing)));
-  EXPECT_CALL(cT, create(outET,EventTypes({tET0, tET1}),_))
+  EXPECT_CALL(cT, create(outET,EventTypes({tET0, tET1}),_, _))
     .Times(1).WillOnce(Return(TransPtr(&c, nothing)));
 
   TransPtr tPtr = compTrans.create(AbstractPolicy());
@@ -198,9 +197,9 @@ TEST_F(BufferingTestSuite, complexTest) {
   TestTransformer a("a", tET0, {inET0, inET0}), b("b", tET1, {inET1, inET1}), c("c", outET, {tET0, tET1});
   TestTransformation aT("aT", 2), bT("bT", 2), cT("cT", 2);
 
-  EXPECT_CALL(aT, in(tET0, _)).Times(1).WillOnce(Return(EventTypes({inET0, inET0})));
-  EXPECT_CALL(bT, in(tET1, _)).Times(1).WillOnce(Return(EventTypes({inET1, inET1})));
-  EXPECT_CALL(cT, in(outET, _)).Times(1).WillOnce(Return(EventTypes({tET0, tET1})));
+  EXPECT_CALL(aT, in(tET0, _, _)).Times(1).WillOnce(Return(EventTypes({inET0, inET0})));
+  EXPECT_CALL(bT, in(tET1, _, _)).Times(1).WillOnce(Return(EventTypes({inET1, inET1})));
+  EXPECT_CALL(cT, in(outET, _, _)).Times(1).WillOnce(Return(EventTypes({tET0, tET1})));
 
   CompositeTransformation compTrans(TransformationPtr(&cT), outET, EventType());
   compTrans.add(TransformationPtr(&aT), compTrans.root(), tET0, EventType());
@@ -208,11 +207,11 @@ TEST_F(BufferingTestSuite, complexTest) {
 
   using TransPtr = Transformation::TransPtr;
 
-  EXPECT_CALL(aT, create(tET0,EventTypes({inET0, inET0}),_))
+  EXPECT_CALL(aT, create(tET0,EventTypes({inET0, inET0}),_, _))
     .Times(1).WillOnce(Return(TransPtr(&a, nothing)));
-  EXPECT_CALL(bT, create(tET1,EventTypes({inET1, inET1}),_))
+  EXPECT_CALL(bT, create(tET1,EventTypes({inET1, inET1}),_, _))
     .Times(1).WillOnce(Return(TransPtr(&b, nothing)));
-  EXPECT_CALL(cT, create(outET,EventTypes({tET0, tET1}),_))
+  EXPECT_CALL(cT, create(outET,EventTypes({tET0, tET1}),_, _))
     .Times(1).WillOnce(Return(TransPtr(&c, nothing)));
 
   TransPtr tPtr = compTrans.create(AbstractPolicy());

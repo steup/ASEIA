@@ -202,9 +202,10 @@ class KBImpl {
 
     /** \brief Find Composite Transformations for EventType
      *  \param goal the output of the Transformations
+     *  \param filter the filter expression stated by the subscriber
      *  \return a list of ConfigureTransformation
      **/
-    Transformations find(const EventType& goal) {
+    Transformations find(const EventType& goal, const MetaFilter& filter) {
       EventIDs ids = mTypes.ids();
       sort(ids.begin(), ids.end(), EventID::comp); //<< Sort EventIDs ascending
 
@@ -299,8 +300,8 @@ vector<EventType> KnowledgeBase::findCompatible(const EventType& eT) {
   return KB::instance().findCompatible(eT);
 }
 
-KnowledgeBase::Transformations KnowledgeBase::findTransforms(const EventType& goal) {
-  return KB::instance().find(goal);
+KnowledgeBase::Transformations KnowledgeBase::findTransforms(const EventType& goal, const MetaFilter& filter) {
+  return KB::instance().find(goal, filter);
 }
 
 void KnowledgeBase::clear() {

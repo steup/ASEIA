@@ -67,11 +67,11 @@ class TypeTransformation : public Transformation {
 			: Transformation(Transformation::Type::attribute, 1, EventID::any)
 		{	}
 
-    virtual EventIDs in(EventID goal) const {
+    virtual EventIDs in(EventID goal, const MetaFilter& = MetaFilter()) const {
       return EventIDs({goal});
     }
 
-    virtual vector<EventType> in(const EventType& goal, const EventType& provided)  const {
+    virtual vector<EventType> in(const EventType& goal, const EventType& provided = EventType(), const MetaFilter& = MetaFilter())  const {
       TypeTransformer::TypeList typeDiff = TypeTransformer::typeDiff(goal, provided);
       auto apply = [](EventType eT, const pair<id::attribute::ID, pair<ValueType, ValueType>>& v){
         EventType result = eT;
@@ -82,7 +82,7 @@ class TypeTransformation : public Transformation {
       return {accumulate(typeDiff.begin(), typeDiff.end(), goal, apply)};
     }
 
-    virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy) const {
+    virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy, const MetaFilter& filter = MetaFilter()) const {
       if(in.size()!=1)
         return TransPtr();
       else
