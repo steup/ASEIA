@@ -29,14 +29,14 @@ class MetaPredicate {
 		/** \brief possible constant argument of the comparision **/
 		MetaValue mV;
 		/** \brief event type information for deserialization **/
-		const std::vector<EventType>& mTypes;
+		const std::vector<const EventType*>* mTypesPtr;
 	public:
 		/** \brief Construct a dynamic filter subexpression container
 		 *  \param types a vector containing the subscribed event types
 		 *
 		 *  The constructor stores a reference to the types of the subscription to enable a correct deserialization of constants used in the filter predicate
 		 **/
-		MetaPredicate(const std::vector<EventType>& types) : mTypes(types) {}
+		MetaPredicate(const std::vector<const EventType*>& types) : mTypesPtr(&types) {}
 		/** \brief execute contained filter predicate
 		 *
 		 *  \param events vector of events the filter predicate may operate on
@@ -44,7 +44,7 @@ class MetaPredicate {
 		 *
 		 *  Executea a preveuisly received filter subexpression and return the results
 		 **/
-		bool operator()(const std::vector<MetaEvent>& events) const;
+		bool operator()(const std::vector<const MetaEvent*>& events) const;
 	/** \brief friend declaration of deserialization function **/
 	template<typename T> friend DeSerializer<T>& operator>>(DeSerializer<T>&, MetaPredicate&);
 	/** \brief friend declaration of output stream operator **/
@@ -68,14 +68,16 @@ class MetaFilter {
 		/** \brief local definition of noop operation to indicate end of list **/
 		static const id::filterOp::ID noop = id::filterOp::NOOP::value;
 		/** \brief event type information to handle deserialization **/
-		const std::vector<EventType>& mTypes;
+		std::vector<const EventType*> mTypes;
 	public:
+		/** \brief Construct an always true filter **/
+    MetaFilter() {}
 		/** \brief Construct a dynamic filter container
 		 *  \param types a vector containing the subscribed event types
 		 *
 		 *  The constructor stores a reference to the types of the subscription to enable a correct deserialization of constants used in the filter expressions
 		 **/
-		MetaFilter(const std::vector<EventType>& types) : mTypes(types) {}
+		MetaFilter(const std::vector<const EventType*>& types) : mTypes(types) {}
 		/** \brief execute contained filter
 		 *
 		 *  \param events vector of events the filter operates on
@@ -83,7 +85,7 @@ class MetaFilter {
 		 *
 		 *  Executea a preveuisly received filter expression and return the results
 		 **/
-		bool operator()(const std::vector<MetaEvent>& events) const;
+		bool operator()(const std::vector<const MetaEvent*>& events) const;
 	/** \brief friend declaration of deserialization function **/
 	template<typename T> friend DeSerializer<T>& operator>>(DeSerializer<T>&, MetaFilter&);
 	/** \brief friend declaration of output stream operator **/
@@ -109,7 +111,7 @@ DeSerializer<T>& operator>>(DeSerializer<T>& d, MetaPredicate& p) {
 	d >> p.mE0.data >> p.mOp.data;
 	try {
 		if(p.mOp.constArg) {
-			auto attrTPtr = p.mTypes.at(p.mE0.num).attribute(p.mE0.attr);
+        auto attrTPtr = p.mTypesPtr->at(p.mE0.num)->attribute(p.mE0.attr);
 			if(!attrTPtr)
 				throw MetaFilterError();
 			ValueType vt = attrTPtr->value();
@@ -137,6 +139,8 @@ DeSerializer<T>& operator>>(DeSerializer<T>& d, MetaPredicate& p) {
  **/
 template<typename T>
 DeSerializer<T>& operator>>(DeSerializer<T>& d, MetaFilter& f) {
+  if(f.mTypes.empty())
+    return d;
 	id::filterOp::ID logicalOp;
 	do{
 		MetaPredicate p(f.mTypes);

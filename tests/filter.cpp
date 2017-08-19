@@ -20,6 +20,7 @@ class FilterTestSuite : public ::testing::Test {
   public:
     using Event = BaseEvent<>;
     Event trueEvent, falseEvent, compEvent;
+    EventType eventType = (EventType)trueEvent;
     using TimeAttr = Event::findAttribute<Time>::type;
     const TimeAttr c0 = {{{ 1024 }}};
     FilterTestSuite() {
@@ -269,47 +270,42 @@ TEST_F(FilterTestSuite, metaFilterBasicTest) {
 	std::vector<uint8_t> buffer({e0Time, gt, e1Time, noop,  e0Time, lt, e1Time, noop, e0Time, eq, e1Time, noop, e0Time, ne, e1Time, noop, e0Time, ge, e1Time, noop, e0Time, le, e1Time, noop});
 
 	DeSerializer<std::vector<uint8_t>::const_iterator> d(buffer.cbegin(), buffer.cend());
-	std::vector<EventType> types={(EventType)trueEvent, (EventType)falseEvent};
+	std::vector<const EventType*> types={&eventType, &eventType};
 	MetaFilter filter0(types), filter1(types), filter2(types), filter3(types), filter4(types), filter5(types);
 	d >> filter0 >> filter1 >> filter2 >> filter3 >> filter4 >> filter5;
 
-	std::vector<MetaEvent> trueEvents(2);
-	std::vector<MetaEvent> falseEvents(2);
-	trueEvents[0]=MetaEvent((EventType)trueEvent);
-	trueEvents[1]=MetaEvent((EventType)compEvent);
-	falseEvents[0]=MetaEvent((EventType)falseEvent);
-	falseEvents[1]=MetaEvent((EventType)compEvent);
+  MetaEvent trueMetaEvent(eventType), falseMetaEvent(eventType), compMetaEvent(eventType);
+
+	std::vector<const MetaEvent*> trueEvents = {&trueMetaEvent, &compMetaEvent};
+	std::vector<const MetaEvent*> falseEvents= {&falseMetaEvent, &compMetaEvent};
 
 	buffer.clear();
 	auto s0 = Serializer<decltype(back_inserter(buffer))>(back_inserter(buffer));
 	s0 << compEvent;
 	auto d0 = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.begin(), buffer.end());
-	d0 >> trueEvents[1];
+	d0 >> compMetaEvent;
 	buffer.clear();
 	auto s1 = Serializer<decltype(back_inserter(buffer))>(back_inserter(buffer));
 	s1 << trueEvent;
 	auto d1 = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.begin(), buffer.end());
-	d1 >> trueEvents[0];
+	d1 >> trueMetaEvent;
 	buffer.clear();
 	auto s2 = Serializer<decltype(back_inserter(buffer))>(back_inserter(buffer));
 	s2 << falseEvent;
 	auto d2 = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.begin(), buffer.end());
-	d2 >> falseEvents[0];
+	d2 >> falseMetaEvent;
 
-	falseEvents[1] = trueEvents[1];
-
-
-	EXPECT_TRUE(filter0(trueEvents))   << "False negative:\n" << trueEvents[0]  <<  filter0 << "\n" << trueEvents[1] ;
-  EXPECT_FALSE(filter0(falseEvents)) << "False positive:\n" << falseEvents[0] <<  filter0 << "\n" << falseEvents[1];
-  EXPECT_TRUE(filter1(falseEvents))  << "False negative:\n" << falseEvents[0] <<  filter1 << "\n" << falseEvents[1];
-  EXPECT_FALSE(filter1(trueEvents))  << "False positive:\n" << trueEvents[0]  <<  filter1 << "\n" << trueEvents[1] ;
-  EXPECT_FALSE(filter2(falseEvents)) << "False positive:\n" << falseEvents[0] <<  filter2 << "\n" << falseEvents[1];
-  EXPECT_FALSE(filter2(trueEvents))  << "False positive:\n" << trueEvents[0]  <<  filter2 << "\n" << trueEvents[1] ;
-  EXPECT_TRUE(filter3(trueEvents))   << "False negative:\n" << trueEvents[0]  <<  filter3 << "\n" << trueEvents[1] ;
-  EXPECT_TRUE(filter3(falseEvents))  << "False negative:\n" << falseEvents[0] <<  filter3 << "\n" << falseEvents[1];
-  EXPECT_TRUE(filter4(trueEvents))   << "False negative:\n" << trueEvents[0]  <<  filter4 << "\n" << trueEvents[1] ;
-  EXPECT_FALSE(filter4(falseEvents)) << "False positive:\n" << falseEvents[0] <<  filter4 << "\n" << falseEvents[1];
-  EXPECT_TRUE(filter5(falseEvents))  << "False negative:\n" << falseEvents[0] <<  filter5 << "\n" << falseEvents[1];
-  EXPECT_FALSE(filter5(trueEvents))  << "False positive:\n" << trueEvents[0]  <<  filter5 << "\n" << trueEvents[1] ;
+	EXPECT_TRUE(filter0(trueEvents))   << "False negative:\n" << *trueEvents[0]  <<  filter0 << "\n" << *trueEvents[1] ;
+  EXPECT_FALSE(filter0(falseEvents)) << "False positive:\n" << *falseEvents[0] <<  filter0 << "\n" << *falseEvents[1];
+  EXPECT_TRUE(filter1(falseEvents))  << "False negative:\n" << *falseEvents[0] <<  filter1 << "\n" << *falseEvents[1];
+  EXPECT_FALSE(filter1(trueEvents))  << "False positive:\n" << *trueEvents[0]  <<  filter1 << "\n" << *trueEvents[1] ;
+  EXPECT_FALSE(filter2(falseEvents)) << "False positive:\n" << *falseEvents[0] <<  filter2 << "\n" << *falseEvents[1];
+  EXPECT_FALSE(filter2(trueEvents))  << "False positive:\n" << *trueEvents[0]  <<  filter2 << "\n" << *trueEvents[1] ;
+  EXPECT_TRUE(filter3(trueEvents))   << "False negative:\n" << *trueEvents[0]  <<  filter3 << "\n" << *trueEvents[1] ;
+  EXPECT_TRUE(filter3(falseEvents))  << "False negative:\n" << *falseEvents[0] <<  filter3 << "\n" << *falseEvents[1];
+  EXPECT_TRUE(filter4(trueEvents))   << "False negative:\n" << *trueEvents[0]  <<  filter4 << "\n" << *trueEvents[1] ;
+  EXPECT_FALSE(filter4(falseEvents)) << "False positive:\n" << *falseEvents[0] <<  filter4 << "\n" << *falseEvents[1];
+  EXPECT_TRUE(filter5(falseEvents))  << "False negative:\n" << *falseEvents[0] <<  filter5 << "\n" << *falseEvents[1];
+  EXPECT_FALSE(filter5(trueEvents))  << "False positive:\n" << *trueEvents[0]  <<  filter5 << "\n" << *trueEvents[1] ;
 }
 }}

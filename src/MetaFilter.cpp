@@ -2,15 +2,15 @@
 #include <IDIO.h>
 using namespace ::id::filterOp;
 
-bool MetaPredicate::operator()(const std::vector<MetaEvent>& events) const {
-	auto aPtr = events.at(mE0.num).attribute(mE0.attr);
+bool MetaPredicate::operator()(const std::vector<const MetaEvent*>& events) const {
+	auto aPtr = events.at(mE0.num)->attribute(mE0.attr);
 	if(!aPtr)
 		return false;
 
 	const MetaValue& a = aPtr->value();
 	const MetaValue* b = &mV;
 	if(!mOp.constArg) {
-		const MetaAttribute* bPtr = events.at(mE1.num).attribute(mE1.attr);
+		const MetaAttribute* bPtr = events.at(mE1.num)->attribute(mE1.attr);
 		if(!bPtr)
 			return false;
 		b = &bPtr->value();
@@ -45,7 +45,9 @@ std::ostream& operator<<(std::ostream& o, const MetaPredicate& p){
 	return o;
 }
 
-bool MetaFilter::operator()(const std::vector<MetaEvent>& events) const {
+bool MetaFilter::operator()(const std::vector<const MetaEvent*>& events) const {
+  if(mTypes.empty())
+    return true;
 	bool result=true;
 	ID op = NOOP::value;
 	for(const auto& subExpr : mExpr) {
