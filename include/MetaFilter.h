@@ -27,7 +27,7 @@ class MetaPredicate {
 		/** \brief the comparision operation **/
 		FilterOp mOp;
 		/** \brief possible constant argument of the comparision **/
-		MetaValue mV;
+		MetaAttribute mAttr;
 		/** \brief event type information for deserialization **/
 		const std::vector<const EventType*>* mTypesPtr;
 	public:
@@ -114,9 +114,8 @@ DeSerializer<T>& operator>>(DeSerializer<T>& d, MetaPredicate& p) {
         auto attrTPtr = p.mTypesPtr->at(p.mE0.num)->attribute(p.mE0.attr);
 			if(!attrTPtr)
 				throw MetaFilterError();
-			ValueType vt = attrTPtr->value();
-			p.mV = MetaFactory::instance().create(vt);
-			d >> p.mV;
+			p.mAttr = MetaAttribute(*attrTPtr);
+			d >> p.mAttr;
 		} else
 			d >> p.mE1.data;
 	}

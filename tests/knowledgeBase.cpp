@@ -3,6 +3,8 @@
 #include <gmock/gmock.h>
 #include <KnowledgeBase.h>
 #include <AttributeType.h>
+#include <Filter.h>
+#include <Attribute.h>
 
 #include <boost/filesystem.hpp>
 
@@ -312,11 +314,20 @@ namespace test {
   }
 
   TEST_F(KnowledgeBaseTestSuite, fullTreeWithHom) {
+    auto filter = filter::uncertainty(filter::e0[Test0()]) < Attribute<Test0, Value<float, 1, 1, false>, Dimensionless, Scale<>>({{{ 10 }}});
+    vector<uint8_t> buffer;
+    auto i = back_inserter(buffer);
+    Serializer<decltype(i)> s(i);
+    FilterEvent<decltype(s)> s0(0, s);
+    s0 << filter;
+    MetaFilter metaFilter;
+    DeSerializer<decltype(buffer.cbegin())> d(buffer.cbegin(), buffer.cend());
+    d >> metaFilter;
     KnowledgeBase::registerEventType(eT7);
     KnowledgeBase::registerEventType(eT5);
     KnowledgeBase::registerEventType(eT6);
     KnowledgeBase::registerEventType(eT8);
-    Transformations ts = KnowledgeBase::findTransforms(eT0);
+    Transformations ts = KnowledgeBase::findTransforms(eT0, metaFilter);
     EXPECT_THAT(ts, SizeIs(2));
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het0) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het1) ) ) ) );

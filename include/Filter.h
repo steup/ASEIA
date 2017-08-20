@@ -2,7 +2,9 @@
 
 #include <boost/phoenix/core/argument.hpp>
 #include <boost/phoenix/operator.hpp>
+#include <boost/phoenix/function.hpp>
 #include <type_traits>
+#include <functional>
 
 #include <ID.h>
 
@@ -15,16 +17,46 @@ namespace filter {
   const boost::phoenix::expression::argument<6>::type e5 = {};
   const boost::phoenix::expression::argument<7>::type e6 = {};
   const boost::phoenix::expression::argument<8>::type e7 = {};
+  
+  struct uncertainty_impl {
+    
+    template<typename Attribute>
+    auto operator()(const Attribute& attr) const -> decltype(attr.uncertainty()){
+      return attr.uncertainty();
+    }
+  };
+
+  extern boost::phoenix::function<uncertainty_impl> uncertainty;
+
+  struct value_impl {
+    
+    template<typename Attribute>
+    auto operator()(const Attribute& attr) const -> decltype(attr.value()){
+      return attr.value();
+    }
+  };
+
+  extern boost::phoenix::function<value_impl> value;
+  
+  struct norm_impl {
+    
+    template<typename Attribute>
+    auto operator()(const Attribute& attr) const -> decltype(attr.norm()){
+      return attr.norm();
+    }
+  };
+
+  extern boost::phoenix::function<norm_impl> norm;
 }
 
 struct PseudoAttr {};
 
 union EventPlaceholder{
 	struct {
-  	uint8_t attr : 5;
+  	uint8_t attr : 8;
     uint8_t num  : 3;
  	};
-  uint8_t data;
+  uint16_t data;
 };
 
 union FilterOp{
@@ -49,6 +81,13 @@ struct FilterEvent {
     mEvent.attr = AttrID::value();
     return *this;
   }
+
+  /** \todo implement **/
+  FilterEvent& uncertainty() { }
+  /** \todo implement **/
+  FilterEvent& value() { }
+  /** \todo implement **/
+  FilterEvent& norm() { }
 };
 
 template<typename Serializer, typename Attr = FilterEvent<Serializer>>
@@ -65,6 +104,7 @@ struct FilterPredicate {
     mOp.constArg = std::is_same<Attr, Event>::type::value?0:1;
   }
 };
+
 
 template<typename T, typename A0, typename A1>
 FilterPredicate<T, A1> operator&&(const FilterPredicate<T, A0>& a, const FilterPredicate<T, A1>& b) {

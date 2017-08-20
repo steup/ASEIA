@@ -2,26 +2,30 @@
 #include <IDIO.h>
 using namespace ::id::filterOp;
 
-bool MetaPredicate::operator()(const std::vector<const MetaEvent*>& events) const {
-	auto aPtr = events.at(mE0.num)->attribute(mE0.attr);
+static const MetaAttribute& extractAttr(EventPlaceholder e, const std::vector<const MetaEvent*> events) {
+	const MetaAttribute* aPtr = events[e.num]->attribute(e.attr);
+  static const MetaAttribute invalid;
 	if(!aPtr)
-		return false;
+		return invalid;
 
-	const MetaValue& a = aPtr->value();
-	const MetaValue* b = &mV;
+  return *aPtr;
+}
+
+bool MetaPredicate::operator()(const std::vector<const MetaEvent*>& events) const {
+  MetaAttribute a = extractAttr(mE0, events);
+	MetaAttribute b;
 	if(!mOp.constArg) {
-		const MetaAttribute* bPtr = events.at(mE1.num)->attribute(mE1.attr);
-		if(!bPtr)
-			return false;
-		b = &bPtr->value();
-	}
+		b = extractAttr(mE1, events);
+	} else {
+    b = mAttr;
+  }
 	switch(mOp.code){
-		case(LE::value): return (bool)(a <= *b).prod();
-		case(GE::value): return (bool)(a >= *b).prod();
-		case(LT::value): return (bool)(a  < *b).prod();
-		case(GT::value): return (bool)(a  > *b).prod();
-		case(EQ::value): return (bool)(a == *b).prod();
-		case(NE::value): return (bool)(a != *b).sum();
+		case(LE::value): return (bool)(a <= b).prod();
+		case(GE::value): return (bool)(a >= b).prod();
+		case(LT::value): return (bool)(a  < b).prod();
+		case(GT::value): return (bool)(a  > b).prod();
+		case(EQ::value): return (bool)(a == b).prod();
+		case(NE::value): return (bool)(a != b).sum();
 		default:
 			return false;
 	}
@@ -39,7 +43,7 @@ std::ostream& operator<<(std::ostream& o, const MetaPredicate& p){
 		default: o << "unknown";
 	}
 	if(p.mOp.constArg)
-		o << p.mV;
+		o << p.mAttr;
 	else
 		o << "e" << (uint16_t)p.mE1.num << "[" << id::attribute::name(p.mE1.attr) << "]";
 	return o;
