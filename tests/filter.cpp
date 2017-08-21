@@ -94,7 +94,7 @@ TEST_F(FilterTestSuite, basicSerializationTest) {
   auto filter4 = e0[Time()] == c0;
   auto filter5 = e0[Time()] != c0;
 
-	uint8_t e0Time = ::id::attribute::Time::value();
+	uint8_t time = ::id::attribute::Time::value();
 	uint8_t gt = 0x80|::id::filterOp::GT::value;
 	uint8_t lt = 0x80|::id::filterOp::LT::value;
 	uint8_t ge = 0x80|::id::filterOp::GE::value;
@@ -110,39 +110,45 @@ TEST_F(FilterTestSuite, basicSerializationTest) {
 	uint16_t count = 0;
 
   s << filter0(s0);
-	EXPECT_EQ(buffer[0], e0Time) << "Placeholder event 0 time serialized wrongly";
-	EXPECT_EQ(buffer[count+1], gt) << "Operation > with constant argument serialized wrongly";
+	EXPECT_EQ(buffer[count++], time) << "Placeholder event 0 time serialized wrongly";
+	EXPECT_EQ(buffer[count++], 0) << "Placeholder event 0 time serialized wrongly";
+	EXPECT_EQ(buffer[count++], gt) << "Operation > with constant argument serialized wrongly";
 
-	count+=2*sizeof(uint32_t)+2;
+	count+=2*sizeof(uint32_t);
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 
+	count+=sizeof(EventPlaceholder);
   s << filter1(s0);
-	EXPECT_EQ(buffer[count+1], lt) << "Operation < with constant argument serialized wrongly";
-  
-	count+=2*sizeof(uint32_t)+2;
+	EXPECT_EQ(buffer[count++], lt) << "Operation < with constant argument serialized wrongly";
+
+	count+=2*sizeof(uint32_t);
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
+	count+=sizeof(EventPlaceholder);
 
 	s << filter2(s0);
-	EXPECT_EQ(buffer[count+1], ge) << "Operation >= with constant argument serialized wrongly";
-  
-	count+=2*sizeof(uint32_t)+2;
+	EXPECT_EQ(buffer[count++], ge) << "Operation >= with constant argument serialized wrongly";
+
+	count+=2*sizeof(uint32_t);
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
+	count+=sizeof(EventPlaceholder);
 
 	s << filter3(s0);
-	EXPECT_EQ(buffer[count+1], le) << "Operation <= with constant argument serialized wrongly";
-	
-	count+=2*sizeof(uint32_t)+2;
+	EXPECT_EQ(buffer[count++], le) << "Operation <= with constant argument serialized wrongly";
+  count+=2*sizeof(uint32_t);
+
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
+	count+=sizeof(EventPlaceholder);
 
 	s << filter4(s0);
-	EXPECT_EQ(buffer[count+1], eq) << "Operation == with constant argument serialized wrongly";
-	
-	count+=2*sizeof(uint32_t)+2;
+	EXPECT_EQ(buffer[count++], eq) << "Operation == with constant argument serialized wrongly";
+
+	count+=2*sizeof(uint32_t);
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
-	
+	count+=sizeof(EventPlaceholder);
+
 	s << filter5(s0);
-	EXPECT_EQ(buffer[count+1], ne) << "Operation != with constant argument serialized wrongly";
-	count+=2*sizeof(uint32_t)+2;
+	EXPECT_EQ(buffer[count++], ne) << "Operation != with constant argument serialized wrongly";
+	count+=2*sizeof(uint32_t);
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 
 }
@@ -155,8 +161,7 @@ TEST_F(FilterTestSuite, extendedSerializationTest) {
   auto filter4 = e0[Time()] == e1[Time()];
   auto filter5 = e0[Time()] != e1[Time()];
 
-	uint8_t e0Time = ::id::attribute::Time::value();
-	uint8_t e1Time = (0x1<<5) | ::id::attribute::Time::value();
+	uint8_t time = ::id::attribute::Time::value();
 	uint8_t gt = ::id::filterOp::GT::value;
 	uint8_t lt = ::id::filterOp::LT::value;
 	uint8_t ge = ::id::filterOp::GE::value;
@@ -172,42 +177,42 @@ TEST_F(FilterTestSuite, extendedSerializationTest) {
 
 	uint16_t count = 0;
   s << filter0(s0, s1);
-	EXPECT_EQ(buffer[0], e0Time) << "Placeholder event 0 time serialized wrongly";
-	EXPECT_EQ(buffer[count+1], gt) << "Operation > with event argument serialized wrongly";
-	EXPECT_EQ(buffer[2], e1Time) << "Placeholder event 1 time serialized wrongly";
-	EXPECT_EQ(buffer.size(), 3U) << "Wrong length of serialized packet";
+	EXPECT_EQ(buffer[count++], time) << "Placeholder event 0 time serialized wrongly";
+	EXPECT_EQ(buffer[count++], 0)    << "Placeholder event 0 time serialized wrongly";
+	EXPECT_EQ(buffer[count++], gt)   << "Operation > with event argument serialized wrongly";
+	EXPECT_EQ(buffer[count++], time) << "Placeholder event 1 time serialized wrongly";
+	EXPECT_EQ(buffer[count++], 1)    << "Placeholder event 1 time serialized wrongly";
 
-	count+=3;
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 
   s << filter1(s0, s1);
-	EXPECT_EQ(buffer[count+1], lt) << "Operation < with event argument serialized wrongly";
-  
-	count+=3;
+	EXPECT_EQ(buffer[count+=sizeof(EventPlaceholder)], lt) << "Operation < with event argument serialized wrongly";
+
+	count+=sizeof(EventPlaceholder)+1;
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 
 	s << filter2(s0, s1);
-	EXPECT_EQ(buffer[count+1], ge) << "Operation >= with event argument serialized wrongly";
-  
-	count+=3;
+	EXPECT_EQ(buffer[count+=sizeof(EventPlaceholder)], ge) << "Operation >= with event argument serialized wrongly";
+
+	count+=sizeof(EventPlaceholder)+1;
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 
 	s << filter3(s0, s1);
-	EXPECT_EQ(buffer[count+1], le) << "Operation <= with event argument serialized wrongly";
-	
-	count+=3;
+	EXPECT_EQ(buffer[count+=sizeof(EventPlaceholder)], le) << "Operation <= with event argument serialized wrongly";
+
+	count+=sizeof(EventPlaceholder)+1;
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 
 	s << filter4(s0, s1);
-	EXPECT_EQ(buffer[count+1], eq) << "Operation == with event argument serialized wrongly";
-	
-	count+=3;
-	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
-	
-	s << filter5(s0, s1);
-	EXPECT_EQ(buffer[count+1], ne) << "Operation != with event argument serialized wrongly";
+	EXPECT_EQ(buffer[count+=sizeof(EventPlaceholder)], eq) << "Operation == with event argument serialized wrongly";
 
-	count+=3;
+	count+=sizeof(EventPlaceholder)+1;
+	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
+
+	s << filter5(s0, s1);
+	EXPECT_EQ(buffer[count+=sizeof(EventPlaceholder)], ne) << "Operation != with event argument serialized wrongly";
+
+	count+=sizeof(EventPlaceholder)+1;
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 }
 
@@ -217,10 +222,8 @@ TEST_F(FilterTestSuite, compositeSerializationTest) {
   auto filter0 = baseFilter0(e0, e1) && baseFilter1(e0, e1);
   auto filter1 = baseFilter0(e0, e1) || baseFilter1(e0, e1);
 
-	uint8_t e0Time = ::id::attribute::Time::value();
-	uint8_t e1Time = (0x1<<5) | ::id::attribute::Time::value();
-	uint8_t e0Pos  = ::id::attribute::Position::value();
-	uint8_t e1Pos  = (0x1<<5) | ::id::attribute::Position::value();
+	uint8_t time = ::id::attribute::Time::value();
+	uint8_t pos  = ::id::attribute::Position::value();
 	uint8_t gt   = ::id::filterOp::GT::value;
 	uint8_t ne   = ::id::filterOp::NE::value;
 	uint8_t lAnd = ::id::filterOp::AND::value;
@@ -232,33 +235,40 @@ TEST_F(FilterTestSuite, compositeSerializationTest) {
   Serializer<decltype(i)> s(i);
   FilterEvent<decltype(s)> s0(0, s);
   FilterEvent<decltype(s)> s1(1, s);
-	
-  s << filter0(s0, s1);
-	EXPECT_EQ(buffer[0], e0Pos) << "Placeholder event 0 position serialized wrongly";
-	EXPECT_EQ(buffer[1], ne) << "Operation != with event argument serialized wrongly";
-	EXPECT_EQ(buffer[2], e1Pos) << "Placeholder event 1 position serialized wrongly";
-	EXPECT_EQ(buffer[3], lAnd) << "Operation && serialized wrongly";
-	EXPECT_EQ(buffer[4], e0Time) << "Placeholder event 0 time serialized wrongly";
-	EXPECT_EQ(buffer[5], gt) << "Operation > with event argument serialized wrongly";
-	EXPECT_EQ(buffer[6], e1Time) << "Placeholder event 1 time serialized wrongly";
 
-	uint16_t count = 7;
+  size_t count= 0;
+  s << filter0(s0, s1);
+	EXPECT_EQ(buffer[count++], pos) << "Placeholder event 0 position serialized wrongly";
+	EXPECT_EQ(buffer[count++], 0) << "Placeholder event 0 position serialized wrongly";
+	EXPECT_EQ(buffer[count++], ne) << "Operation != with event argument serialized wrongly";
+	EXPECT_EQ(buffer[count++], pos) << "Placeholder event 1 position serialized wrongly";
+	EXPECT_EQ(buffer[count++], 1) << "Placeholder event 1 position serialized wrongly";
+	EXPECT_EQ(buffer[count++], lAnd) << "Operation && serialized wrongly";
+	EXPECT_EQ(buffer[count++], time) << "Placeholder event 0 time serialized wrongly";
+	EXPECT_EQ(buffer[count++], 0) << "Placeholder event 0 time serialized wrongly";
+	EXPECT_EQ(buffer[count++], gt) << "Operation > with event argument serialized wrongly";
+	EXPECT_EQ(buffer[count++], time) << "Placeholder event 1 time serialized wrongly";
+	EXPECT_EQ(buffer[count++], 1) << "Placeholder event 1 time serialized wrongly";
+
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
-  
+
 	s << filter1(s0, s1);
-	EXPECT_EQ(buffer[count+0], e0Pos) << "Placeholder event 0 position serialized wrongly";
-	EXPECT_EQ(buffer[count+1], ne) << "Operation != with event argument serialized wrongly";
-	EXPECT_EQ(buffer[count+2], e1Pos) << "Placeholder event 1 position serialized wrongly";
-	EXPECT_EQ(buffer[count+3], lOr) << "Operation || serialized wrongly";
-	EXPECT_EQ(buffer[count+4], e0Time) << "Placeholder event 0 time serialized wrongly";
-	EXPECT_EQ(buffer[count+5], gt) << "Operation > with event argument serialized wrongly";
-	EXPECT_EQ(buffer[count+6], e1Time) << "Placeholder event 1 time serialized wrongly";
-	EXPECT_EQ(buffer.size(), count+7U) << "Wrong length of serialized packet";
+	EXPECT_EQ(buffer[count++], pos) << "Placeholder event 0 position serialized wrongly";
+	EXPECT_EQ(buffer[count++], 0) << "Placeholder event 0 position serialized wrongly";
+	EXPECT_EQ(buffer[count++], ne) << "Operation != with event argument serialized wrongly";
+	EXPECT_EQ(buffer[count++], pos) << "Placeholder event 1 position serialized wrongly";
+	EXPECT_EQ(buffer[count++], 1) << "Placeholder event 1 position serialized wrongly";
+	EXPECT_EQ(buffer[count++], lOr) << "Operation || serialized wrongly";
+	EXPECT_EQ(buffer[count++], time) << "Placeholder event 0 time serialized wrongly";
+	EXPECT_EQ(buffer[count++], 0) << "Placeholder event 0 time serialized wrongly";
+	EXPECT_EQ(buffer[count++], gt) << "Operation > with event argument serialized wrongly";
+	EXPECT_EQ(buffer[count++], time) << "Placeholder event 1 time serialized wrongly";
+	EXPECT_EQ(buffer[count++], 1) << "Placeholder event 1 time serialized wrongly";
+	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 }
 
 TEST_F(FilterTestSuite, metaFilterBasicTest) {
-	uint8_t e0Time = ::id::attribute::Time::value();
-	uint8_t e1Time = (0x1<<5) | ::id::attribute::Time::value();
+	uint8_t time = ::id::attribute::Time::value();
 	uint8_t gt = ::id::filterOp::GT::value;
 	uint8_t lt = ::id::filterOp::LT::value;
 	uint8_t ge = ::id::filterOp::GE::value;
@@ -267,7 +277,7 @@ TEST_F(FilterTestSuite, metaFilterBasicTest) {
 	uint8_t ne = ::id::filterOp::NE::value;
 	uint8_t noop = ::id::filterOp::NOOP::value;
 
-	std::vector<uint8_t> buffer({e0Time, gt, e1Time, noop,  e0Time, lt, e1Time, noop, e0Time, eq, e1Time, noop, e0Time, ne, e1Time, noop, e0Time, ge, e1Time, noop, e0Time, le, e1Time, noop});
+	std::vector<uint8_t> buffer({time, 0, gt, time, 1, noop,  time, 0, lt, time, 1, noop, time, 0, eq, time, 1, noop, time, 0, ne, time, 1, noop, time, 0, ge, time, 1, noop, time, 0, le, time, 1, noop});
 
 	DeSerializer<std::vector<uint8_t>::const_iterator> d(buffer.cbegin(), buffer.cend());
 	std::vector<const EventType*> types={&eventType, &eventType};

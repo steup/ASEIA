@@ -5,20 +5,12 @@ using namespace ::id::filterOp;
 static const MetaAttribute& extractAttr(EventPlaceholder e, const std::vector<const MetaEvent*> events) {
 	const MetaAttribute* aPtr = events[e.num]->attribute(e.attr);
   static const MetaAttribute invalid;
-	if(!aPtr)
-		return invalid;
-
-  return *aPtr;
+	return !aPtr?invalid:*aPtr;
 }
 
 bool MetaPredicate::operator()(const std::vector<const MetaEvent*>& events) const {
-  MetaAttribute a = extractAttr(mE0, events);
-	MetaAttribute b;
-	if(!mOp.constArg) {
-		b = extractAttr(mE1, events);
-	} else {
-    b = mAttr;
-  }
+  const MetaAttribute& a = extractAttr(mE0, events);
+	const MetaAttribute& b = !mOp.constArg?extractAttr(mE1, events):mAttr;
 	switch(mOp.code){
 		case(LE::value): return (bool)(a <= b).prod();
 		case(GE::value): return (bool)(a >= b).prod();
