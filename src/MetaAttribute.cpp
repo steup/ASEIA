@@ -103,6 +103,18 @@ MetaAttribute MetaAttribute::norm() const {
   return temp;
 }
 
+MetaAttribute MetaAttribute::certain() const {
+  MetaAttribute temp(*this);
+  temp.value() = temp.value().value();
+  return temp;
+}
+
+MetaAttribute MetaAttribute::uncertainty() const {
+  MetaAttribute temp(*this);
+  temp.value() = temp.value().uncertainty();
+  return temp;
+}
+
 MetaValue MetaAttribute::operator<(const MetaAttribute& b) const {
 	if(!check(b))
     return MetaValue();
