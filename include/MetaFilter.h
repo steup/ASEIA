@@ -30,6 +30,7 @@ class MetaPredicate {
 		MetaAttribute mAttr;
 		/** \brief event type information for deserialization **/
 		const std::vector<const EventType*>* mTypesPtr;
+    std::vector<MetaAttribute(MetaAttribute::*)(void)const> mUnaryFuncs;
 	public:
 		/** \brief Construct a dynamic filter subexpression container
 		 *  \param types a vector containing the subscribed event types
@@ -45,6 +46,8 @@ class MetaPredicate {
 		 *  Executea a preveuisly received filter subexpression and return the results
 		 **/
 		bool operator()(const std::vector<const MetaEvent*>& events) const;
+    
+    const std::vector<MetaAttribute(MetaAttribute::*)(void)const>& func() const { return mUnaryFuncs; }
 	/** \brief friend declaration of deserialization function **/
 	template<typename T> friend DeSerializer<T>& operator>>(DeSerializer<T>&, MetaPredicate&);
 	/** \brief friend declaration of output stream operator **/
@@ -86,6 +89,10 @@ class MetaFilter {
 		 *  Executea a preveuisly received filter expression and return the results
 		 **/
 		bool operator()(const std::vector<const MetaEvent*>& events) const;
+
+    const MetaPredicate& operator[](size_t i) const { return mExpr[i].first; }
+    const MetaPredicate& at(size_t i) const { return mExpr.at(i).first; }
+
 	/** \brief friend declaration of deserialization function **/
 	template<typename T> friend DeSerializer<T>& operator>>(DeSerializer<T>&, MetaFilter&);
 	/** \brief friend declaration of output stream operator **/
@@ -108,8 +115,18 @@ std::ostream& operator<<(std::ostream& o, const MetaFilter& f);
  **/
 template<typename T>
 DeSerializer<T>& operator>>(DeSerializer<T>& d, MetaPredicate& p) {
-	d >> p.mE0.data >> p.mOp.data;
+	d >> p.mE0.data;
 	try {
+    do {
+      d >> p.mOp.data;
+      if(p.mOp.func)
+        switch(p.mOp.code){
+          case(id::filterOp::UNC::value): p.mUnaryFuncs.push_back(&MetaAttribute::uncertainty); break;
+          case(id::filterOp::CER::value): p.mUnaryFuncs.push_back(&MetaAttribute::certain); break;
+          case(id::filterOp::NOR::value): p.mUnaryFuncs.push_back(&MetaAttribute::norm); break;
+          default: throw MetaFilterError();
+        };
+    }while(p.mOp.func);
 		if(p.mOp.constArg) {
         auto attrTPtr = p.mTypesPtr->at(p.mE0.num)->attribute(p.mE0.attr);
 			if(!attrTPtr)
@@ -119,11 +136,11 @@ DeSerializer<T>& operator>>(DeSerializer<T>& d, MetaPredicate& p) {
 		} else
 			d >> p.mE1.data;
 	}
-	catch(const MetaFilterError& e) { 
-		throw e; 
+	catch(const MetaFilterError& e) {
+		throw e;
 	}
-	catch(const std::exception& e) { 
-		throw MetaFilterError(); 
+	catch(const std::exception& e) {
+		throw MetaFilterError();
 	}
 	if(d.error())
 		throw MetaFilterError();

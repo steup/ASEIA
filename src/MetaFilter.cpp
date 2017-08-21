@@ -9,7 +9,9 @@ static const MetaAttribute& extractAttr(EventPlaceholder e, const std::vector<co
 }
 
 bool MetaPredicate::operator()(const std::vector<const MetaEvent*>& events) const {
-  const MetaAttribute& a = extractAttr(mE0, events);
+  MetaAttribute a = extractAttr(mE0, events);
+  for(auto func: mUnaryFuncs)
+    a=(a.*func)();
 	const MetaAttribute& b = !mOp.constArg?extractAttr(mE1, events):mAttr;
 	switch(mOp.code){
 		case(LE::value): return (bool)(a <= b).prod();
@@ -25,6 +27,14 @@ bool MetaPredicate::operator()(const std::vector<const MetaEvent*>& events) cons
 
 std::ostream& operator<<(std::ostream& o, const MetaPredicate& p){
 	o << "e" << (uint16_t)p.mE0.num << "[" << id::attribute::name(p.mE0.attr) << "]";
+  for(auto func : p.func()) {
+    if(func == &MetaAttribute::uncertainty)
+      o << ".uncertainty()";
+    if(func == &MetaAttribute::certain)
+      o << ".certain()";
+    if(func == &MetaAttribute::norm)
+      o << ".norm()";
+  }
 	switch(p.mOp.code) {
 		case(LE::value): o << " <= "; break;
 		case(GE::value): o << " >= "; break;

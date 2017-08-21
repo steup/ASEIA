@@ -17,9 +17,9 @@ namespace filter {
   const boost::phoenix::expression::argument<6>::type e5 = {};
   const boost::phoenix::expression::argument<7>::type e6 = {};
   const boost::phoenix::expression::argument<8>::type e7 = {};
-  
+
   struct uncertainty_impl {
-    
+
     template<typename Attribute>
     auto operator()(const Attribute& attr) const -> decltype(attr.uncertainty()){
       return attr.uncertainty();
@@ -28,18 +28,18 @@ namespace filter {
 
   extern boost::phoenix::function<uncertainty_impl> uncertainty;
 
-  struct value_impl {
-    
+  struct certain_impl {
+
     template<typename Attribute>
-    auto operator()(const Attribute& attr) const -> decltype(attr.value()){
-      return attr.value();
+    auto operator()(const Attribute& attr) const -> decltype(attr.certain()){
+      return attr.ccertain();
     }
   };
 
-  extern boost::phoenix::function<value_impl> value;
-  
+  extern boost::phoenix::function<certain_impl> certain;
+
   struct norm_impl {
-    
+
     template<typename Attribute>
     auto operator()(const Attribute& attr) const -> decltype(attr.norm()){
       return attr.norm();
@@ -47,21 +47,28 @@ namespace filter {
   };
 
   extern boost::phoenix::function<norm_impl> norm;
+
+  enum Functions {
+      Uncertainty=32,
+      Certain=33,
+      Norm=34
+  };
 }
 
 struct PseudoAttr {};
 
 union EventPlaceholder{
 	struct {
-  	uint8_t attr : 8;
+    uint8_t attr : 8;
     uint8_t num  : 3;
- 	};
+};
   uint16_t data;
 };
 
 union FilterOp{
 	struct {
-		uint8_t code      : 7;
+    uint8_t func      : 1;
+		uint8_t code      : 6;
 		uint8_t constArg  : 1;
 	};
 	uint8_t data;
@@ -82,12 +89,29 @@ struct FilterEvent {
     return *this;
   }
 
-  /** \todo implement **/
-  FilterEvent& uncertainty() { }
-  /** \todo implement **/
-  FilterEvent& value() { }
-  /** \todo implement **/
-  FilterEvent& norm() { }
+  FilterEvent& uncertainty() {
+    FilterOp op;
+    op.code = id::filterOp::UNC::value;
+    op.func = 1;
+    mS << op;
+    return *this;
+  }
+
+  FilterEvent& certain() {
+    FilterOp op;
+    op.code = id::filterOp::CER::value;
+    op.func = 1;
+    mS << op;
+    return *this;
+  }
+
+  FilterEvent& norm() {
+    FilterOp op;
+    op.code = id::filterOp::NOR::value;
+    op.func = 1;
+    mS << op;
+    return *this;
+  }
 };
 
 template<typename Serializer, typename Attr = FilterEvent<Serializer>>
@@ -97,11 +121,12 @@ struct FilterPredicate {
   FilterOp mOp;
   const Event mE0;
   const Attr mAttr;
-  FilterPredicate(id::filterOp::ID op, const Event& e0, const Attr& attr) 
+  FilterPredicate(id::filterOp::ID op, const Event& e0, const Attr& attr)
     : mS(e0.mS), mE0(e0), mAttr(attr) {
 
     mOp.code = op;
     mOp.constArg = std::is_same<Attr, Event>::type::value?0:1;
+    mOp.func = 0;
   }
 };
 

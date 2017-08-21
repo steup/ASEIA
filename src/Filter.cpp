@@ -5,5 +5,5 @@
 using boost::phoenix::function;
 
 function<filter::uncertainty_impl> filter::uncertainty;
-function<filter::value_impl> filter::value;
+function<filter::certain_impl> filter::certain;
 function<filter::norm_impl> filter::norm;
