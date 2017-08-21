@@ -199,8 +199,12 @@ namespace id{
 		using AE  = Base< 7>;
 		using NA  = Base< 8>;
 		using AND = Base< 9>;
-		using OR  = Base<10>;
-		using NOT = Base<11>;
+		using OR  = Base< 10>;
+		using NOT = Base< 11>;
+
+    using UNC = Base< 16>;
+    using CER = Base< 17>;
+    using NOR = Base< 18>;
 
 		bool isLogical(ID id);
 	}
