@@ -87,6 +87,7 @@ class MetaFilter {
 		 *  Executea a preveuisly received filter expression and return the results
 		 **/
 		bool operator()(const std::vector<const MetaEvent*>& events) const;
+    const std::vector<std::pair<MetaPredicate, id::filterOp::ID>>& expressions() const { return mExpr; }
 
     const MetaPredicate& operator[](size_t i) const { return mExpr[i].first; }
     const MetaPredicate& at(size_t i) const { return mExpr.at(i).first; }
