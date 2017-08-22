@@ -150,7 +150,26 @@ VertexResult CompositeTransformation::add(TransformationPtr tPtr, const EventTyp
 
 VertexResult CompositeTransformation::add(CompositeTransformation&& cT, Vertex v, const EventType& goal,
                      const EventType& provided) {
-  return make_pair(Vertex(), false);
+  Vertex subRoot;
+  auto vertexCopy = [this, &cT, &subRoot](Vertex in, Vertex out) {
+    if(in==cT.mRoot)
+      subRoot = out;
+    mGraph[out] = std::move(cT.mGraph[in]);
+  };
+  auto edgeCopy = [this, &cT](Edge in, Edge out) {
+    mGraph[out] = std::move(cT.mGraph[in]);
+  };
+
+  copy_graph(cT.mGraph, mGraph, boost::vertex_copy(vertexCopy).edge_copy(edgeCopy));
+  auto e = boost::add_edge(v, subRoot, mGraph);
+  if(!e.second)
+    return make_pair(Vertex(), false);
+  mGraph[e.first] = mGraph[subRoot].out();
+  auto endIt = remove(cT.mIn.begin(), cT.mIn.end(), goal);
+  size_t oldSize = mIn.size();
+  mIn.resize(oldSize+(endIt-cT.mIn.begin()));
+  std::move(cT.mIn.begin(), endIt, mIn.begin()+oldSize);
+  return make_pair(subRoot, true);
 }
 
 VertexResult CompositeTransformation::add(TransformationPtr tPtr, Vertex v,
