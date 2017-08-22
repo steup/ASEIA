@@ -7,14 +7,15 @@
 #include <Attribute.h>
 
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 #include <ratio>
 #include <algorithm>
 #include <iostream>
-#include <boost/filesystem/fstream.hpp>
 
 namespace test {
 
+ namespace fs = boost::filesystem;
  using namespace ::id::attribute;
  using std::ratio;
  using std::cout;
@@ -34,10 +35,10 @@ namespace test {
  using ::testing::Each;
  using ::testing::Contains;
  using ::testing::SizeIs;
+ using ::testing::AtLeast;
  using ::testing::ResultOf;
  using ::testing::Property;
  using ::testing::UnorderedElementsAre;
-
 
   struct KnowledgeBaseTestSuite : public ::testing::Test {
     
@@ -135,7 +136,7 @@ namespace test {
       virtual TransPtr create(const EventType& outE, const EventTypes& inE, const AbstractPolicy& policy, const MetaFilter& filter = MetaFilter()) const { return TransPtr(); }
       virtual void print(std::ostream& o) const { o << name; }
     };
-    
+
     struct HomTrans1 : public Transformation {
       const EventType& inOutE;
       const EventType& in1;
@@ -144,12 +145,21 @@ namespace test {
         : Transformation(Type::homogeneus, 2, EventID::any), inOutE(inOutE), in1(in1), name(name)
 
       {}
+      bool containsUncertaintyTest(const MetaFilter& filter) const {
+        for(const auto& predicate : filter.expressions())
+          for(const auto& func : predicate.first.func())
+            if(func==&MetaAttribute::uncertainty)
+              return true;
+        return false;
+      }
       virtual EventIDs in(EventID goal, const MetaFilter& filter = MetaFilter()) const  {
-        cout << "Got Filter: " << filter << endl;
+        if(!containsUncertaintyTest(filter))
+          return {};
         return EventIDs({ goal, EventID({Test4::value()})});
       }
       virtual vector<EventType> in(const EventType& goal,  const EventType& provided, const MetaFilter& filter = MetaFilter()) const  {
-        cout << "Got Filter: " << filter << endl;
+        if(!containsUncertaintyTest(filter))
+          return {};
         if(goal == inOutE)
           return {inOutE, in1};
         else
@@ -167,7 +177,7 @@ namespace test {
     AttrTrans1 attr1=AttrTrans1(eT1, eT5, eT6, eT5, "Attr [eT5, eT6] -> eT1(eT5)");
     AttrTrans0 attr2=AttrTrans0(eT4, eT7, eT7, "Attr [eT7] -> eT4(eT7)");
     AttrTrans0 attr3=AttrTrans0(eT3, eT4, eT7, "Attr [eT4] -> eT3(eT7)");
-    HomTrans1  hom0=HomTrans1(eT0, eT8, "Hom [eT1, eT8] -> eT0");
+    HomTrans1  hom0=HomTrans1(eT0, eT8, "Hom [eT0, eT8] -> eT0");
 
 
     KnowledgeBaseTestSuite() {
@@ -228,7 +238,10 @@ namespace test {
   TEST_F(KnowledgeBaseTestSuite, findSingleHeterogeneusTransform) {
     KnowledgeBase::registerEventType(eT3);
     Transformations ts = KnowledgeBase::findTransforms(eT2);
-    EXPECT_THAT(ts, SizeIs(1));
+    ASSERT_THAT(ts, SizeIs(1));
+    fs::path file = fs::current_path()/"doc"/("kbSingleHet.dot");
+    fs::ofstream out(file);
+    out << ts[0];
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het0) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT3)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT2) ));
@@ -237,7 +250,10 @@ namespace test {
   TEST_F(KnowledgeBaseTestSuite, findSingleAttributeTransform) {
     KnowledgeBase::registerEventType(eT4);
     Transformations ts = KnowledgeBase::findTransforms(eT3);
-    EXPECT_THAT(ts, SizeIs(1));
+    ASSERT_THAT(ts, SizeIs(1));
+    fs::path file = fs::current_path()/"doc"/("kbSingleAttr.dot");
+    fs::ofstream out(file);
+    out << ts[0];
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr0) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT4)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT3) ));
@@ -247,7 +263,10 @@ namespace test {
     KnowledgeBase::registerEventType(eT1);
     KnowledgeBase::registerEventType(eT2);
     Transformations ts = KnowledgeBase::findTransforms(eT0);
-    EXPECT_THAT(ts, SizeIs(1));
+    ASSERT_THAT(ts, SizeIs(1));
+    fs::path file = fs::current_path()/"doc"/("kbMultiHet.dot");
+    fs::ofstream out(file);
+    out << ts[0];
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het1) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT1, eT2)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT0) ));
@@ -257,7 +276,10 @@ namespace test {
     KnowledgeBase::registerEventType(eT5);
     KnowledgeBase::registerEventType(eT6);
     Transformations ts = KnowledgeBase::findTransforms(eT1);
-    EXPECT_THAT(ts, SizeIs(1));
+    ASSERT_THAT(ts, SizeIs(1));
+    fs::path file = fs::current_path()/"doc"/("kbMultiAttr.dot");
+    fs::ofstream out(file);
+    out << ts[0];
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr1) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT5, eT6)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT1) ));
@@ -266,7 +288,10 @@ namespace test {
   TEST_F(KnowledgeBaseTestSuite, findCombinedAttributeTransform) {
     KnowledgeBase::registerEventType(eT7);
     Transformations ts = KnowledgeBase::findTransforms(eT3);
-    EXPECT_THAT(ts, SizeIs(1));
+    ASSERT_THAT(ts, SizeIs(1));
+    fs::path file = fs::current_path()/"doc"/("kbCombinedAttr.dot");
+    fs::ofstream out(file);
+    out << ts[0];
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr2) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr3) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT7)) ));
@@ -277,7 +302,10 @@ namespace test {
     KnowledgeBase::registerEventType(eT1);
     KnowledgeBase::registerEventType(eT3);
     Transformations ts = KnowledgeBase::findTransforms(eT0);
-    EXPECT_THAT(ts, SizeIs(1));
+    ASSERT_THAT(ts, SizeIs(1));
+    fs::path file = fs::current_path()/"doc"/("kbCombinedHet.dot");
+    fs::ofstream out(file);
+    out << ts[0];
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het0) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het1) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT1, eT3)) ));
@@ -289,7 +317,10 @@ namespace test {
     KnowledgeBase::registerEventType(eT5);
     KnowledgeBase::registerEventType(eT6);
     Transformations ts = KnowledgeBase::findTransforms(eT0);
-    EXPECT_THAT(ts, SizeIs(1));
+    ASSERT_THAT(ts, SizeIs(1));
+    fs::path file = fs::current_path()/"doc"/("kbFullTree.dot");
+    fs::ofstream out(file);
+    out << ts[0];
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het0) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het1) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr1) ) ) ) );
@@ -308,21 +339,22 @@ namespace test {
     MetaFilter metaFilter({&eT0});
     DeSerializer<decltype(buffer.cbegin())> d(buffer.cbegin(), buffer.cend());
     EXPECT_NO_THROW(d >> metaFilter);
-    cout << "The filter: " << metaFilter;
     KnowledgeBase::registerEventType(eT7);
     KnowledgeBase::registerEventType(eT5);
     KnowledgeBase::registerEventType(eT6);
     KnowledgeBase::registerEventType(eT8);
     Transformations ts = KnowledgeBase::findTransforms(eT0, metaFilter);
-    EXPECT_THAT(ts, SizeIs(2));
+    ASSERT_THAT(ts, SizeIs(1));
+    fs::path file = fs::current_path()/"doc"/("kbFullTreeWithHom.dot");
+    fs::ofstream out(file);
+    out << ts[0];
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het0) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het1) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr1) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr2) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr3) ) ) ) );
-    EXPECT_THAT(ts, Contains( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &hom0) ) ) ) );
-    EXPECT_THAT(ts, Contains( Property(&CompositeTransformation::in, UnorderedElementsAre(eT7, eT5, eT6, eT8)) ));
-    EXPECT_THAT(ts, Contains( Property(&CompositeTransformation::in, UnorderedElementsAre(eT7, eT5, eT6)) ));
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &hom0) ) ) ) );
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT7, eT5, eT6, eT8)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT0) ));
   }
 }

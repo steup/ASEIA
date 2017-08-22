@@ -16,6 +16,7 @@ using namespace std;
 using ::testing::_;
 using ::testing::Return;
 using ::testing::AtLeast;
+using ::testing::UnorderedElementsAre;
 using boost::filesystem::ofstream;
 using boost::filesystem::current_path;
 using boost::filesystem::path;
@@ -248,6 +249,28 @@ TEST_F(CompositeTransformSuite, treeCreateTest) {
   move(res1.begin(), res1.end(), back_inserter(res0));
   ASSERT_GE(res0.size(), 1U) << "No events generated";
   EXPECT_EQ(res0.front(), eE);
+}
+
+TEST_F(CompositeTransformSuite, insertTest) {
+  using Vertex = CompositeTransformation::Vertex;
+  auto edges = boost::edges(compTrans.graph());
+  ASSERT_NE(edges.first, edges.second);
+  Vertex insertPoint = boost::target(*edges.first, compTrans.graph());
+  ASSERT_NO_THROW(compTrans.add(move(compTrans2), insertPoint, compTrans.in().at(0)));
+  path file = current_path()/"doc"/"insertCompTrans.dot";
+  ofstream out(file);
+  out << compTrans;
+  ASSERT_EQ(out_degree(insertPoint, compTrans.graph()), 1U);
+  auto outEdges = boost::out_edges(insertPoint, compTrans.graph());
+  Vertex cV = boost::target(*outEdges.first, compTrans.graph());
+  ASSERT_EQ(out_degree(cV, compTrans.graph()), 2U);
+  outEdges = boost::out_edges(cV, compTrans.graph());
+  Vertex bV = boost::target(*outEdges.first, compTrans.graph());
+  Vertex dV = boost::target(*++outEdges.first, compTrans.graph());
+  EXPECT_EQ(compTrans.graph()[cV].trans(), &c);
+  EXPECT_EQ(compTrans.graph()[bV].trans(), b.get());
+  EXPECT_EQ(compTrans.graph()[dV].trans(), &d);
+  EXPECT_THAT(compTrans.in(), UnorderedElementsAre(provided, provided2));
 }
 
 }
