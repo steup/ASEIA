@@ -15,6 +15,7 @@ namespace filterTestSuite {
 
 using namespace ::id::attribute;
 using namespace filter;
+using std::vector;
 
 class FilterTestSuite : public ::testing::Test {
   public:
@@ -23,7 +24,7 @@ class FilterTestSuite : public ::testing::Test {
     EventType eventType = (EventType)trueEvent;
     using TimeAttr = Event::findAttribute<Time>::type;
     const TimeAttr c0 = {{{ 1024 }}};
-    uint8_t time, pos, gt, lt, ge, le, eq, ne, cgt, clt, cge, cle, ceq, cne, noop, lOr, lAnd, unc;
+    uint8_t time, pos, gt, lt, ge, le, eq, ne, cgt, clt, cge, cle, ceq, cne, nop, lOr, lAnd, unc;
     FilterTestSuite() {
       trueEvent.attribute(Time()).value()  = {{{1050}}};
       trueEvent.attribute(Position()).value()  = {{{0, 10}}, {{0, 10}}, {{0, 10}}};
@@ -31,47 +32,49 @@ class FilterTestSuite : public ::testing::Test {
       compEvent.attribute(Position()).value()  = {{{0, 5}}, {{0, 5}}, {{0, 5}}};
       falseEvent.attribute(Time()).value() = {{{100}}};
       falseEvent.attribute(Position()).value()  = {{{0, 0}}, {{0, 0}}, {{0, 0}}};
-      FilterOp op;
+      filter::Op op;
       time = ::id::attribute::Time::value();
       pos  = ::id::attribute::Position::value();
       op.code = ::id::filterOp::GT::value;
       op.constArg = 0;
-      op.func  = 0;
+      op.unary  = 0;
+      op.comp = 1;
       gt = op.data;
       op.constArg = 1;
       cgt = op.data;
-      op.code = ::id::filterOp::LT::value;
+      op.code = ::id::filterOp::LT();
       op.constArg = 0;
       lt = op.data;
       op.constArg = 1;
       clt = op.data;
       op.constArg = 0;
-      op.code = ::id::filterOp::GE::value;
+      op.code = ::id::filterOp::GE();
       ge = op.data;
       op.constArg = 1;
       cge = op.data;
       op.constArg = 0;
-      op.code = ::id::filterOp::LE::value;
+      op.code = ::id::filterOp::LE();
       le = op.data;
       op.constArg = 1;
       cle = op.data;
       op.constArg = 0;
-      op.code = ::id::filterOp::EQ::value;
+      op.code = ::id::filterOp::EQ();
       eq = op.data;
       op.constArg = 1;
       ceq = op.data;
       op.constArg = 0;
-      op.code = ::id::filterOp::NE::value;
+      op.code = ::id::filterOp::NE();
       ne = op.data;
       op.constArg = 1;
       cne = op.data;
       op.constArg = 0;
-      op.code = ::id::filterOp::NOOP::value;
-      noop = op.data;
-      lOr = ::id::filterOp::OR::value;
-      lAnd = ::id::filterOp::AND::value;
-      op.func=1;
-      op.code = ::id::filterOp::UNC::value;
+      op.comp = 0;
+      op.code = ::id::filterOp::NOP();
+      nop = op.data;
+      lOr = ::id::filterOp::OR();
+      lAnd = ::id::filterOp::AND();
+      op.unary=1;
+      op.code = ::id::filterOp::UNC();
       unc = op.data;
     }
 };
@@ -140,53 +143,40 @@ TEST_F(FilterTestSuite, basicSerializationTest) {
   auto filter4 = e0[Time()] == c0;
   auto filter5 = e0[Time()] != c0;
 
-  std::vector<uint8_t> buffer;
+  std::vector<uint8_t> buffer, ref;
   auto i = std::back_inserter(buffer);
   Serializer<decltype(i)> s(i);
-  FilterEvent<decltype(s)> s0(0, s);
 
-	uint16_t count = 0;
+  s << filter0(filter::s0);
+  ref = {0, time, cgt};
+  Serializer<decltype(i)> sTemp = Serializer<decltype(i)>(back_inserter(ref));
+  sTemp << c0 << nop;
+	EXPECT_EQ(buffer, ref);
+	uint16_t count = buffer.size();
 
-  s << filter0(s0);
-	EXPECT_EQ(buffer[count++], time) << "Placeholder event 0 time serialized wrongly";
-	EXPECT_EQ(buffer[count++], 0) << "Placeholder event 0 time serialized wrongly";
-	EXPECT_EQ(buffer[count++], cgt) << "Operation > with constant argument serialized wrongly";
-
-	count+=2*sizeof(uint32_t);
+	buffer.clear();
+  s << filter1(filter::s0);
+	EXPECT_EQ(buffer[2], clt) << "Operation < with constant argument serialized wrongly";
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 
-	count+=sizeof(EventPlaceholder);
-  s << filter1(s0);
-	EXPECT_EQ(buffer[count++], clt) << "Operation < with constant argument serialized wrongly";
-
-	count+=2*sizeof(uint32_t);
+	buffer.clear();
+	s << filter2(filter::s0);
+	EXPECT_EQ(buffer[2], cge) << "Operation >= with constant argument serialized wrongly";
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
-	count+=sizeof(EventPlaceholder);
 
-	s << filter2(s0);
-	EXPECT_EQ(buffer[count++], cge) << "Operation >= with constant argument serialized wrongly";
-
-	count+=2*sizeof(uint32_t);
+	buffer.clear();
+	s << filter3(filter::s0);
+	EXPECT_EQ(buffer[2], cle) << "Operation <= with constant argument serialized wrongly";
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
-	count+=sizeof(EventPlaceholder);
 
-	s << filter3(s0);
-	EXPECT_EQ(buffer[count++], cle) << "Operation <= with constant argument serialized wrongly";
-  count+=2*sizeof(uint32_t);
-
+	buffer.clear();
+	s << filter4(filter::s0);
+	EXPECT_EQ(buffer[2], ceq) << "Operation == with constant argument serialized wrongly";
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
-	count+=sizeof(EventPlaceholder);
 
-	s << filter4(s0);
-	EXPECT_EQ(buffer[count++], ceq) << "Operation == with constant argument serialized wrongly";
-
-	count+=2*sizeof(uint32_t);
-	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
-	count+=sizeof(EventPlaceholder);
-
-	s << filter5(s0);
-	EXPECT_EQ(buffer[count++], cne) << "Operation != with constant argument serialized wrongly";
-	count+=2*sizeof(uint32_t);
+	buffer.clear();
+	s << filter5(filter::s0);
+	EXPECT_EQ(buffer[2], cne) << "Operation != with constant argument serialized wrongly";
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 
 }
@@ -199,50 +189,38 @@ TEST_F(FilterTestSuite, extendedSerializationTest) {
   auto filter4 = e0[Time()] == e1[Time()];
   auto filter5 = e0[Time()] != e1[Time()];
 
-  std::vector<uint8_t> buffer;
+  std::vector<uint8_t> buffer, ref;
   auto i = std::back_inserter(buffer);
   Serializer<decltype(i)> s(i);
-  FilterEvent<decltype(s)> s0(0, s);
-  FilterEvent<decltype(s)> s1(1, s);
 
-	uint16_t count = 0;
-  s << filter0(s0, s1);
-	EXPECT_EQ(buffer[count++], time) << "Placeholder event 0 time serialized wrongly";
-	EXPECT_EQ(buffer[count++], 0)    << "Placeholder event 0 time serialized wrongly";
-	EXPECT_EQ(buffer[count++], gt)   << "Operation > with event argument serialized wrongly";
-	EXPECT_EQ(buffer[count++], time) << "Placeholder event 1 time serialized wrongly";
-	EXPECT_EQ(buffer[count++], 1)    << "Placeholder event 1 time serialized wrongly";
+  s << filter0(filter::s0, filter::s1);
+  ref = {0, time, gt, 1, time, nop};
+	EXPECT_EQ(buffer, ref);
+	uint16_t count = buffer.size();
+  buffer.clear();
 
+  s << filter1(filter::s0, filter::s1);
+	EXPECT_EQ(buffer[2], lt) << "Operation < with event argument serialized wrongly";
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
+	buffer.clear();
 
-  s << filter1(s0, s1);
-	EXPECT_EQ(buffer[count+=sizeof(EventPlaceholder)], lt) << "Operation < with event argument serialized wrongly";
-
-	count+=sizeof(EventPlaceholder)+1;
+	s << filter2(filter::s0, filter::s1);
+	EXPECT_EQ(buffer[2], ge) << "Operation >= with event argument serialized wrongly";
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
+	buffer.clear();
 
-	s << filter2(s0, s1);
-	EXPECT_EQ(buffer[count+=sizeof(EventPlaceholder)], ge) << "Operation >= with event argument serialized wrongly";
-
-	count+=sizeof(EventPlaceholder)+1;
+	s << filter3(filter::s0, filter::s1);
+	EXPECT_EQ(buffer[2], le) << "Operation <= with event argument serialized wrongly";
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
+	buffer.clear();
 
-	s << filter3(s0, s1);
-	EXPECT_EQ(buffer[count+=sizeof(EventPlaceholder)], le) << "Operation <= with event argument serialized wrongly";
-
-	count+=sizeof(EventPlaceholder)+1;
+	s << filter4(filter::s0, filter::s1);
+	EXPECT_EQ(buffer[2], eq) << "Operation == with event argument serialized wrongly";
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
+	buffer.clear();
 
-	s << filter4(s0, s1);
-	EXPECT_EQ(buffer[count+=sizeof(EventPlaceholder)], eq) << "Operation == with event argument serialized wrongly";
-
-	count+=sizeof(EventPlaceholder)+1;
-	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
-
-	s << filter5(s0, s1);
-	EXPECT_EQ(buffer[count+=sizeof(EventPlaceholder)], ne) << "Operation != with event argument serialized wrongly";
-
-	count+=sizeof(EventPlaceholder)+1;
+	s << filter5(filter::s0, filter::s1);
+	EXPECT_EQ(buffer[2], ne) << "Operation != with event argument serialized wrongly";
 	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
 }
 
@@ -252,46 +230,24 @@ TEST_F(FilterTestSuite, compositeSerializationTest) {
   auto filter0 = baseFilter0(e0, e1) && baseFilter1(e0, e1);
   auto filter1 = baseFilter0(e0, e1) || baseFilter1(e0, e1);
 
-	std::vector<uint8_t> buffer;
+	std::vector<uint8_t> buffer, ref;
   auto i = std::back_inserter(buffer);
   Serializer<decltype(i)> s(i);
-  FilterEvent<decltype(s)> s0(0, s);
-  FilterEvent<decltype(s)> s1(1, s);
 
-  size_t count= 0;
-  s << filter0(s0, s1);
-	EXPECT_EQ(buffer[count++], pos) << "Placeholder event 0 position serialized wrongly";
-	EXPECT_EQ(buffer[count++], 0) << "Placeholder event 0 position serialized wrongly";
-	EXPECT_EQ(buffer[count++], ne) << "Operation != with event argument serialized wrongly";
-	EXPECT_EQ(buffer[count++], pos) << "Placeholder event 1 position serialized wrongly";
-	EXPECT_EQ(buffer[count++], 1) << "Placeholder event 1 position serialized wrongly";
-	EXPECT_EQ(buffer[count++], lAnd) << "Operation && serialized wrongly";
-	EXPECT_EQ(buffer[count++], time) << "Placeholder event 0 time serialized wrongly";
-	EXPECT_EQ(buffer[count++], 0) << "Placeholder event 0 time serialized wrongly";
-	EXPECT_EQ(buffer[count++], gt) << "Operation > with event argument serialized wrongly";
-	EXPECT_EQ(buffer[count++], time) << "Placeholder event 1 time serialized wrongly";
-	EXPECT_EQ(buffer[count++], 1) << "Placeholder event 1 time serialized wrongly";
+  s << filter0(filter::s0, filter::s1);
+  ref={0, pos, ne, 1, pos, lAnd, 0, time, gt, 1, time, nop};
+	EXPECT_EQ(buffer, ref);
 
-	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
+  buffer.clear();
 
-	s << filter1(s0, s1);
-	EXPECT_EQ(buffer[count++], pos) << "Placeholder event 0 position serialized wrongly";
-	EXPECT_EQ(buffer[count++], 0) << "Placeholder event 0 position serialized wrongly";
-	EXPECT_EQ(buffer[count++], ne) << "Operation != with event argument serialized wrongly";
-	EXPECT_EQ(buffer[count++], pos) << "Placeholder event 1 position serialized wrongly";
-	EXPECT_EQ(buffer[count++], 1) << "Placeholder event 1 position serialized wrongly";
-	EXPECT_EQ(buffer[count++], lOr) << "Operation || serialized wrongly";
-	EXPECT_EQ(buffer[count++], time) << "Placeholder event 0 time serialized wrongly";
-	EXPECT_EQ(buffer[count++], 0) << "Placeholder event 0 time serialized wrongly";
-	EXPECT_EQ(buffer[count++], gt) << "Operation > with event argument serialized wrongly";
-	EXPECT_EQ(buffer[count++], time) << "Placeholder event 1 time serialized wrongly";
-	EXPECT_EQ(buffer[count++], 1) << "Placeholder event 1 time serialized wrongly";
-	EXPECT_EQ(buffer.size(), count) << "Wrong length of serialized packet";
+	s << filter1(filter::s0, filter::s1);
+  ref={0, pos, ne, 1, pos, lOr, 0, time, gt, 1, time, nop};
+	EXPECT_EQ(buffer, ref);
 }
 
 TEST_F(FilterTestSuite, metaFilterBasicTest) {
 
-	std::vector<uint8_t> buffer({time, 0, gt, time, 1, noop,  time, 0, lt, time, 1, noop, time, 0, eq, time, 1, noop, time, 0, ne, time, 1, noop, time, 0, ge, time, 1, noop, time, 0, le, time, 1, noop});
+	std::vector<uint8_t> buffer({0, time, gt, 1, time, nop, 0, time, lt, 1, time, nop, 0, time, eq, 1, time, nop, 0, time, ne, 1, time, nop, 0, time, ge, 1, time, nop, 0, time, le, 1, time, nop});
 
 	DeSerializer<std::vector<uint8_t>::const_iterator> d(buffer.cbegin(), buffer.cend());
 	std::vector<const EventType*> types={&eventType, &eventType};
@@ -303,21 +259,11 @@ TEST_F(FilterTestSuite, metaFilterBasicTest) {
 	std::vector<const MetaEvent*> trueEvents = {&trueMetaEvent, &compMetaEvent};
 	std::vector<const MetaEvent*> falseEvents= {&falseMetaEvent, &compMetaEvent};
 
-	buffer.clear();
-	auto s0 = Serializer<decltype(back_inserter(buffer))>(back_inserter(buffer));
-	s0 << compEvent;
-	auto d0 = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.begin(), buffer.end());
-	d0 >> compMetaEvent;
-	buffer.clear();
-	auto s1 = Serializer<decltype(back_inserter(buffer))>(back_inserter(buffer));
-	s1 << trueEvent;
-	auto d1 = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.begin(), buffer.end());
-	d1 >> trueMetaEvent;
-	buffer.clear();
-	auto s2 = Serializer<decltype(back_inserter(buffer))>(back_inserter(buffer));
-	s2 << falseEvent;
-	auto d2 = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.begin(), buffer.end());
-	d2 >> falseMetaEvent;
+  buffer.clear();
+  Serializer<decltype(back_inserter(buffer))> s(back_inserter(buffer));
+	s << compEvent << trueEvent << falseEvent;
+  d = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.cbegin(), buffer.cend());
+	d >> compMetaEvent >> trueMetaEvent >> falseMetaEvent;
 
 	EXPECT_TRUE(filter0(trueEvents))   << "False negative:\n" << *trueEvents[0]  <<  filter0 << "\n" << *trueEvents[1] ;
   EXPECT_FALSE(filter0(falseEvents)) << "False positive:\n" << *falseEvents[0] <<  filter0 << "\n" << *falseEvents[1];
@@ -335,7 +281,15 @@ TEST_F(FilterTestSuite, metaFilterBasicTest) {
 
 TEST_F(FilterTestSuite, metaFilterFuncTest) {
 
-	std::vector<uint8_t> buffer({pos, 0, unc, gt, pos, 1, noop});
+  auto filter1 = uncertainty(e0[Position()]) > e1[Position()];
+	std::vector<uint8_t> compBuffer;
+  auto i = back_inserter(compBuffer);
+  Serializer<decltype(i)> s(i);
+
+  s << filter1(filter::s0, filter::s1);
+
+	std::vector<uint8_t> buffer({0, pos, unc, gt, 1, pos, nop});
+  EXPECT_EQ(buffer, compBuffer);
 
   DeSerializer<std::vector<uint8_t>::const_iterator> d(buffer.cbegin(), buffer.cend());
 	std::vector<const EventType*> types={&eventType, &eventType};
@@ -346,22 +300,11 @@ TEST_F(FilterTestSuite, metaFilterFuncTest) {
 
 	std::vector<const MetaEvent*> trueEvents = {&trueMetaEvent, &compMetaEvent};
 	std::vector<const MetaEvent*> falseEvents= {&falseMetaEvent, &compMetaEvent};
-
-	buffer.clear();
-	auto s0 = Serializer<decltype(back_inserter(buffer))>(back_inserter(buffer));
-	s0 << compEvent;
-	auto d0 = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.begin(), buffer.end());
-	d0 >> compMetaEvent;
-	buffer.clear();
-	auto s1 = Serializer<decltype(back_inserter(buffer))>(back_inserter(buffer));
-	s1 << trueEvent;
-	auto d1 = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.begin(), buffer.end());
-	d1 >> trueMetaEvent;
-	buffer.clear();
-	auto s2 = Serializer<decltype(back_inserter(buffer))>(back_inserter(buffer));
-	s2 << falseEvent;
-	auto d2 = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.begin(), buffer.end());
-	d2 >> falseMetaEvent;
+  buffer.clear();
+  s = Serializer<decltype(back_inserter(buffer))>(back_inserter(buffer));
+	s << compEvent << trueEvent << falseEvent;
+  d = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.cbegin(), buffer.cend());
+	d >> compMetaEvent >> trueMetaEvent >> falseMetaEvent;
 
   EXPECT_EQ(filter0.at(0).func().at(0), &MetaAttribute::uncertainty);
 	EXPECT_TRUE(filter0(trueEvents))   << "False negative:\n" << *trueEvents[0]  <<  filter0 << "\n" << *trueEvents[1] ;

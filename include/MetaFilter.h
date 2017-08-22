@@ -23,9 +23,9 @@ class MetaFilterError : public std::runtime_error {
 class MetaPredicate {
 	private:
 		/** \brief EventPlaceholders to store events taking part in comparision **/
-		EventPlaceholder mE0, mE1;
+		uint8_t mE0Num, mE0Attr, mE1Num, mE1Attr;
 		/** \brief the comparision operation **/
-		FilterOp mOp;
+		filter::Op mOp;
 		/** \brief possible constant argument of the comparision **/
 		MetaAttribute mAttr;
 		/** \brief event type information for deserialization **/
@@ -68,8 +68,6 @@ class MetaFilter {
 	private:
 		/** \brief the filter expression as list of predicate, logical op pairs **/
 		std::vector<std::pair<MetaPredicate, id::filterOp::ID>> mExpr;
-		/** \brief local definition of noop operation to indicate end of list **/
-		static const id::filterOp::ID noop = id::filterOp::NOOP::value;
 		/** \brief event type information to handle deserialization **/
 		std::vector<const EventType*> mTypes;
 	public:
@@ -115,26 +113,26 @@ std::ostream& operator<<(std::ostream& o, const MetaFilter& f);
  **/
 template<typename T>
 DeSerializer<T>& operator>>(DeSerializer<T>& d, MetaPredicate& p) {
-	d >> p.mE0.data;
+	d >> p.mE0Num >> p.mE0Attr;
 	try {
     do {
       d >> p.mOp.data;
-      if(p.mOp.func)
+      if(p.mOp.unary)
         switch(p.mOp.code){
           case(id::filterOp::UNC::value): p.mUnaryFuncs.push_back(&MetaAttribute::uncertainty); break;
           case(id::filterOp::CER::value): p.mUnaryFuncs.push_back(&MetaAttribute::certain); break;
           case(id::filterOp::NOR::value): p.mUnaryFuncs.push_back(&MetaAttribute::norm); break;
           default: throw MetaFilterError();
         };
-    }while(p.mOp.func);
+    }while(p.mOp.unary);
 		if(p.mOp.constArg) {
-        auto attrTPtr = p.mTypesPtr->at(p.mE0.num)->attribute(p.mE0.attr);
+        auto attrTPtr = p.mTypesPtr->at(p.mE0Num)->attribute(p.mE0Attr);
 			if(!attrTPtr)
 				throw MetaFilterError();
 			p.mAttr = MetaAttribute(*attrTPtr);
 			d >> p.mAttr;
 		} else
-			d >> p.mE1.data;
+			d >> p.mE1Num >> p.mE1Attr;
 	}
 	catch(const MetaFilterError& e) {
 		throw e;
@@ -162,7 +160,7 @@ DeSerializer<T>& operator>>(DeSerializer<T>& d, MetaFilter& f) {
 		MetaPredicate p(f.mTypes);
 		d >> p >> logicalOp;
 		f.mExpr.emplace_back(p, logicalOp);
-	}while(logicalOp != id::filterOp::NOOP::value && !d.error());
+	}while(logicalOp != id::filterOp::NOP() && !d.error());
 	if(d.error())
 		throw MetaFilterError();
 	return d;

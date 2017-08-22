@@ -18,7 +18,9 @@ namespace test {
  using namespace ::id::attribute;
  using std::ratio;
  using std::cout;
+ using std::ostream;
  using std::endl;
+ using std::hex;
  using std::vector;
  using std::any_of;
  using std::to_string;
@@ -41,30 +43,12 @@ namespace test {
     
     using  Transformations = KnowledgeBase::Transformations;
 
-    struct Test0: public ::id::attribute::Base {
-      static constexpr const ::id::attribute::ID value()  { return 250; }
-    };
-
-    struct Test1 : public ::id::attribute::Base {
-      static constexpr const ::id::attribute::ID value()  { return 251; }
-    };
-
-    struct Test2 : public ::id::attribute::Base {
-      static constexpr const ::id::attribute::ID value()  { return 252; }
-    };
-
-    struct Test3 : public ::id::attribute::Base {
-      static constexpr const ::id::attribute::ID value()  { return 253; }
-    };
-
-    struct Test4 : public ::id::attribute::Base {
-      static constexpr const ::id::attribute::ID value() { return 254; }
-    };
-
-    struct Test5 : public ::id::attribute::Base {
-      static constexpr const ::id::attribute::ID value() { return 255; }
-    };
-
+    using Test0 = ::id::attribute::AttrID<250>;
+    using Test1 = ::id::attribute::AttrID<251>;
+    using Test2 = ::id::attribute::AttrID<252>;
+    using Test3 = ::id::attribute::AttrID<253>;
+    using Test4 = ::id::attribute::AttrID<254>;
+    using Test5 = ::id::attribute::AttrID<255>;
     struct HetTrans0 : public Transformation {
       const EventType& outE;
       const EventType& inE;
@@ -161,9 +145,11 @@ namespace test {
 
       {}
       virtual EventIDs in(EventID goal, const MetaFilter& filter = MetaFilter()) const  {
+        cout << "Got Filter: " << filter << endl;
         return EventIDs({ goal, EventID({Test4::value()})});
       }
       virtual vector<EventType> in(const EventType& goal,  const EventType& provided, const MetaFilter& filter = MetaFilter()) const  {
+        cout << "Got Filter: " << filter << endl;
         if(goal == inOutE)
           return {inOutE, in1};
         else
@@ -314,15 +300,15 @@ namespace test {
   }
 
   TEST_F(KnowledgeBaseTestSuite, fullTreeWithHom) {
-    auto filter = filter::uncertainty(filter::e0[Test0()]) < Attribute<Test0, Value<float, 1, 1, false>, Dimensionless, Scale<>>({{{ 10 }}});
+    auto filter0 = filter::uncertainty(filter::e0[Test0()]) < Value<float, 1>({{{ 10 }}});
     vector<uint8_t> buffer;
     auto i = back_inserter(buffer);
     Serializer<decltype(i)> s(i);
-    FilterEvent<decltype(s)> s0(0, s);
-    s0 << filter;
-    MetaFilter metaFilter;
+    s << filter0(filter::s0);
+    MetaFilter metaFilter({&eT0});
     DeSerializer<decltype(buffer.cbegin())> d(buffer.cbegin(), buffer.cend());
-    d >> metaFilter;
+    EXPECT_NO_THROW(d >> metaFilter);
+    cout << "The filter: " << metaFilter;
     KnowledgeBase::registerEventType(eT7);
     KnowledgeBase::registerEventType(eT5);
     KnowledgeBase::registerEventType(eT6);

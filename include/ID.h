@@ -187,9 +187,11 @@ namespace id{
 		using ID = std::uint8_t;
 
 		template<ID id>
-		struct Base : public Tag, boost::mpl::int_<id> { };
+		struct Base : public Tag, boost::mpl::int_<id> {
+      operator ID() const { return id; }
+    };
 
-		using NOOP= Base< 0>;
+		using NOP = Base< 0>;
 		using LE  = Base< 1>;
 		using GE  = Base< 2>;
 		using LT  = Base< 3>;
