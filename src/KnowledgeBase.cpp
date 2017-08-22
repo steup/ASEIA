@@ -124,7 +124,6 @@ class KBImpl {
      *  \param goal the goal EventType
      *  \param ids the clist of currently published ids
      *  \param it the OutputIterator to the CompositeTransformation storage
-     *  \todo implement
      **/
     void generateHomTrans(const EventType& goal, const MetaFilter& filter, const EventIDs& ids, OutIt it) const {
       for(TransformationPtr t : mHomTrans) {

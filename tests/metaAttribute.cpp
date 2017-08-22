@@ -37,8 +37,8 @@ TEST_F(MetaAttributeSuite, scaleTest) {
   ref.value() = {{{0,1}, {1,1}, {2,1}}};
   ref.scale() = Scale<>();
 
-  EXPECT_EQ(scaled, ref);
-  /**\todo test for exact equality */
+  EXPECT_LE((scaled.valueOnly()-ref.valueOnly()).norm().value().get(0,0).value(), 0.1);
+  EXPECT_LE((scaled.uncertainty()-ref.uncertainty()).norm().value().get(0,0).value(), 0.1);
 }
 TEST_F(MetaAttributeSuite, certainscaleTest) {
   MetaAttribute scaled = Position::value();
@@ -49,8 +49,8 @@ TEST_F(MetaAttributeSuite, certainscaleTest) {
 
   ref.value() = MetaValue({{{10}, {100}, {200}}}, UInt16());
   ref.scale() = Scale<centi>();
-  EXPECT_EQ(scaled, ref);
-  /**\todo test for exact equality */
+  EXPECT_EQ(scaled.valueOnly(),   ref.valueOnly());
+  EXPECT_EQ(scaled.uncertainty(), ref.uncertainty());
 }
 
 TEST_F(MetaAttributeSuite, operatorTest) {

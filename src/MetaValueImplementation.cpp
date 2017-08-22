@@ -147,11 +147,10 @@ bool MetaValueImplementation<T, U>::unaryOp( UnaryOp op)  {
                          break;
     case(UnaryOp::Abs): mData.abs();
                          break;
-    case(UnaryOp::Min):
-    case(UnaryOp::Max): /** \todo implement **/
-                        break;
     case(UnaryOp::Sqrt): mData.sqrt();
                          break;
+    case(UnaryOp::Min):
+    case(UnaryOp::Max): /** \todo implement min and max**/
 		default           : return Interface::unaryOp(op);
 	}
 	return true;
@@ -299,7 +298,7 @@ bool MetaValueImplementation<T, U>::scale(const MetaScale& scale, bool invert) {
   }
 	return true;
 }
-/** \todo implement **/
+
 template<typename T, bool U>
 bool MetaValueImplementation<T, U>::block(size_t i, size_t j, Ptr&& ptr) {
   Data typeID = ptr->get(Attributes::TypeID);
