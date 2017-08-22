@@ -30,8 +30,8 @@ std::ostream& operator<<(std::ostream& o, const MetaPredicate& p){
   for(auto func : p.func()) {
     if(func == &MetaAttribute::uncertainty)
       o << ".uncertainty()";
-    if(func == &MetaAttribute::certain)
-      o << ".certain()";
+    if(func == &MetaAttribute::valueOnly)
+      o << ".valueOnly()";
     if(func == &MetaAttribute::norm)
       o << ".norm()";
   }

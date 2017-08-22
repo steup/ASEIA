@@ -35,7 +35,7 @@ namespace filter {
   struct certain_impl {
     template<typename Attribute>
     auto operator()(Attribute& attr) const -> decltype(attr.certain()){
-      return attr.certain();
+      return attr.valueOnly();
     }
   };
 

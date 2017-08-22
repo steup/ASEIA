@@ -44,7 +44,7 @@ class MetaAttribute {
     MetaValue operator==(const MetaAttribute& b) const;
     MetaValue operator!=(const MetaAttribute& b) const;
     MetaAttribute uncertainty() const;
-    MetaAttribute certain() const;
+    MetaAttribute valueOnly() const;
 
           ID            id() const { return mID;    }
 

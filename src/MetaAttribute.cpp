@@ -103,7 +103,7 @@ MetaAttribute MetaAttribute::norm() const {
   return temp;
 }
 
-MetaAttribute MetaAttribute::certain() const {
+MetaAttribute MetaAttribute::valueOnly() const {
   MetaAttribute temp(*this);
   temp.value() = temp.value().value();
   return temp;

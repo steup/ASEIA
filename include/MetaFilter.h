@@ -121,7 +121,7 @@ DeSerializer<T>& operator>>(DeSerializer<T>& d, MetaPredicate& p) {
       if(p.mOp.unary)
         switch(p.mOp.code){
           case(id::filterOp::UNC::value): p.mUnaryFuncs.push_back(&MetaAttribute::uncertainty); break;
-          case(id::filterOp::CER::value): p.mUnaryFuncs.push_back(&MetaAttribute::certain); break;
+          case(id::filterOp::CER::value): p.mUnaryFuncs.push_back(&MetaAttribute::valueOnly); break;
           case(id::filterOp::NOR::value): p.mUnaryFuncs.push_back(&MetaAttribute::norm); break;
           default: throw MetaFilterError();
         };
