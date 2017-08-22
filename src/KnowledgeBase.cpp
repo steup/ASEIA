@@ -11,6 +11,8 @@
 #include <utility>
 #include <ostream>
 
+
+
 using namespace std;
 
 class KBImpl {
@@ -217,20 +219,12 @@ class KBImpl {
 
       /** \TODO: start dirty hack including homogeneus transforms as final trans **/
       for(const Transformation* homTrans: mHomTrans)
-        for(const CompositeTransformation& cT: result) {
+        for(CompositeTransformation& cT: result) {
           CompositeTransformation homCT(homTrans, cT.out(), EventType(), filter);
           EventTypes inETs =homCT.in();
           if(inETs.empty()) continue;
-          homCT.add(move(CompositeTransformation(cT)), homCT.root(), cT.out());
-          for(const EventType inET: inETs) {
-            if(inET == cT.out()) continue;
-            vector<CompositeTransformation> genTrans;
-            mHetTrans.generate(inET, ids, back_inserter(genTrans));
-            CompositeTransformation newCT = homCT;
-            for(CompositeTransformation& genCT: genTrans)
-              newCT.add(move(genCT), homCT.root(), inET);
-            result.push_back(newCT);
-          }
+          swap(cT, homCT);
+          cT.add(move(homCT), homCT.root(), cT.out());
         }
       /** \TODO: end dirty hack including homogeneus transforms as final trans **/
 
