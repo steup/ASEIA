@@ -124,9 +124,9 @@ class KBImpl {
      *  \param it the OutputIterator to the CompositeTransformation storage
      *  \todo implement
      **/
-    void generateHomTrans(const EventType& goal, const EventIDs& ids, OutIt it) const {
+    void generateHomTrans(const EventType& goal, const MetaFilter& filter, const EventIDs& ids, OutIt it) const {
       for(TransformationPtr t : mHomTrans) {
-        CompositeTransformation cT(t, goal, EventType());
+        CompositeTransformation cT(t, goal, EventType(), filter);
         if(!cT.in().empty())
           *it++ = cT;
       }
@@ -212,13 +212,13 @@ class KBImpl {
       Transformations result;
 
       mHetTrans.generate(goal, ids, back_inserter(result));
-      generateHomTrans(goal, ids, back_inserter(result));
+      generateHomTrans(goal, filter, ids, back_inserter(result));
       generateAttTrans(goal, ids, back_inserter(result));
 
       /** \TODO: start dirty hack including homogeneus transforms as final trans **/
       for(const Transformation* homTrans: mHomTrans)
         for(const CompositeTransformation& cT: result) {
-          CompositeTransformation homCT(homTrans, cT.out(), EventType());
+          CompositeTransformation homCT(homTrans, cT.out(), EventType(), filter);
           EventTypes inETs =homCT.in();
           if(inETs.empty()) continue;
           homCT.add(move(CompositeTransformation(cT)), homCT.root(), cT.out());

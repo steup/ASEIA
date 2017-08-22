@@ -3,6 +3,7 @@
 #include <Transformation.h>
 #include <EventID.h>
 #include <EventType.h>
+#include <MetaFilter.h>
 
 #include <boost/graph/adjacency_list.hpp>
 
@@ -44,7 +45,7 @@ class CompositeTransformation : public AbstractConfiguredTransformation {
 
     CompositeTransformation() = default;
     CompositeTransformation(TransformationPtr tPtr, const EventType& goal,
-                            const EventType& provided);
+                            const EventType& provided, const MetaFilter& filter = MetaFilter());
 
     VertexResult add(CompositeTransformation&& cT, Vertex v, const EventType& goal,
                      const EventType& provided = EventType());

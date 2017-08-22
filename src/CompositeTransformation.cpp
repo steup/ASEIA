@@ -119,8 +119,8 @@ using TransPtr     = CompositeTransformation::TransPtr;
 using TransList    = CompositeTransformation::TransList;
 
 CompositeTransformation::CompositeTransformation(TransformationPtr tPtr, const EventType& goal,
-                                                 const EventType& provided) {
-  VertexResult res = add(tPtr, goal, provided);
+                                                 const EventType& provided, const MetaFilter& filter) {
+  VertexResult res = add(tPtr, goal, provided, filter);
   if(res.second)
     mRoot = res.first;
 }
