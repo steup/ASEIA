@@ -29,14 +29,16 @@ struct CompositeTransformer : public Transformer {
 
     Graph graph;
     Vertex root;
+    MetaFilter mFilter;
     /** \brief Generate CompositeTransformer from CompositeTransformation
      *  \param out output EventType of the created MetaEvents
      *  \param in input EventTypes of the consumed MetaEvents
      *  \param g CompositeTransformation graph to generate Transformers from
      **/
     CompositeTransformer(const EventType& out, const EventTypes& in,
-                        const CompositeTransformation::Graph& g, const AbstractPolicy& policy)
+                        const CompositeTransformation::Graph& g, const AbstractPolicy& policy, const MetaFilter& filter)
       : Transformer(out, in) {
+      mFilter = filter;
       auto vertexCopy = [&g, &policy, this](CompositeTransformation::Vertex in, Vertex out) {
         graph[out] = g[in].create(policy);
       };
@@ -87,6 +89,10 @@ static It call(Vertex v, const MetaEvent& e, const Graph& graph, It it) {
         if(find_if(t.in().begin(), t.in().end(), eTCompat) != t.in().end())
           call(*it, event, graph, back_inserter(result));
       }
+      if(!mFilter.expressions().empty())
+        result.erase(remove_if(result.begin(), result.end(),
+                               [this](const MetaEvent& e){ return mFilter({&e});}),
+                     result.end());
       return result;
     }
 
@@ -120,16 +126,14 @@ using TransList    = CompositeTransformation::TransList;
 
 CompositeTransformation::CompositeTransformation(TransformationPtr tPtr, const EventType& goal,
                                                  const EventType& provided, const MetaFilter& filter) {
-  VertexResult res = add(tPtr, goal, provided, filter);
+  mFilter = filter;
+  VertexResult res = add(tPtr, goal, provided);
   if(res.second)
     mRoot = res.first;
 }
 
 TransPtr CompositeTransformation::create(const AbstractPolicy& policy) const {
-  if(boost::num_vertices(mGraph)==1) {
-    return mGraph[mRoot].create(policy);
-  }
-  return TransPtr(new CompositeTransformer(mOut, mIn, mGraph, policy));
+  return TransPtr(new CompositeTransformer(mOut, mIn, mGraph, policy, mFilter));
 }
 
 bool CompositeTransformation::check() const {
@@ -137,10 +141,10 @@ bool CompositeTransformation::check() const {
 }
 
 VertexResult CompositeTransformation::add(TransformationPtr tPtr, const EventType& tempGoal,
-                                          const EventType& provided, const MetaFilter& filter) {
+                                          const EventType& provided) {
   if(num_vertices(mGraph)==0) {
     mRoot = boost::add_vertex(mGraph);
-    mGraph[mRoot] = ConfiguredTransformation(tPtr, tempGoal, provided, filter);
+    mGraph[mRoot] = ConfiguredTransformation(tPtr, tempGoal, provided, mFilter);
     mIn=mGraph[mRoot].in();
     mOut=mGraph[mRoot].out();
     return make_pair(mRoot, true);
@@ -180,7 +184,7 @@ VertexResult CompositeTransformation::add(TransformationPtr tPtr, Vertex v,
     return make_pair(Vertex(), false);
 
   Vertex newV = boost::add_vertex(mGraph);
-  mGraph[newV] = ConfiguredTransformation(tPtr, intermediate, provided);
+  mGraph[newV] = ConfiguredTransformation(tPtr, intermediate, provided, mFilter);
   auto e = boost::add_edge(v, newV, mGraph);
   mGraph[e.first]=mGraph[newV].out();
   mIn.clear();
@@ -188,8 +192,14 @@ VertexResult CompositeTransformation::add(TransformationPtr tPtr, Vertex v,
   auto getTypes = [this](back_insert_iterator<EventTypes> it, Vertex v){
     const EventTypes& tempIn = mGraph[v].in();
     EventTypes tTypes(out_degree(v, mGraph));
-    transform(out_edges(v, mGraph).first, out_edges(v, mGraph).second, tTypes.begin(), [this](Edge e){ return mGraph[e];});
-    return copy_if(tempIn.begin(), tempIn.end(), it, [&tTypes](const EventType& t){ return count(tTypes.begin(), tTypes.end(), t)==0;});
+    auto copyTypes = [&tTypes](const EventType& t){
+      return count(tTypes.begin(), tTypes.end(), t)==0;
+    };
+    transform(out_edges(v, mGraph).first,
+              out_edges(v, mGraph).second,
+              tTypes.begin(),
+              [this](Edge e){ return mGraph[e];});
+    return copy_if(tempIn.begin(), tempIn.end(), it, copyTypes);
   };
 
   accumulate(vertices(mGraph).first, vertices(mGraph).second, back_inserter(mIn), getTypes);

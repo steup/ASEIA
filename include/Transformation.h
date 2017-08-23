@@ -24,7 +24,7 @@ class AbstractConfiguredTransformation {
   public:
     const EventType& out() const { return mOut; }
     const EventTypes& in() const { return mIn; }
-    const MetaFilter& filter() const { return mFilter; } 
+    const MetaFilter& filter() const { return mFilter; }
     bool operator==(const AbstractConfiguredTransformation& b) const;
 };
 

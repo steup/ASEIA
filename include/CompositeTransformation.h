@@ -18,14 +18,18 @@ class CompositeTransformation : public AbstractConfiguredTransformation {
       public:
         using TransPtr = Transformation::TransPtr;
         ConfiguredTransformation() = default;
-        ConfiguredTransformation(TransformationPtr tPtr, const EventType& out, const EventType& provided = EventType(), const MetaFilter& filter = MetaFilter())
+        ConfiguredTransformation(TransformationPtr tPtr, const EventType& out,
+                                 const EventType& provided = EventType(),
+                                 const MetaFilter& filter = MetaFilter())
           : mTPtr(tPtr) {
-          mOut = out;
-          mIn = tPtr->in(out, provided, filter);
           mFilter = filter;
+          mOut = out;
+          mIn = tPtr->in(out, provided, mFilter);
         }
         TransformationPtr trans() const { return mTPtr; }
-        TransPtr create(const AbstractPolicy& policy) const { return mTPtr->create(mOut, mIn, policy, mFilter); }
+        TransPtr create(const AbstractPolicy& policy) const {
+          return mTPtr->create(mOut, mIn, policy, mFilter);
+        }
     };
     using  Graph       = boost::adjacency_list< boost::vecS, boost::vecS, boost::bidirectionalS,
                                                 ConfiguredTransformation, EventType>;
@@ -50,7 +54,7 @@ class CompositeTransformation : public AbstractConfiguredTransformation {
     VertexResult add(CompositeTransformation&& cT, Vertex v, const EventType& goal,
                      const EventType& provided = EventType());
     VertexResult add(TransformationPtr tPtr, const EventType& goal,
-                     const EventType& provided = EventType(), const MetaFilter& filter = MetaFilter());
+                     const EventType& provided = EventType());
     VertexResult add(TransformationPtr tPtr, Vertex v, const EventType& goal,
                      const EventType& provided = EventType());
     EventIDs inIDs() const;
