@@ -93,7 +93,7 @@ static It call(Vertex v, const MetaEvent& e, const Graph& graph, It it) {
       }
       if(!mFilter.expressions().empty())
         result.erase(remove_if(result.begin(), result.end(),
-                               [this](const MetaEvent& e){ return mFilter({&e});}),
+                               [this](const MetaEvent& e){ return !mFilter({&e});}),
                      result.end());
       return result;
     }
@@ -150,6 +150,15 @@ VertexResult CompositeTransformation::add(TransformationPtr tPtr, const EventTyp
     mIn=mGraph[mRoot].in();
     mOut=mGraph[mRoot].out();
     return make_pair(mRoot, true);
+  }else
+    return make_pair(Vertex(), false);
+}
+
+VertexResult CompositeTransformation::add(TransformationPtr tPtr, const EventType& tempGoal,
+                                          const EventType& provided, const MetaFilter& filter) {
+  if(num_vertices(mGraph)==0) {
+    mFilter = filter;
+    return add(tPtr, tempGoal, provided);
   }else
     return make_pair(Vertex(), false);
 }

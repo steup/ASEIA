@@ -54,6 +54,8 @@ class CompositeTransformation : public AbstractConfiguredTransformation {
     VertexResult add(CompositeTransformation&& cT, Vertex v, const EventType& goal,
                      const EventType& provided = EventType());
     VertexResult add(TransformationPtr tPtr, const EventType& goal,
+                     const EventType& provided, const MetaFilter& filter);
+    VertexResult add(TransformationPtr tPtr, const EventType& goal,
                      const EventType& provided = EventType());
     VertexResult add(TransformationPtr tPtr, Vertex v, const EventType& goal,
                      const EventType& provided = EventType());
