@@ -3,19 +3,38 @@
 #include <cstdint>
 #include <boost/mpl/int.hpp>
 
+/** \brief namespace of static unique identifiers used in ASEIA **/
 namespace id{
+  /**\brief sub-namespace of static unique Attribute identifiers **/
   namespace attribute{
 
+    /**\brief Tag indicating AttrID **/
     struct Tag{};
 
+    /**\brief Definition of numeric type used for AttrID **/
     using ID = std::uint8_t;
 
+    /** \brief Unique Attribute Identifier
+     *
+     *  \tparam id uint8_t number specifying the unqiue identifier
+     *
+     * Class representing a unique attribute in Events and EventTypes. It is
+     * used to filter, extract and order Attributes, MetaAttributes and
+     * AttributeTypes.
+     **/
     template<uint8_t id>
     struct AttrID : public Tag {
+      /** \brief accessor for the uint8_t number associated with this AttrID
+       *  \return numerical unique id
+       **/
       static constexpr const ID value(){ return id; }
+      /** \brief cast operator to convert this AttrID to its unique number
+       *  \return numerical unique id
+       **/
       operator ID() const { return id; }
     };
 
+    /** \brief Invalid Attribute **/
     using Base        = AttrID<0>;
     using Position    = AttrID<1>;
     using Time        = AttrID<2>;
@@ -28,10 +47,24 @@ namespace id{
     using Object      = AttrID<9>;
     using Speed       = AttrID<10>;
 
+    /** \brief Lookup of AttrID based on unique number
+     *  \tparam id unique numeric ID
+     **/
     template<ID id>
-    struct attribute {
+    struct lookup {
+      /** \brief the corresponding AttrID
+       *
+       *  in case number is not defined, a compile error will be raised
+       **/
       using type = AttrID<id>;
     };
+
+
+    /** \brief Deprecated alias of lookup
+     *  \tparam id unique numeric ID
+     **/
+    template<ID id>
+    using attribute = lookup<id>;
   }
 
   namespace type{
