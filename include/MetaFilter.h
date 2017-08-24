@@ -46,6 +46,8 @@ class MetaPredicate {
 		 *  Executea a preveuisly received filter subexpression and return the results
 		 **/
 		bool operator()(const std::vector<const MetaEvent*>& events) const;
+    bool operator==(const MetaPredicate& b) const;
+    bool operator!=(const MetaPredicate& b) const { return !(*this==b); }
 
     const std::vector<MetaAttribute(MetaAttribute::*)(void)const>& func() const { return mUnaryFuncs; }
 	/** \brief friend declaration of deserialization function **/
@@ -91,6 +93,9 @@ class MetaFilter {
 
     const MetaPredicate& operator[](size_t i) const { return mExpr[i].first; }
     const MetaPredicate& at(size_t i) const { return mExpr.at(i).first; }
+
+    bool operator==(const MetaFilter& b) const;
+    bool operator!=(const MetaFilter& b) const { return !(*this==b); }
 
 	/** \brief friend declaration of deserialization function **/
 	template<typename T> friend DeSerializer<T>& operator>>(DeSerializer<T>&, MetaFilter&);

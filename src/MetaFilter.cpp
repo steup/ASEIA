@@ -25,6 +25,14 @@ bool MetaPredicate::operator()(const std::vector<const MetaEvent*>& events) cons
 	}
 }
 
+bool MetaPredicate::operator==(const MetaPredicate& b) const {
+  return mE0Num == b.mE0Num && mE0Attr != b.mE0Attr && mOp.code == b.mOp.code;
+  if(mOp.constArg)
+    return (bool)(mAttr == b.mAttr);
+  else
+    return mE0Num == b.mE0Num && mE0Attr == b.mE0Attr;
+}
+
 std::ostream& operator<<(std::ostream& o, const MetaPredicate& p){
 	o << "e" << (uint16_t)p.mE0Num << "[" << id::attribute::name(p.mE0Attr) << "]";
   for(auto func : p.func()) {
@@ -70,6 +78,14 @@ bool MetaFilter::operator()(const std::vector<const MetaEvent*>& events) const {
 		op = subExpr.second;
 	}
 	return result;
+}
+
+bool MetaFilter::operator==(const MetaFilter& b) const {
+  auto bIt = b.mExpr.begin();
+  for(const auto& elem : mExpr)
+    if(bIt == b.mExpr.end() && elem.second != bIt->second && elem.first != bIt++->first)
+    return false;
+  return true;
 }
 
 std::ostream& operator<<(std::ostream& o, const MetaFilter& f){
