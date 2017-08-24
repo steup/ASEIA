@@ -75,6 +75,7 @@ class KBImpl {
     /** \brief (partially) complete incomplete CompositeTransformations
      *  \param cT the incomplete CompositeTransformation
      *  \param ids the current sorted EventIDs available
+     *  \param trans list of transformation to be considered for completion
      *  \param it OutputIterator of the partially complete vector
      *  \return the modified Output Iterator
      *
@@ -122,6 +123,7 @@ class KBImpl {
 
     /** \brief find homogeneus transforms leading directly to goal
      *  \param goal the goal EventType
+     *  \param filter subscriber filter expressions
      *  \param ids the clist of currently published ids
      *  \param it the OutputIterator to the CompositeTransformation storage
      **/
@@ -205,6 +207,8 @@ class KBImpl {
      *  \param goal the output of the Transformations
      *  \param filter the filter expression stated by the subscriber
      *  \return a list of ConfigureTransformation
+     *
+     *  \todo: fix dirty hack to include homogeneus transforms
      **/
     Transformations find(const EventType& goal, const MetaFilter& filter) {
       EventIDs ids = mTypes.ids();
@@ -216,7 +220,7 @@ class KBImpl {
       generateHomTrans(goal, filter, ids, back_inserter(result));
       generateAttTrans(goal, ids, back_inserter(result));
 
-      /** \TODO: start dirty hack including homogeneus transforms as final trans **/
+      // start dirty hack including homogeneus transforms as final trans
       for(const Transformation* homTrans: mHomTrans)
         for(CompositeTransformation& cT: result) {
           CompositeTransformation homCT(homTrans, cT.out(), EventType(), filter);
@@ -225,7 +229,7 @@ class KBImpl {
           swap(cT, homCT);
           cT.add(move(homCT), homCT.root(), cT.out());
         }
-      /** \TODO: end dirty hack including homogeneus transforms as final trans **/
+      // end dirty hack including homogeneus transforms as final trans
 
       auto close = [&result, &ids, this](const TransStorage& trans){
         Transformations temp = result;

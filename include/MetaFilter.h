@@ -46,20 +46,20 @@ class MetaPredicate {
 		 *  Executea a preveuisly received filter subexpression and return the results
 		 **/
 		bool operator()(const std::vector<const MetaEvent*>& events) const;
-    
+
     const std::vector<MetaAttribute(MetaAttribute::*)(void)const>& func() const { return mUnaryFuncs; }
 	/** \brief friend declaration of deserialization function **/
 	template<typename T> friend DeSerializer<T>& operator>>(DeSerializer<T>&, MetaPredicate&);
 	/** \brief friend declaration of output stream operator **/
-	friend std::ostream& operator<<(std::ostream&, const MetaPredicate&);
+	friend std::ostream& operator<<(std::ostream& o, const MetaPredicate& p);
 };
 
 /** \brief overloaded output stream operator
  *  \param o the output stream object
- *  \param f the MetaPredicate to be printed
+ *  \param p the MetaPredicate to be printed
  *  \return the output stream containing the printed MetaPredicate
  **/
-std::ostream& operator<<(std::ostream& o, const MetaPredicate& f);
+std::ostream& operator<<(std::ostream& o, const MetaPredicate& p);
  /** \brief Dynamic filter filled by a filter expression. 
 	* 
 	* These expressions may be transmitted in subscriptions and allow the publisher to filter events before transmission. They are stated by the subscriber, serialized into the subscription event and deserialized into this class.
@@ -95,7 +95,7 @@ class MetaFilter {
 	/** \brief friend declaration of deserialization function **/
 	template<typename T> friend DeSerializer<T>& operator>>(DeSerializer<T>&, MetaFilter&);
 	/** \brief friend declaration of output stream operator **/
-	friend std::ostream& operator<<(std::ostream&, const MetaFilter&);
+	friend std::ostream& operator<<(std::ostream& o, const MetaFilter& f);
 };
 
 /** \brief overloaded output stream operator
@@ -149,7 +149,7 @@ DeSerializer<T>& operator>>(DeSerializer<T>& d, MetaPredicate& p) {
 /** \brief overloaded and templated deserialization function for dynamic filter expression
  *  \tparam T the iterator type of the DeSerializer
  *  \param d the used DeSerializer object
- *  \param p the MetaFilter to store the filter expression
+ *  \param f the MetaFilter to store the filter expression
  *  \return the DeSerializer moved forward by the size of the extracted filter
  **/
 template<typename T>

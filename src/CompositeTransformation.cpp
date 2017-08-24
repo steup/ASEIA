@@ -34,6 +34,8 @@ struct CompositeTransformer : public Transformer {
      *  \param out output EventType of the created MetaEvents
      *  \param in input EventTypes of the consumed MetaEvents
      *  \param g CompositeTransformation graph to generate Transformers from
+     *  \param policy policy used to generate Transformer s and Buffer s
+     *  \param filter filter expressions stated by the subscriber
      **/
     CompositeTransformer(const EventType& out, const EventTypes& in,
                         const CompositeTransformation::Graph& g, const AbstractPolicy& policy, const MetaFilter& filter)
@@ -75,7 +77,7 @@ static It call(Vertex v, const MetaEvent& e, const Graph& graph, It it) {
 }
 
     /** \brief execute transformer on input events
-     *  \param events input events
+     *  \param event input events
      *  \return result of the transformer graph
      **/
     virtual Events operator()(const MetaEvent& event) {

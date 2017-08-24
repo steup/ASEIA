@@ -19,7 +19,7 @@ class MetaValue {
 
 	private:
     Ptr mImpl;
-    
+
 	public:
     explicit MetaValue(Ptr&& ref);
     Ptr& implementation() { return mImpl; }
@@ -35,18 +35,18 @@ class MetaValue {
     MetaValue();
 
     MetaValue(const ValueType& vT);
-    MetaValue(id::type::ID typeID, size_t rows, size_t cols=1, bool u=false);
+    MetaValue(::id::type::ID typeID, size_t rows, size_t cols=1, bool u=false);
     MetaValue(double v, id::type::ID typeIDid=id::type::Double::value());
     //MetaValue(ElemInitType l, id::type::ID typeIDid=id::type::Double::value(), bool u=false);
     //MetaValue(RowInitType l, id::type::ID typeIDid=id::type::Double::value(),
     //          size_t rows=0, bool u=false);
-    MetaValue(InitType l, id::type::ID typeIDid=id::type::Double::value(),
+    MetaValue(InitType l, ::id::type::ID typeIDid=id::type::Double::value(),
               size_t rows=0, size_t cols=0, bool u=false);
 
     MetaValue(const MetaValue& copy);
 
     MetaValue& operator=(const MetaValue& b);
-    
+
     MetaValue operator-() const;
     MetaValue& operator+=(const MetaValue& b);
     MetaValue& operator-=(const MetaValue& b);
