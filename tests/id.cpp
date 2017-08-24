@@ -2,33 +2,31 @@
 #include <gtest/gtest.h>
 #include <ID.h>
 
-/** \namespace id
- * 	\test ID Test Suites \see tests::id
+/** \namespace ::id::type::attribute
+ *  \test Unit-Tests regarding unique number assignment and id::attribute::lookup of id::attribute::AttrID in ::tests::id::attr
  **/
 
-/** \namespace id::attribute
- *  \test %Attribute ID Test Suite \see tests::id::attr
+/** \namespace ::id::type
+ *  \test Unit-Tests regarding unique number assignment and id::type::lookup of id::type::TypeID in ::tests::id::type
  **/
 
-/** \namespace id::type
- *  \test Type ID Test Suite \see tests::id::type
+/** \namespace ::id::unit
+ *  \test Unit-Tests regarding unique number assignment and id::unit::lookup of id::unit::UnitID in ::tests::id::unit
  **/
 
-/** \namespace id::unit
- *  \test %Unit ID Test Suite \see tests::id::unit
- **/
 namespace tests {
 
 /** \brief ID Test Suites **/
 namespace id {
 
-/** \brief %Attribute ID Test Suite **/
+/** \brief AttrID Test Suite **/
 namespace attr {
 	using namespace ::id::attribute;
-	/** \brief %Attribute ID assignment test case
-	 *	\test %Unit test checking the correct assignment of integers to %Attribute IDs
+	/** \brief AttrID number assignment test case
+   *
+   *	unit test checking the correct assignment of unqiue integers to static Attribute IDs
 	 **/
-	TEST(IdAttributeSuite, valueTest) {
+	TEST(AttrIdTestSuite, valueTest) {
 		EXPECT_EQ(Base::value()       , 0) << "ID of attribute \"Base\" does not match ";
 		EXPECT_EQ(Position::value()   , 1) << "ID of attribute \"Position\" does not match ";
 		EXPECT_EQ(Time::value()       , 2) << "ID of attribute \"Time\" does not match ";
@@ -40,10 +38,11 @@ namespace attr {
 		EXPECT_EQ(Reference::value()  , 8) << "ID of attribute \"Reference\" does not match ";
 	}
 
-	/** \brief %Attribute ID lookup test case
-	 *	\test %Unit test checking the correct lookup of %Attribute IDs from integers
+	/** \brief AttrID lookup test case
+   *
+   *	Unit-Test checking the correct lookup of AttributeIDs from integers
 	 **/
-	TEST(IdAttributeSuite, lookUpTest) {
+	TEST(AttrIdTestSuite, lookUpTest) {
 		EXPECT_EQ(attribute<1>::type::value(), 1) << "ID of attribute \"Position\" does not match ";
 		EXPECT_EQ(attribute<2>::type::value(), 2) << "ID of attribute \"Time\" does not match ";
 		EXPECT_EQ(attribute<3>::type::value(), 3) << "ID of attribute \"PublisherID\" does not match ";
@@ -55,7 +54,7 @@ namespace attr {
 	}
 }
 
-/** \brief Type ID Test Suites **/
+/** \brief TypeID Test Suites **/
 namespace type {
 	using namespace ::id::type;
 
@@ -102,7 +101,7 @@ namespace type {
 		EXPECT_EQ(id::type::id(double())  ,  8) << "ID of type \"Double\" does not match ";
 	}
 }
-/** \brief %Unit ID Test Suites **/
+/** \brief UnitID Test Suites **/
 namespace unit {
 	using namespace ::id::unit;
 
