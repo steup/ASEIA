@@ -8,9 +8,17 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 
+/** \class CompositeTransformation
+ *
+ *  \test CompositeTransformSuite testing creation of linear and tree-like
+ *  CompositeTransformations. Additionally checks correctness of input
+ *  EventTypes and created CompositeTransformers. Finally tests correct merging
+ *  of two CompositeTransformations in ::tests::compTrans
+ **/
 
-namespace test {
-
+namespace tests {
+/** \brief CompositeTransformation Tests **/
+namespace compTrans {
 using namespace std;
 
 using ::testing::_;
@@ -21,20 +29,33 @@ using boost::filesystem::ofstream;
 using boost::filesystem::current_path;
 using boost::filesystem::path;
 
-MATCHER(EqPtrContent, "") {
-  return *get<0>(arg)==*get<1>(arg);
-}
+/** \brief Fixture for all CompositeTransformation UnitTests **/
 struct CompositeTransformSuite : public ::testing::Test {
 
+  /** \brief forward declaration of EventTypes **/
   using EventTypes = Transformer::EventTypes;
+  /** \brief forward declaration of TransPtr **/
   using TransPtr   = Transformation::TransPtr;
 
+  /** \brief helper function to compare MetaEvents based on their pointers
+   *  \param a first MetaEvent pointer
+   *  \param b second MetaEvent pointer
+   *  \return true if equal according to MetaEvent::operator==, false otherwise
+   **/
   static bool comp(const MetaEvent* const a, const MetaEvent* const b) {
     return *a==*b;
   }
 
+  /// Mock-Implementation of Unary Transformer
   struct TestTransformer : public Transformer {
+    /// Name of this Mock-Object
     string name;
+    /** \brief Create Mock-Transformer
+     *  \param name Name of this Mock-Object
+     *  \param out Goal EventType
+     *  \param in single elementary vector of input EventTypes
+     *  \param trans Transformer lookup structure to register this instance
+     **/
     TestTransformer(const string& name, const EventType& out, const EventTypes& in,
                     map<string, TestTransformer*>& trans)
       : Transformer(out, in), name(name) {
@@ -46,8 +67,14 @@ struct CompositeTransformSuite : public ::testing::Test {
     virtual void print(ostream& o) const { o << name; }
   };
 
+  /// Mock-Implementation of Unary Transformation
   struct TestTransformation : public Transformation {
+    /// Name of this Mock-Object
     string name;
+    /** \brief Create Mock-Transformation
+     *  \param name Name of this Mock-Object
+     *  \param arity Arity of transformation
+     **/
     TestTransformation(const string& name, size_t arity)
       : Transformation(Type::attribute, arity, EventID::any), name(name) { }
 
@@ -57,23 +84,38 @@ struct CompositeTransformSuite : public ::testing::Test {
     virtual void print(ostream& o) const { o << name; }
   };
 
+  /// Lookup structure to map TestTransformation names to instances
   map<string, TestTransformer*> trans;
+  /// Statically allocated unary TestTransformations
   TestTransformation a, c, d;
-  CompositeTransformation compTrans, compTrans2;
+  /// Linear CompositeTransformation containing a and b
+  CompositeTransformation compTrans;
+  /// Tree-like CompositeTransformation containing c, b and d
+  CompositeTransformation compTrans2;
+  /// Dynamically allocated unary TestTransformation
   shared_ptr<const TestTransformation> b;
-  EventType goal, provided, provided2, intermediate, intermediate2;
+  /// Final goal EventType: single Attribute Test0 of certain 1x1 float
+  EventType goal;
+  /// Provided EventType: single Attribute Test0 of certain 1x1 int with scale 1/1000
+  EventType provided;
+  /// Provided EventType: single Attribute Test1 of certain 1x1 int with scale 1/1000
+  EventType provided2;
+  /// Intermediate EventType: single Attribute Test0 of certain 1x1 float with scale 1/1000
+  EventType intermediate;
+  /// Intermediate EventType: single Attribute Test1 of certain 1x1 float with scale 1/1000
+  EventType intermediate2;
 
-  struct Test0: public ::id::attribute::Base {
-    static constexpr const ::id::attribute::ID value()  { return 251; }
-  };
-  struct Test1: public ::id::attribute::Base {
-    static constexpr const ::id::attribute::ID value()  { return 252; }
-  };
+  /// Definition of non-static AttrID used only testing
+  using Test0 = ::id::attribute::AttrID<251>;
+  /// Definition of non-static AttrID used only testing
+  using Test1 = ::id::attribute::AttrID<252>;
 
+  /// Create four TestTransformations
   CompositeTransformSuite()
     : a("a", 1), c("c", 2), d("d", 1), b(new TestTransformation("b", 1))
   {}
 
+  /// Create CompositeTransformations compTrans and compTrans2
   void SetUp() {
 
     ValueType goalVT(id::type::Float::value(), 1, 1, false);
@@ -123,6 +165,7 @@ struct CompositeTransformSuite : public ::testing::Test {
   }
 };
 
+/** \brief Unit-Test testing creation of a linear CompositeTransformation **/
 TEST_F(CompositeTransformSuite, linearTest) {
   using Graph = CompositeTransformation::Graph;
   using Vertex = CompositeTransformation::Vertex;
@@ -142,11 +185,13 @@ TEST_F(CompositeTransformSuite, linearTest) {
   EXPECT_EQ(testB, *b);
 }
 
+/** \brief Unit-Test checking correctness of input EventTypes of a linear CompositeTransformation**/
 TEST_F(CompositeTransformSuite, linearInTest) {
   auto result = compTrans.in();
   EXPECT_EQ(result, EventTypes({provided}));
 }
 
+/** \brief Unit-Test testing creation of a tree-like CompositeTransformation **/
 TEST_F(CompositeTransformSuite, treeTest) {
   using Graph = CompositeTransformation::Graph;
   using Vertex = CompositeTransformation::Vertex;
@@ -171,12 +216,14 @@ TEST_F(CompositeTransformSuite, treeTest) {
   EXPECT_EQ(testD, d);
 }
 
+/** \brief Unit-Test checking correctness of input EventTypes of a tree-like CompositeTransformation**/
 TEST_F(CompositeTransformSuite, treeInTest) {
   auto result = compTrans2.in();
   ASSERT_FALSE(result.empty());
   EXPECT_EQ(result, EventTypes({provided, provided2}));
 }
 
+/** \brief Unit-Test checking correct creation of CompositeTransformer from linear CompositeTransformation **/
 TEST_F(CompositeTransformSuite, linearCreateTest) {
   using Events = Transformer::Events;
   EXPECT_CALL(a, create(goal, EventTypes({intermediate}), _, _))
@@ -206,6 +253,7 @@ TEST_F(CompositeTransformSuite, linearCreateTest) {
   EXPECT_EQ(res0.front(), eC);
 }
 
+/** \brief Unit-Test checking correct creation of CompositeTransformer from tree-like CompositeTransformation **/
 TEST_F(CompositeTransformSuite, treeCreateTest) {
   using Events = Transformer::Events;
   EXPECT_CALL(c, create(goal, EventTypes({intermediate, intermediate2}), _, _))
@@ -251,6 +299,7 @@ TEST_F(CompositeTransformSuite, treeCreateTest) {
   EXPECT_EQ(res0.front(), eE);
 }
 
+/** \brief Unit-Test checking correct merging of linear and tree-like CompositeTransformation **/
 TEST_F(CompositeTransformSuite, insertTest) {
   using Vertex = CompositeTransformation::Vertex;
   auto edges = boost::edges(compTrans.graph());
@@ -273,4 +322,4 @@ TEST_F(CompositeTransformSuite, insertTest) {
   EXPECT_THAT(compTrans.in(), UnorderedElementsAre(provided, provided2));
 }
 
-}
+}}
