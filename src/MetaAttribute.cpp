@@ -17,10 +17,10 @@ MetaAttribute::MetaAttribute(const AttributeType& at)
 {}
 
 bool MetaAttribute::check(const MetaAttribute& b) const {
-  const bool idTest = mID == b.mID;
+  //const bool idTest = mID == b.mID;
   const bool unitTest = mUnit == b.mUnit;
   const bool scaleTest = mScale.reference() == b.mScale.reference();
-  return  idTest && unitTest && scaleTest;
+  return  unitTest && scaleTest;
 }
 
 MetaAttribute::MetaAttribute(const MetaAttribute& b)
