@@ -47,7 +47,6 @@ endif
 BASEDIR   := $(abspath $(dir $(lastword ${MAKEFILE_LIST}))/..)
 
 SRC       := src
-EXAMPLES  := examples
 INC       := include
 DOC       := doc
 TESTS     := tests
@@ -57,14 +56,13 @@ HTML      := ${DOC}/html
 BIN       := bin
 BUILD     := build
 BLIB      := ${BUILD}/lib
-BEX       := ${BUILD}/examples
 BTEST     := ${BUILD}/tests
 LIB       := lib
 CMAKE     := cmake
 PKG       := pkgconfig
 LOG       := log
 
-DIRS      := ${BIN} ${BLIB} ${BEX} ${BTEST} ${BUILD} ${LIB} ${CMAKE} ${PKG} ${LOG}
+DIRS      := ${BIN} ${BLIB} ${BTEST} ${BUILD} ${LIB} ${CMAKE} ${PKG} ${LOG}
 GARBAGE   := $(wildcard ${DOC}/*.dot) $(wildcard ${DOC}/*.svg) ${HTML} ${DIRS}
 
 CMAKEFILE := ${CMAKE}/aseiaConfig.cmake
@@ -88,8 +86,7 @@ TARGETS   := ${DYNLIB} ${STATLIB} ${STATBASELIB}
 
 vpath %.mk ${BASEDIR}/make
 
-.PHONY: all ${EXAMPLES} examples clean run_examples run_% debug_% tests run_tests doc dot
-#.PRECIOUS: ${BEX}/%.o ${BLIB}/%.o
+.PHONY: all ${EXAMPLES} clean run_% debug_% tests run_tests doc dot
 
 all: ${DYNLIB} ${STATLIB} ${DYNBASELIB} ${DYNIOLIB}
 
@@ -110,7 +107,6 @@ IO_OBJECTS   := IO IDIO
 OBJECTS      := $(wildcard ${SRC}/*.cpp)
 
 SYMBOLS  := $(addprefix -D, ${SYMBOLS})
-EXEXES   := $(notdir $(basename $(wildcard ${EXAMPLES}/*.cpp)))
 TESTOBJS := $(addprefix ${BTEST}/, $(addsuffix .o, $(notdir $(basename $(wildcard ${TESTS}/*.cpp)))))
 BASE_OBJECTS  := $(addprefix ${BLIB}/, $(addsuffix .o, ${BASE_OBJECTS}))
 IO_OBJECTS  := $(addprefix ${BLIB}/, $(addsuffix .o, ${IO_OBJECTS}))
@@ -140,10 +136,6 @@ ${TESTOBJS}: ${BTEST}/%.o: ${TESTS}/%.cpp ${MAKEFILE_LIST} ${GTEST} | ${BTEST}
 ${BIN}/${RUN_TESTS}: ${TESTOBJS} ${MAKEFILE_LIST} ${GTEST} | ${BIN} ${DYNLIB}
 	@echo "Linking unit tests $@ <- [${TESTOBJS}]"
 	@${CXX} ${LDFLAGS} ${GTEST_LDFLAGS} ${TESTOBJS} -o $@ ${LDPATHS} ${LIBS} -L ${LIB} -l${LIBNAME} -l${IO_LIBNAME} -l${BASE_LIBNAME} ${GTEST_LDPATHS} ${GTEST_LIBS}
-
-examples: ${EXEXES}
-
-${EXEXES}: %: ${BIN}/%
 
 ${DYNLIB}: ${OBJECTS} | ${DYNBASELIB} ${DYNIOLIB} ${CONFIGS}
 	@echo "Linking dynamic library: $@ <- [$^]"
@@ -233,17 +225,9 @@ ${BLIB}/%.o: ${SRC}/%.cpp ${MAKEFILE_LIST} | ${BLIB}
 	@echo "Compiling lib file $@ <- $<"
 	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} ${SYMBOLS} $< -o $@ ${INCLUDES}
 
-${BEX}/%.o: ${EXAMPLES}/%.cpp ${MAKEFILE_LIST} | ${BEX}
-	@echo "Compiling example $@ <- $<"
-	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} ${SYMBOLS} $< -o $@ ${INCLUDES}
-
 ${BIN}/%: ${BEX}/%.o | ${DYNLIB} ${BIN}
 	@echo "Linking exampple $@ <- $<"
 	@${CXX} $< ${LDFLAGS} ${LDPATHS} ${LIBS} -o $@
-
-run_examples: ${EXEXES}
-	@echo "Executing examples and writing output to ${LOG}"
-	@for exe in ${EXEXES} ; do ./${BIN}/$${exe} > log/$${exe}.log ; done
 
 run_%: % | ${LOG}
 	@echo "Running $<"
