@@ -8,3 +8,4 @@ pkgconfig
 *.sw?
 doc/*.dot
 doc/*.svg
+doc/*.log

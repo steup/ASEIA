@@ -243,7 +243,7 @@ clean:
 
 doc:
 	@echo "Creating Documentation"
-	@doxygen ${DOC}/doxyfile
+	@doxygen ${DOC}/doxyfile 2> doc/error.log 1> doc/output.log
 
 dot: ${GRAPHS}
 
