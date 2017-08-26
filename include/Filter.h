@@ -259,10 +259,10 @@ namespace filter {
 
 template<typename Serializer, typename Arg0, typename Arg1>
 Serializer& operator<<(Serializer& s, const filter::Predicate<Arg0, Arg1>& p) {
-  return p(s) << (uint8_t)::id::filterOp::NOP();
+  return p(s);
 }
 
 template<typename Serializer, typename SubExp0, typename SubExp1>
 Serializer& operator<<(Serializer& s, const filter::Expression<SubExp0, SubExp1>& e) {
-  return e(s) << (uint8_t)::id::filterOp::NOP();
+  return e(s);
 }

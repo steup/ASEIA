@@ -321,6 +321,7 @@ class Value {
 		constexpr const bool hasUncertainty() const noexcept {return BaseType().hasUncertainty();}
 
     static constexpr const std::size_t staticSize() { return R * C * BaseType::size(); }
+    static constexpr const std::size_t size() { return staticSize(); }
     std::size_t dynamicSize() const { return mData.rows() * mData.cols() * BaseType::size(); }
 
     template<typename TF, int32_t RF, int32_t CF, bool UF, int32_t C2F>

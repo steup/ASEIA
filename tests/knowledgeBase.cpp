@@ -331,11 +331,11 @@ namespace test {
   }
 
   TEST_F(KnowledgeBaseTestSuite, fullTreeWithHom) {
-    auto filter0 = filter::uncertainty(filter::e0[Test0()]) < Value<float, 1>({{{ 10 }}});
-    vector<uint8_t> buffer;
-    auto i = back_inserter(buffer);
-    Serializer<decltype(i)> s(i);
-    s << filter0(filter::s0);
+    auto filter0 = filter::uncertainty(filter::e0[Test0()]) < Value<float, 1, 1, false>({{{ 10 }}});
+    auto filterExpr = filter0(filter::s0);
+    vector<uint8_t> buffer(decltype(filterExpr)::size());
+    Serializer<decltype(buffer.begin())> s(buffer.begin());
+    s << filterExpr;
     MetaFilter metaFilter({&eT0});
     DeSerializer<decltype(buffer.cbegin())> d(buffer.cbegin(), buffer.cend());
     EXPECT_NO_THROW(d >> metaFilter);

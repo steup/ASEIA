@@ -136,6 +136,9 @@ DeSerializer<T>& operator>>(DeSerializer<T>& d, MetaPredicate& p) {
 			if(!attrTPtr)
 				throw MetaFilterError();
 			p.mAttr = MetaAttribute(*attrTPtr);
+      p.mAttr.value() = p.mAttr.value().zero();
+      for(const auto& func: p.mUnaryFuncs)
+        p.mAttr = (p.mAttr.*func)();
 			d >> p.mAttr;
 		} else
 			d >> p.mE1Num >> p.mE1Attr;
@@ -164,9 +167,13 @@ DeSerializer<T>& operator>>(DeSerializer<T>& d, MetaFilter& f) {
 	id::filterOp::ID logicalOp;
 	do{
 		MetaPredicate p(f.mTypes);
-		d >> p >> logicalOp;
-		f.mExpr.emplace_back(p, logicalOp);
-	}while(logicalOp != id::filterOp::NOP() && !d.error());
+		d >> p;
+    if(d.eof())
+		  f.mExpr.emplace_back(p, id::filterOp::NOP());
+    else
+      d >> logicalOp;
+		  f.mExpr.emplace_back(p, logicalOp);
+	}while(!d.eof() && !d.error());
 	if(d.error())
 		throw MetaFilterError();
 	return d;

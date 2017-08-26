@@ -23,6 +23,7 @@ class DeSerializer{
     DeSerializer(Iterator start, Iterator end) : mI(start), mEnd(end), mError(false){}
 
     const Iterator& iterator() const{return mI;}
+    bool eof() const { return mI==mEnd; }
     bool error() const{return mError;}
 
 

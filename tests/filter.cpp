@@ -159,7 +159,7 @@ TEST_F(FilterTestSuite, basicSerializationTest) {
   s << filter0(filter::s0);
   ref = {0, time, cgt};
   Serializer<decltype(i)> sTemp = Serializer<decltype(i)>(back_inserter(ref));
-  sTemp << c0 << nop;
+  sTemp << c0;
 	EXPECT_EQ(buffer, ref);
 	uint16_t count = buffer.size();
 
@@ -203,7 +203,7 @@ TEST_F(FilterTestSuite, extendedSerializationTest) {
   Serializer<decltype(i)> s(i);
 
   s << filter0(filter::s0, filter::s1);
-  ref = {0, time, gt, 1, time, nop};
+  ref = {0, time, gt, 1, time};
 	EXPECT_EQ(buffer, ref);
 	uint16_t count = buffer.size();
   buffer.clear();
@@ -244,62 +244,83 @@ TEST_F(FilterTestSuite, compositeSerializationTest) {
   Serializer<decltype(i)> s(i);
 
   s << filter0(filter::s0, filter::s1);
-  ref={0, pos, ne, 1, pos, lAnd, 0, time, gt, 1, time, nop};
+  ref={0, pos, ne, 1, pos, lAnd, 0, time, gt, 1, time};
 	EXPECT_EQ(buffer, ref);
 
   buffer.clear();
 
 	s << filter1(filter::s0, filter::s1);
-  ref={0, pos, ne, 1, pos, lOr, 0, time, gt, 1, time, nop};
+  ref={0, pos, ne, 1, pos, lOr, 0, time, gt, 1, time};
 	EXPECT_EQ(buffer, ref);
 }
 
 
 TEST_F(FilterTestSuite, metaFilterBasicTest) {
 
-	std::vector<uint8_t> buffer({0, time, gt, 1, time, nop, 0, time, lt, 1, time, nop, 0, time, eq, 1, time, nop, 0, time, ne, 1, time, nop, 0, time, ge, 1, time, nop, 0, time, le, 1, time, nop});
-
-	DeSerializer<std::vector<uint8_t>::const_iterator> d(buffer.cbegin(), buffer.cend());
+	std::vector<std::vector<uint8_t>> buffers = {
+    {0, time, gt, 1, time},
+    {0, time, lt, 1, time},
+    {0, time, eq, 1, time},
+    {0, time, ne, 1, time},
+    {0, time, ge, 1, time},
+    {0, time, le, 1, time},
+  };
 	std::vector<const EventType*> types={&eventType, &eventType};
-	MetaFilter filter0(types), filter1(types), filter2(types), filter3(types), filter4(types), filter5(types);
-	d >> filter0 >> filter1 >> filter2 >> filter3 >> filter4 >> filter5;
+	std::vector<MetaFilter> filters(6, types);
+  size_t i=0;
+  for(const auto& buffer : buffers) {
+	  DeSerializer<std::vector<uint8_t>::const_iterator> d(buffer.cbegin(), buffer.cend());
+	  EXPECT_NO_THROW(d >> filters[i++]);
+  }
 
   MetaEvent trueMetaEvent(eventType), falseMetaEvent(eventType), compMetaEvent(eventType);
 
 	std::vector<const MetaEvent*> trueEvents = {&trueMetaEvent, &compMetaEvent};
 	std::vector<const MetaEvent*> falseEvents= {&falseMetaEvent, &compMetaEvent};
 
-  buffer.clear();
+  std::vector<uint8_t> buffer;
   Serializer<decltype(back_inserter(buffer))> s(back_inserter(buffer));
 	s << compEvent << trueEvent << falseEvent;
-  d = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.cbegin(), buffer.cend());
+  DeSerializer<std::vector<uint8_t>::const_iterator> d(buffer.cbegin(), buffer.cend());
 	d >> compMetaEvent >> trueMetaEvent >> falseMetaEvent;
 
-	EXPECT_TRUE(filter0(trueEvents))   << "False negative:\n" << *trueEvents[0]  <<  filter0 << "\n" << *trueEvents[1] ;
-  EXPECT_FALSE(filter0(falseEvents)) << "False positive:\n" << *falseEvents[0] <<  filter0 << "\n" << *falseEvents[1];
-  EXPECT_TRUE(filter1(falseEvents))  << "False negative:\n" << *falseEvents[0] <<  filter1 << "\n" << *falseEvents[1];
-  EXPECT_FALSE(filter1(trueEvents))  << "False positive:\n" << *trueEvents[0]  <<  filter1 << "\n" << *trueEvents[1] ;
-  EXPECT_FALSE(filter2(falseEvents)) << "False positive:\n" << *falseEvents[0] <<  filter2 << "\n" << *falseEvents[1];
-  EXPECT_FALSE(filter2(trueEvents))  << "False positive:\n" << *trueEvents[0]  <<  filter2 << "\n" << *trueEvents[1] ;
-  EXPECT_TRUE(filter3(trueEvents))   << "False negative:\n" << *trueEvents[0]  <<  filter3 << "\n" << *trueEvents[1] ;
-  EXPECT_TRUE(filter3(falseEvents))  << "False negative:\n" << *falseEvents[0] <<  filter3 << "\n" << *falseEvents[1];
-  EXPECT_TRUE(filter4(trueEvents))   << "False negative:\n" << *trueEvents[0]  <<  filter4 << "\n" << *trueEvents[1] ;
-  EXPECT_FALSE(filter4(falseEvents)) << "False positive:\n" << *falseEvents[0] <<  filter4 << "\n" << *falseEvents[1];
-  EXPECT_TRUE(filter5(falseEvents))  << "False negative:\n" << *falseEvents[0] <<  filter5 << "\n" << *falseEvents[1];
-  EXPECT_FALSE(filter5(trueEvents))  << "False positive:\n" << *trueEvents[0]  <<  filter5 << "\n" << *trueEvents[1] ;
+	EXPECT_TRUE(filters[0](trueEvents))   << "False negative:\n" << *trueEvents[0]
+                                        <<  filters[0] << "\n" << *trueEvents[1];
+  EXPECT_FALSE(filters[0](falseEvents)) << "False positive:\n" << *falseEvents[0]
+                                        <<  filters[0] << "\n" << *falseEvents[1];
+  EXPECT_TRUE(filters[1](falseEvents))  << "False negative:\n" << *falseEvents[0]
+                                        <<  filters[1] << "\n" << *falseEvents[1];
+  EXPECT_FALSE(filters[1](trueEvents))  << "False positive:\n" << *trueEvents[0]
+                                        <<  filters[1] << "\n" << *trueEvents[1];
+  EXPECT_FALSE(filters[2](falseEvents)) << "False positive:\n" << *falseEvents[0]
+                                        <<  filters[2] << "\n" << *falseEvents[1];
+  EXPECT_FALSE(filters[2](trueEvents))  << "False positive:\n" << *trueEvents[0]
+                                        <<  filters[2] << "\n" << *trueEvents[1];
+  EXPECT_TRUE(filters[3](trueEvents))   << "False negative:\n" << *trueEvents[0]
+                                        <<  filters[3] << "\n" << *trueEvents[1];
+  EXPECT_TRUE(filters[3](falseEvents))  << "False negative:\n" << *falseEvents[0]
+                                        <<  filters[3] << "\n" << *falseEvents[1];
+  EXPECT_TRUE(filters[4](trueEvents))   << "False negative:\n" << *trueEvents[0]
+                                        <<  filters[4] << "\n" << *trueEvents[1];
+  EXPECT_FALSE(filters[4](falseEvents)) << "False positive:\n" << *falseEvents[0]
+                                        <<  filters[4] << "\n" << *falseEvents[1];
+  EXPECT_TRUE(filters[5](falseEvents))  << "False negative:\n" << *falseEvents[0]
+                                        <<  filters[5] << "\n" << *falseEvents[1];
+  EXPECT_FALSE(filters[5](trueEvents))  << "False positive:\n" << *trueEvents[0]
+                                        <<  filters[5] << "\n" << *trueEvents[1];
 }
 
 
 TEST_F(FilterTestSuite, metaFilterFuncTest) {
 
   auto filter1 = uncertainty(e0[Position()]) > e1[Position()];
-	std::vector<uint8_t> compBuffer;
-  auto i = back_inserter(compBuffer);
-  Serializer<decltype(i)> s(i);
+  auto filterExpr = filter1(filter::s0, filter::s1);
+	std::vector<uint8_t> compBuffer(decltype(filterExpr)::size());
+  Serializer<decltype(compBuffer.begin())> s(compBuffer.begin());
 
-  s << filter1(filter::s0, filter::s1);
+  s << filterExpr;
 
-	std::vector<uint8_t> buffer({0, pos, unc, gt, 1, pos, nop});
+	std::vector<uint8_t> buffer({0, pos, unc, gt, 1, pos});
   EXPECT_EQ(buffer, compBuffer);
 
   DeSerializer<std::vector<uint8_t>::const_iterator> d(buffer.cbegin(), buffer.cend());
@@ -311,8 +332,8 @@ TEST_F(FilterTestSuite, metaFilterFuncTest) {
 
 	std::vector<const MetaEvent*> trueEvents = {&trueMetaEvent, &compMetaEvent};
 	std::vector<const MetaEvent*> falseEvents= {&falseMetaEvent, &compMetaEvent};
-  buffer.clear();
-  s = Serializer<decltype(back_inserter(buffer))>(back_inserter(buffer));
+  buffer.resize(3*decltype(compEvent)::size());
+  s = Serializer<decltype(buffer.begin())>(buffer.begin());
 	s << compEvent << trueEvent << falseEvent;
   d = DeSerializer<std::vector<uint8_t>::const_iterator>(buffer.cbegin(), buffer.cend());
 	d >> compMetaEvent >> trueMetaEvent >> falseMetaEvent;
