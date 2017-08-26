@@ -13,8 +13,10 @@
 #include <boost/mpl/plus.hpp>
 #include <boost/mpl/fold.hpp>
 #include <boost/mpl/int.hpp>
+#include <boost/mpl/bool.hpp>
 #include <boost/mpl/transform.hpp>
 #include <boost/mpl/for_each.hpp>
+#include <boost/mpl/sort.hpp>
 
 
 template<Endianess e=hostEndianess, typename... Attributes>
@@ -130,20 +132,27 @@ class Event : public Attributes...
   template<typename PB, Endianess end,typename... Attrs> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, Event<end, Attrs...>&);
 };
 
+struct AttributeLess {
+  template<typename A, typename B>
+  struct apply {
+    using type = boost::mpl::bool_< A::IDType::value() < B::IDType::value() >;
+  };
+};
+
 template<typename PB, Endianess end,typename... Attrs>
 Serializer<PB>& operator<<(Serializer<PB>& s, const Event<end, Attrs...>& e){
   using E = Event<end, Attrs...>;
   using Helper = typename E::template SerializationHelper<Serializer<PB>>;
-  using AttrList = typename E::AttributeList;
+  using AttrList = typename boost::mpl::sort<typename E::AttributeList, AttributeLess>::type;
   boost::mpl::for_each<AttrList>(Helper(s,e));
   return s;
 }
 
 template<typename PB, Endianess end,typename... Attrs>
-DeSerializer<PB>& operator>>(DeSerializer<PB>& s, Event<end, Attrs...>& e){
+DeSerializer<PB>& operator>>(DeSerializer<PB>& d, Event<end, Attrs...>& e){
   using E = Event<end, Attrs...>;
   using Helper = typename E::template DeSerializationHelper<DeSerializer<PB>>;
-  using AttrList = typename E::AttributeList;
-  boost::mpl::for_each<AttrList>(Helper(s,e));
-  return s;
+  using AttrList = typename boost::mpl::sort<typename E::AttributeList, AttributeLess>::type;
+  boost::mpl::for_each<AttrList>(Helper(d,e));
+  return d;
 }

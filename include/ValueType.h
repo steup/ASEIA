@@ -9,8 +9,8 @@ class ValueType{
   private:
     id::type::ID mTypeId         = id::type::Base::value();
     bool         mHasUncertainty = false;
-    int32_t      mRows           = 1;
-    int32_t      mCols           = 1;
+    int32_t      mRows           = 0;
+    int32_t      mCols           = 0;
   public:
     union Converter{
       uint8_t data;
@@ -25,15 +25,33 @@ class ValueType{
 
     ValueType(id::type::ID id, int32_t rows, int32_t cols, bool u) : mTypeId(id), mHasUncertainty(u), mRows(rows), mCols(cols) { }
     
-    id::type::ID typeId()         const;
-    bool         hasUncertainty() const;
-    uint32_t     cols()              const;
-    uint32_t     rows()              const;
+    id::type::ID typeId()         const { return mTypeId; }
+    bool         hasUncertainty() const { return mHasUncertainty; }
+    uint32_t     cols()           const { return mCols; }
+    uint32_t     rows()           const { return mRows; }
+
+    void typeId(id::type::ID id) { mTypeId = id; }
+    void hasUncertainty(bool u)  { mHasUncertainty = u; }
+    void cols(uint32_t n)        { mCols = n; }
+    void rows(uint32_t n)        { mRows = n; }
 
     static constexpr unsigned int size() { return sizeof(mTypeId) + sizeof(mRows) + sizeof(mCols);}
 
-    bool operator==(const ValueType& b) const;
+    bool operator==(const ValueType& b) const {
+      return    mTypeId         == b.mTypeId
+             && mHasUncertainty == b.mHasUncertainty
+             && mRows           == b.mRows
+             && mCols           == b.mCols;
+    }
     bool operator!=(const ValueType& b) const { return !(*this==b); }
+    std::size_t operator-(const ValueType& b) const {
+      std::size_t value=0;
+      value+=mTypeId!=b.mTypeId?1:0;
+      value+=mHasUncertainty^b.mHasUncertainty?1:0;
+      value+=abs(mRows-b.mRows);
+      value+=abs(mCols-b.mCols);
+      return value;
+    }
 
     template<typename I> friend DeSerializer<I>& operator>>(DeSerializer<I>&, ValueType&);
 };

@@ -16,7 +16,7 @@ enum class Endianess : uint8_t
 #endif
 
 template<std::size_t n>
-void byteSwap(std::uint8_t* s)
+void byteSwap(uint8_t* s)
 {
   static_assert(n==2||n==4||n==8, "Only storages of size 2, 4 or 8 can be byte swapped");
   for(std::uint8_t i=0;i<n/2;i++)

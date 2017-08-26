@@ -7,6 +7,10 @@ const EventType::ValueType& EventType::const_iterator::operator*() const {
   return mI->second;
 }
 
+const EventType::ValueType* EventType::const_iterator::operator->() const { 
+  return &mI->second;
+}
+
 EventType::const_iterator& EventType::const_iterator::operator++() {
 	++mI;
 	return *this;
@@ -26,11 +30,11 @@ EventType::const_iterator EventType::end() const {
   return const_iterator(mStorage.cend()); 
 }
 
-bool EventType::const_iterator::operator==(const const_iterator& b){
+bool EventType::const_iterator::operator==(const const_iterator& b) const {
 	return mI==b.mI;
 }
 
-bool EventType::const_iterator::operator!=(const const_iterator& b) {
+bool EventType::const_iterator::operator!=(const const_iterator& b) const {
 	return mI!=b.mI;
 }
 
@@ -42,10 +46,15 @@ const AttributeType* EventType::attribute(KeyType key) const{
     return &i->second;
 }
 
-bool EventType::operator==(const EventType& b) const{
-  if(mStorage.size() != b.mStorage.size())
-    return false;
+AttributeType* EventType::attribute(KeyType key) {
+  auto i = mStorage.find(key);
+  if(i == mStorage.end())
+    return NULL;
+  else
+    return &i->second;
+}
 
+bool EventType::operator<=(const EventType& b) const {
   for( const auto& p : mStorage ){
     auto i = b.mStorage.find(p.first);
     if( i == b.mStorage.end())
@@ -56,7 +65,30 @@ bool EventType::operator==(const EventType& b) const{
   return true;
 }
 
-uint8_t EventType::length() const { 
+bool EventType::operator<(const EventType& b) const {
+  if(mStorage.size() >= b.mStorage.size())
+    return false;
+  return *this <= b;
+}
+
+bool EventType::operator==(const EventType& b) const{
+  if(mStorage.size() != b.mStorage.size())
+    return false;
+  return *this <= b;
+}
+
+size_t EventType::operator-(const EventType& b) const{
+  size_t value=0;
+  for( const auto& p : mStorage ){
+    auto i = b.mStorage.find(p.first);
+    if( i == b.mStorage.end())
+      continue;
+    value+=p.second - i->second;
+  }
+  return value;
+}
+
+uint8_t EventType::length() const {
   return mStorage.size();
 }
 

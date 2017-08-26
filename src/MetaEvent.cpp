@@ -1,4 +1,5 @@
 #include <MetaEvent.h>
+#include <EventID.h>
 #include <memory>
 
 using namespace std;
@@ -25,17 +26,31 @@ const MetaAttribute* MetaEvent::attribute(id::attribute::ID id) const {
     return nullptr;
 }
 
-MetaEvent::MetaEvent(const EventType& eT) {
-	for(const AttributeType& aT: eT)
-		add(MetaAttribute(aT));
-}
-
 MetaAttribute* MetaEvent::attribute(id::attribute::ID id){
 	Storage::iterator iter = mStorage.find(id);
 	if(iter != mStorage.end())
     return &(iter->second);
   else
     return nullptr;
+}
+
+MetaEvent::MetaEvent(const EventType& eT) {
+	for(const AttributeType& aT: eT)
+		add(MetaAttribute(aT));
+}
+
+MetaEvent& MetaEvent::operator=(const MetaEvent& copy) {
+  if(mStorage.size()==0) {
+    mStorage = copy.mStorage;
+    return *this;
+  }
+
+  for(Storage::value_type& v : mStorage) {
+    Storage::const_iterator it = copy.mStorage.find(v.first);
+    if(it!=copy.mStorage.end())
+      v.second = it->second;
+  }
+  return *this;
 }
 
 bool MetaEvent::add(const MetaAttribute& mA) {
@@ -65,6 +80,55 @@ bool MetaEvent::operator==(const MetaEvent& b) const {
       return false;
   }
   return true;
+}
+
+
+bool MetaEvent::compatible(const MetaEvent& b) const {
+  return EventID(*this) <= EventID(b);
+}
+
+bool MetaEvent::valid() const {
+ bool valid = true;
+ for(const MetaAttribute& a: *this)
+  valid &= a.valid();
+ return valid;
+}
+
+MetaEvent& MetaEvent::operator+=(const MetaEvent& b) {
+  if(!compatible(b))
+    mStorage.clear();
+  else
+    for(MetaAttribute& a: *this)
+      a+=b[a.id()];
+  return *this;
+}
+
+MetaEvent& MetaEvent::operator-=(const MetaEvent& b) {
+  if(!compatible(b))
+    mStorage.clear();
+  else
+    for(MetaAttribute& a: *this)
+      a-=b[a.id()];
+  return *this;
+}
+
+MetaEvent& MetaEvent::operator*=(const MetaValue& b) {
+  for(MetaAttribute& a: *this)
+    a.value()*=b;
+  return *this;
+}
+
+MetaEvent& MetaEvent::operator/=(const MetaValue& b) {
+  for(MetaAttribute& a: *this)
+    a.value()/=b;
+  return *this;
+}
+
+MetaEvent operator*(const MetaValue& a, const MetaEvent& b) {
+  MetaEvent temp(b);
+  for(MetaAttribute& attr: temp)
+    attr=a*attr;
+  return temp;
 }
 
 MetaEvent::operator EventType() const {

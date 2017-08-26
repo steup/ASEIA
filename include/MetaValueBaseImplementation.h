@@ -30,19 +30,38 @@ class MetaValueBaseImplementation {
 		};
 
 		enum class UnaryOp {
-			Neg
+      Sin,
+      Cos,
+      Tan,
+      ASin,
+      ACos,
+      ATan,
+      Abs,
+      Min,
+      Max,
+      Sqrt
     };
 
     enum class UnaryConstOp {
+			Neg,
 			Prod,
-      Sum
+      Sum,
+      Norm,
+      Transpose,
+      Zero,
+      Ones,
+      ZeroValue,
+      Identity,
+      Value,
+      Uncertainty
     };
 
 		enum class BinaryOp {
 			Add,
 			Sub,
 			Mul,
-			Div
+			Div,
+      EMul
 		};
 
 		enum class BinaryConstOp {
@@ -54,7 +73,6 @@ class MetaValueBaseImplementation {
 			NotEqual,
 			ApproxEqual
 		};
-
 	public:
     using Ptr = std::unique_ptr<Interface>;
 
@@ -67,9 +85,10 @@ class MetaValueBaseImplementation {
 		virtual const uint8_t* end() const {return nullptr;}
 		virtual uint8_t* end() {return nullptr;}
 
-  public:
     MetaValueBaseImplementation() = default;
-
+  public:
+    using ElemInitType = std::initializer_list<double>;
+    static Ptr instance() { return Ptr(new MetaValueBaseImplementation()); }
     virtual ~MetaValueBaseImplementation() = default;
 
 		Interface& operator=(const Interface& copy) = delete;
@@ -84,17 +103,22 @@ class MetaValueBaseImplementation {
 
 		virtual bool set(Attributes a, Data d);
 
-    virtual bool set(std::size_t row, std::size_t col, const ValueElement<double, true>& v);
+    virtual bool set(std::size_t row, std::size_t col, ElemInitType elem);
 
-		virtual Interface& unaryOp( UnaryOp op);
+		virtual bool unaryOp( UnaryOp op);
 
     virtual Ptr unaryConstOp( UnaryConstOp op) const;
 
-		virtual Interface& binaryOp( BinaryOp op, const Interface& b);
+		virtual bool binaryOp( BinaryOp op, const Interface& b);
 
 		virtual Ptr binaryConstOp( BinaryConstOp op, const Interface& b ) const;
 
-		virtual Interface& scale(const MetaScale& scale, bool invert = false);
+    virtual bool block(size_t i, size_t j, Ptr&&);
+    virtual Ptr block(size_t i, size_t j, size_t numI, size_t numJ) const;
+    virtual Ptr col(size_t col) const;
+    virtual Ptr row(size_t row) const;
+
+		virtual bool scale(const MetaScale& scale, bool invert = false);
 
     virtual std::ostream& print( std::ostream& o ) const;
 

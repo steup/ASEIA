@@ -1,3 +1,5 @@
+
+#include <gtest/gtest.h>
 #include <MetaEvent.h>
 #include <MetaAttribute.h>
 #include <MetaValue.h>
@@ -32,29 +34,43 @@ class MetaSerializationSuite : public ::testing::Test {
 };
 
 TEST_F(MetaSerializationSuite, 1value8Test) {
-  MetaValue v = f.create({{{0,0}}}, UInt8::value());
+  MetaValue v({{{0,0}}}, UInt8::value());
   Buffer comp={0,0};
   s << v;
   check(comp);
 }
 
 TEST_F(MetaSerializationSuite, 2value8Test) {
-  MetaValue v = f.create({{{0,0},{1,0}}}, UInt8::value());
+  MetaValue v({{{0,0},{1,0}}}, UInt8::value());
   Buffer comp={0,0,1,0};
   s << v;
   check(comp);
 }
 
 TEST_F(MetaSerializationSuite, 4value8Test) {
-  MetaValue v = f.create({{{0,0},{1,0}},{{2,0},{3,0}}}, UInt8::value());
+  MetaValue v({{{0,0},{1,0}},{{2,0},{3,0}}}, UInt8::value());
   Buffer comp={0,0,2,0,1,0,3,0};
   s << v;
   check(comp);
 }
 
-TEST_F(MetaSerializationSuite, 1value64Test) {
-  MetaValue v = f.create({{{1024,2048}}}, UInt64::value());
-  Buffer comp={0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+TEST_F(MetaSerializationSuite, 1value32Test) {
+  MetaValue v({{{1024,2048}}}, UInt32::value());
+  Buffer comp={0x00, 0x04, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00};
+  s << v;
+  check(comp);
+}
+
+TEST_F(MetaSerializationSuite, 4value32Test) {
+  MetaValue v({{{1,2}, {4, 8}}, {{16, 32}, {64, 128}}}, UInt32::value());
+  Buffer comp={0x01, 0x00, 0x00, 0x00,
+               0x02, 0x00, 0x00, 0x00,
+               0x10, 0x00, 0x00, 0x00,
+               0x20, 0x00, 0x00, 0x00,
+               0x04, 0x00, 0x00, 0x00,
+               0x08, 0x00, 0x00, 0x00,
+               0x40, 0x00, 0x00, 0x00,
+               0x80, 0x00, 0x00, 0x00};
   s << v;
   check(comp);
 }
@@ -63,9 +79,9 @@ TEST_F(MetaSerializationSuite, 1value64Test) {
 
 TEST_F(MetaSerializationSuite, attributeTest) {
   MetaAttribute attr(Position::value());
-  attr.value() = f.create({{{0,0}}}, UInt8::value());
+  attr.value() = MetaValue({{{0,0}}}, UInt8::value());
   attr.unit() = Meter();
-  attr.scale() = ratio<1, 1000>();
+  attr.scale() = Scale<std::milli>();
   Buffer comp={0,0};
   s << attr;
   check(comp);
@@ -76,7 +92,7 @@ TEST_F(MetaSerializationSuite, eventTest) {
   e.add(MetaAttribute(Position::value()));
   MetaAttribute* attrPtr = e.attribute(Position::value());
   ASSERT_NE(attrPtr, nullptr) << "The specified attribute is not contained in the event";
-  attrPtr->value() = f.create({{{0,0}}}, UInt8::value());
+  attrPtr->value() = MetaValue({{{0,0}}}, UInt8::value());
   Buffer comp={0,0};
   s << e;
   check(comp);

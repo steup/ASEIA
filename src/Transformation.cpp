@@ -1,95 +1,41 @@
 #include <Transformation.h>
 
 #include <KnowledgeBase.h>
-#include <MetaEvent.h>
 #include <EventType.h>
 #include <IO.h>
-#include <IDIO.h>
 
 #include <iostream>
 
-class ScaleTransformer : public Transformer {
-  private:
-    using Storage = std::map<id::attribute::ID, MetaScale>;
-    Storage mScaleDeltas;
+using namespace std;
 
-	public:
-    ScaleTransformer(const EventType& out, const EventTypes& in)
-			: Transformer(out, in)
-		{
-      if(in.size()!=1 || !in.front())
-        return;
-      const EventType& b = *in.front();
-      for(const AttributeType& aT : out) {
-        const AttributeType* temp = b.attribute(aT.id());
-        if(!temp || aT.scale() == temp->scale())
-          continue;
+/** \todo ignore sorting of input EventTypes **/
+bool AbstractConfiguredTransformation::operator==(const AbstractConfiguredTransformation& b) const {
+  return mOut == b.out() && mIn == b.in();
+}
 
-				MetaScale mod=aT.scale();
-				mod/=temp->scale();
-        mScaleDeltas.insert(std::make_pair(aT.id(), mod));
-      }
-    }
+Transformation::Transformation(Type type, size_t arity, const EventID& out)
+  : mOut(out), mType(type), mArity(arity) {
+}
 
-    virtual bool check(const Events& events) const {
-      return true;
-    }
+Transformation::~Transformation() {
+}
 
-    virtual MetaEvent operator()(const Events& events) {
-      if (events.size() != 1 || !events.front())
-        return MetaEvent(mOut);
-      MetaEvent e = *events.front();
-      for(MetaAttribute& a : e) {
-        auto it = mScaleDeltas.find(a.id());
-        if(it != mScaleDeltas.end())
-          a*=it->second;
-      }
-      return e;
-    }
-
-    virtual void print(std::ostream& o) const {
-      o << "Rescale " << EventID(mOut) << ": \n";
-      for(const Storage::value_type& scaleOp : mScaleDeltas)
-        o << "\t" << id::attribute::name(scaleOp.first) << ": " << scaleOp.second << "\n";
-    }
-
-};
-
-class ScaleTransformation : public Transformation {
+class InvalidTransformation : public Transformation {
   public:
-		ScaleTransformation()
-			: Transformation(EventID::any, {EventID::any})
-		{	}
-
-    virtual bool check(const EventType& out, const EventTypes& in) const {
-      if(in.size()!=1 || !in.front())
-        return false;
-      const EventType& b = *in.front();
-      if(EventID(out)!=EventID(b))
-        return false;
-      //TODO: check data types
-      return true;
+    InvalidTransformation() : Transformation(Type::invalid, 0, EventID::any) {
     }
-
-    virtual TransPtr create(const EventType& out, const EventTypes& in) const {
-			if(check(out, in))
-				return TransPtr(new ScaleTransformer(out, in));
-			else
-				return TransPtr();
-		}
-
+    virtual vector<EventType> in(const EventType& goal, const EventType& provided, const MetaFilter& filter) const {
+      return {};
+    }
+    virtual TransPtr create(const EventType& out, const EventTypes& in, const AbstractPolicy& policy, const MetaFilter& filter) const {
+      return TransPtr();
+    }
     virtual void print(std::ostream& o) const {
-			o << "Rescale Transformation";
-		}
-} rescale;
+      o << "invalid";
+    }
+    virtual EventIDs in(EventID goal, const MetaFilter& filter) const {
+      return EventIDs();
+    }
+} invalidInstance;
 
-
-Transformation::Transformation(const EventID& out, const EventIDs& in)
-  : mOut(out), mIn(in)
-{
-  KnowledgeBase::registerTransformation(*this);
-}
-
-bool Transformer::operator==(const Transformer& b) const {
-  return mOut == b.mOut && std::equal(mIn.begin(), mIn.begin(), b.mIn.begin());
-}
+const Transformation& Transformation::invalid = invalidInstance;

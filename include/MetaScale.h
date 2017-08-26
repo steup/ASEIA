@@ -8,8 +8,8 @@ class MetaScale : public ScaleType {
   public:
     MetaScale() = default;
 		MetaScale(const ScaleType& copy) : ScaleType(copy) {}
-    template<std::intmax_t num, std::intmax_t denom>
-    MetaScale(const std::ratio<num, denom> scale) : ScaleType(scale) {}
+    template<typename ratio, uint32_t ref>
+    MetaScale(const Scale<ratio, ref>& scale) : ScaleType(scale) {}
 
     MetaScale operator*(const MetaScale& b) const;
     MetaScale operator/(const MetaScale& b) const;

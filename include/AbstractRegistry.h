@@ -5,6 +5,7 @@
 
 #include <utility>
 #include <unordered_map>
+#include <vector>
 
 class EventType;
 
@@ -66,10 +67,10 @@ class AbstractRegistry {
 
     struct Hash {
       std::size_t operator()(const Key& k) const {
-        return k.first;
+        return k.first.value();
       }
     };
-    using Storage = std::unordered_multimap<Key, T, Hash>;
+    using Storage = std::unordered_map<Key, T, Hash>;
     Storage mStorage;
 
   public:
@@ -80,6 +81,7 @@ class AbstractRegistry {
 
     using Range = RegistryRange<const_iterator>;
     using LocalRange = RegistryRange<const_local_iterator>;
+    using EventIDs = std::vector<EventID>;
 
 		void registerType(const EventType& eT, const T& t) {
       mStorage.emplace(Key(eT, eT), t);
@@ -87,6 +89,10 @@ class AbstractRegistry {
 
     void registerType(const EventType& eT, T&& t) {
       mStorage.emplace(Key(eT, eT), std::move(t));
+    }
+
+    void unregisterType(const EventType& eT) {
+      mStorage.erase(Key(eT, eT));
     }
 
     const_iterator begin() const {
@@ -121,5 +127,18 @@ class AbstractRegistry {
 
     bool contains(const EventType& eT) const {
       return contains(eT, eT);
+    }
+
+    EventIDs ids() const {
+      EventIDs temp(mStorage.size());
+      auto transFunc =  [](const typename Storage::value_type& v){ return v.first.eventID(); };
+      transform(mStorage.begin(), mStorage.end(), temp.begin(), transFunc);
+      sort(temp.begin(), temp.end(), EventID::comp);
+      temp.erase(unique(temp.begin(), temp.end()), temp.end());
+      return temp;
+    }
+
+    void clear() {
+      mStorage.clear();
     }
 };

@@ -7,8 +7,8 @@ using Interface = MVBI::Interface;
 using Ptr       = MVBI::Ptr;
 using Data      = MVBI::Data;
 
-Interface& MVBI::operator=( Interface&& movee) { 
-	return *this; 
+Interface& MVBI::operator=( Interface&& movee) {
+	return *this;
 }
 
 Ptr MVBI::copy() const {
@@ -40,32 +40,46 @@ ValueElement<double, true> MetaValueBaseImplementation::get(std::size_t row, std
     return ValueElement<double, true>();
 }
 
-bool MetaValueBaseImplementation::set(std::size_t row, std::size_t col, const ValueElement<double, true>& v) {
+bool MetaValueBaseImplementation::set(std::size_t row, std::size_t col, ElemInitType elem) {
   return false;
 }
 
-Interface& MVBI::unaryOp( UnaryOp op) {
-	return *this; 
+bool MVBI::unaryOp( UnaryOp op) {
+	return false;
 }
 
-Ptr MVBI::unaryConstOp( UnaryConstOp op ) const { 
+Ptr MVBI::unaryConstOp( UnaryConstOp op ) const {
 	return copy();
-} 
-
-Interface& MVBI::binaryOp( BinaryOp op, const Interface& b) { 
-	return *this;	
 }
 
-Ptr MVBI::binaryConstOp( BinaryConstOp op, const Interface& b ) const { 
-	return copy();
-} 
-		
-Interface& MVBI::scale(const MetaScale& scale, bool invert){
-	return *this;
+bool MVBI::binaryOp( BinaryOp op, const Interface& b) {
+	return false;
 }
-		
-ostream& MVBI::print( ostream& o ) const { 
-      return o << "void"; 
+
+Ptr MVBI::binaryConstOp( BinaryConstOp op, const Interface& b ) const {
+  return copy();
+}
+
+MVBI::Ptr MVBI::block(size_t i, size_t j, size_t numI, size_t numJ) const {
+  return copy();
+}
+
+bool MVBI::block(size_t i, size_t j, Ptr&&){
+  return false;
+}
+MVBI::Ptr MVBI::col(size_t col) const {
+  return copy();
+}
+MVBI::Ptr MVBI::row(size_t row) const {
+  return copy();
+}
+
+bool MVBI::scale(const MetaScale& scale, bool invert){
+	return false;
+}
+
+ostream& MVBI::print( ostream& o ) const {
+      return o << "void";
 }
 
 ostream& operator<<( ostream& o, const MVBI& mvbi) {

@@ -1,4 +1,7 @@
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include <Channel.h>
+#include <BaseEvent.h>
 
 namespace test {
 
@@ -11,12 +14,10 @@ struct ChannelTestSuite : public ::testing::Test{
   using EventTypes = Transformer::EventTypes;
   using TransPtr   = Transformation::TransPtr;
 
-  struct TestTransformer : public Transformer {
-    EventType dummy;
-    TestTransformer() : Transformer(EventType(), {&dummy}) {}
-    MOCK_CONST_METHOD1(check, bool(const Events&));
-    MOCK_METHOD1(call, MetaEvent(const Events&));
-    virtual MetaEvent operator()(const Events& events) { return call(events); }
+  struct TestTransformer : public SimpleTransformer {
+    TestTransformer() : SimpleTransformer(EventType(), EventType()) {}
+    MOCK_CONST_METHOD1(check, bool(const MetaEvent&));
+    MOCK_CONST_METHOD1(execute, MetaEvent(const MetaEvent&));
     MOCK_CONST_METHOD1(print, void(std::ostream&));
   };
 
@@ -24,6 +25,7 @@ struct ChannelTestSuite : public ::testing::Test{
     TestChannel() : Channel(TransPtr(new TestTransformer())) { }
 
     MOCK_CONST_METHOD1(publishEvent, void(const MetaEvent& e));
+    MOCK_CONST_METHOD2(error, void(Errors, const MetaEvent&));
     void handleEvent() { Channel::handleEvent(MetaEvent()); }
     Transformer* trans() { return mTrans.get(); }
   } c;
@@ -31,7 +33,8 @@ struct ChannelTestSuite : public ::testing::Test{
 
 TEST_F(ChannelTestSuite, failedSingleTransformTest) {
   ASSERT_TRUE(c.trans());
-	EXPECT_CALL(dynamic_cast<TestTransformer&>(*c.trans()), call(_))
+	EXPECT_CALL(c, error(_,_)).Times(0);
+	EXPECT_CALL(dynamic_cast<TestTransformer&>(*c.trans()), execute(_))
 		.Times(0);
   EXPECT_CALL(dynamic_cast<const TestTransformer&>(*c.trans()), check(_))
     .Times(AtLeast(1))
@@ -42,11 +45,10 @@ TEST_F(ChannelTestSuite, failedSingleTransformTest) {
 }
 
 TEST_F(ChannelTestSuite, succededTransformTest) {
-	MetaEvent e;
-	MetaAttribute a;
-	e.add(a);
+	MetaEvent e((EventType)BaseEvent<>());
   ASSERT_TRUE(c.trans());
-	EXPECT_CALL(dynamic_cast<TestTransformer&>(*c.trans()), call(_))
+	EXPECT_CALL(c, error(_,_)).Times(0);
+	EXPECT_CALL(dynamic_cast<TestTransformer&>(*c.trans()), execute(_))
 		.Times(1)
 		.WillRepeatedly(Return(e));
   EXPECT_CALL(dynamic_cast<const TestTransformer&>(*c.trans()), check(_))

@@ -1,3 +1,5 @@
+
+#include <gtest/gtest.h>
 #include <FormatID.h>
 #include <EventType.h>
 
@@ -40,11 +42,22 @@ TEST(FormatIDTestSuite, ValueCompTest) {
     EventType eT5;
     eT5.add(aT5);
     FormatID f5(eT5);
+    AttributeType aT6(Base::value(), vT0, ScaleType(1,1,1), Meter());
+    EventType eT6;
+    eT6.add(aT6);
+    FormatID f6(eT6);
     EXPECT_EQ(f0, f1) << "FormatID of same event types is not the same";
+    EXPECT_EQ(eT0-eT1, 0U) << "EventTypes difference of same event types is not 0";
     EXPECT_NE(f0, f2) << "FormatID of events with different value types are the same";
+    EXPECT_NE(eT0-eT2, 0U) << "EventTypes difference of different event types is 0";
     EXPECT_NE(f0, f3) << "FormatID of events with different value types are the same";
+    EXPECT_NE(eT0-eT3, 0U) << "EventTypes difference of different event types is 0";
     EXPECT_NE(f0, f4) << "FormatID of events with different value types are the same";
+    EXPECT_NE(eT0-eT4, 0U) << "EventTypes difference of different event types is 0";
     EXPECT_NE(f0, f5) << "FormatID of events with different value types are the same";
+    EXPECT_NE(eT0-eT5, 0U) << "EventTypes difference of different event types is 0";
+    EXPECT_NE(f0, f6) << "FormatID of events with different value types are the same";
+    EXPECT_NE(eT0-eT6, 0U) << "EventTypes difference of different event types is 0";
 }
 
 }}

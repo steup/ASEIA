@@ -72,6 +72,13 @@ class UnitType{
 		bool operator!=(const UnitType& b) const {
       return !(*this==b);
     }
+
+    std::size_t operator-(const UnitType& b) const {
+      std::size_t value=0;
+      for(unsigned int i=0; i<id::unit::NumDim::value; i++)
+        value+=abs(mStorage[i]-b.mStorage[i]);
+      return value;
+    }
   
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, UnitType&);
 

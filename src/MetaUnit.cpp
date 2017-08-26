@@ -5,14 +5,13 @@
 
 using namespace std;
 
-MetaUnit MetaUnit::operator*(const MetaUnit& b) const {
+MetaUnit& MetaUnit::operator*=(const MetaUnit& b){
   MetaUnit temp;
-  transform(begin(), end(), b.begin(), temp.begin(), plus<int8_t>());
-  return temp;
+  transform(begin(), end(), b.begin(), begin(), plus<int8_t>());
+  return *this;
 }
 
-MetaUnit MetaUnit::operator/(const MetaUnit& b) const {
-  MetaUnit temp;
-  transform(begin(), end(), b.begin(), temp.begin(), minus<int8_t>());
-  return temp;
+MetaUnit& MetaUnit::operator/=(const MetaUnit& b) {
+  transform(begin(), end(), b.begin(), begin(), minus<int8_t>());
+  return *this;
 }

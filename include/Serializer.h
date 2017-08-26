@@ -2,6 +2,8 @@
 
 #include <PODConverter.h>
 
+#include <cstddef>
+
 template<typename PacketBufferIterator>
 class Serializer{
   private:
@@ -9,7 +11,7 @@ class Serializer{
     Iterator mI;
     /*Iterator mEnd;*/
     /*bool mError;*/
-    void copyBytes(const uint8_t* bytes, std::size_t n){
+    void copyBytes(const uint8_t* bytes, size_t n){
       while(n--)
         *mI++=*bytes++;
 		}
@@ -29,7 +31,7 @@ class Serializer{
 };
 
 template<typename PB>
-Serializer<PB>& operator<<(Serializer<PB>& s, std::uint8_t value){
+Serializer<PB>& operator<<(Serializer<PB>& s, uint8_t value){
   PODConverter c;
   c.uint8=value;
   s.copyBytes(c.bytes, sizeof(uint8_t));
@@ -37,7 +39,7 @@ Serializer<PB>& operator<<(Serializer<PB>& s, std::uint8_t value){
 }
 
 template<typename PB>
-Serializer<PB>& operator<<(Serializer<PB>& s, std::uint16_t value){
+Serializer<PB>& operator<<(Serializer<PB>& s, uint16_t value){
   PODConverter c;
   c.uint16=value;
   s.copyBytes(c.bytes, sizeof(uint16_t));
@@ -45,7 +47,7 @@ Serializer<PB>& operator<<(Serializer<PB>& s, std::uint16_t value){
 }
 
 template<typename PB>
-Serializer<PB>& operator<<(Serializer<PB>& s, std::uint32_t value){
+Serializer<PB>& operator<<(Serializer<PB>& s, uint32_t value){
   PODConverter c;
   c.uint32=value;
   s.copyBytes(c.bytes, sizeof(uint32_t));
@@ -53,7 +55,7 @@ Serializer<PB>& operator<<(Serializer<PB>& s, std::uint32_t value){
 }
 
 template<typename PB>
-Serializer<PB>& operator<<(Serializer<PB>& s, std::uint64_t value){
+Serializer<PB>& operator<<(Serializer<PB>& s, uint64_t value){
   PODConverter c;
   c.uint64=value;
   s.copyBytes(c.bytes, sizeof(uint64_t));
@@ -61,7 +63,7 @@ Serializer<PB>& operator<<(Serializer<PB>& s, std::uint64_t value){
 }
 
 template<typename PB>
-Serializer<PB>& operator<<(Serializer<PB>& s, std::int8_t value){
+Serializer<PB>& operator<<(Serializer<PB>& s, int8_t value){
   PODConverter c;
   c.int8=value;
   s.copyBytes(c.bytes, sizeof(int8_t));
@@ -69,7 +71,7 @@ Serializer<PB>& operator<<(Serializer<PB>& s, std::int8_t value){
 }
 
 template<typename PB>
-Serializer<PB>& operator<<(Serializer<PB>& s, std::int16_t value){
+Serializer<PB>& operator<<(Serializer<PB>& s, int16_t value){
   PODConverter c;
   c.int16=value;
   s.copyBytes(c.bytes, sizeof(int16_t));
@@ -77,7 +79,7 @@ Serializer<PB>& operator<<(Serializer<PB>& s, std::int16_t value){
 }
 
 template<typename PB>
-Serializer<PB>& operator<<(Serializer<PB>& s, std::int32_t value){
+Serializer<PB>& operator<<(Serializer<PB>& s, int32_t value){
   PODConverter c;
   c.int32=value;
   s.copyBytes(c.bytes, sizeof(int32_t));
@@ -85,7 +87,7 @@ Serializer<PB>& operator<<(Serializer<PB>& s, std::int32_t value){
 }
 
 template<typename PB>
-Serializer<PB>& operator<<(Serializer<PB>& s, std::int64_t value){
+Serializer<PB>& operator<<(Serializer<PB>& s, int64_t value){
   PODConverter c;
   c.int64=value;
   s.copyBytes(c.bytes, sizeof(int64_t));

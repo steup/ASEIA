@@ -31,5 +31,6 @@ ${BTEST}/gmock.o : ${GTEST_HEADER} ${MAKEFILE_LIST} | ${BTEST} ${LOG}
 
 ${LIB}/libgtest.a : ${BTEST}/gtest.o ${BTEST}/gmock.o ${MAKEFILE_LIST} | ${LIB} ${LOG}
 	@echo "Linking Dependancy GTest and GMock $@ <- [$<]" | tee -a ${LOG}/gtest.log
-	@echo "$(AR) $(ARFLAGS) $@ $^" &>> ${LOG}/gtest.log
-	@$(AR) $(ARFLAGS) $@ $^ &>> ${LOG}/gtest.log
+	@echo "${AR} ${ARFLAGS} $@ $^" &>> ${LOG}/gtest.log
+	@${AR} ${ARFLAGS} $@ $^ &>> ${LOG}/gtest.log
+	@${RANLIB} $@

@@ -5,74 +5,197 @@
 #include <IO.h>
 
 #include <memory>
+#include <utility>
 #include <ostream>
 
 using namespace std;
 
 using std::move;
 
-MetaAttribute::MetaAttribute(const AttributeType& at) {
-	mValue = MetaFactory::instance().create(at.value());
-	mUnit = at.unit();
-	mScale = at.scale();
-	mID = at.id();
+MetaAttribute::MetaAttribute(const AttributeType& at)
+  : mID(at.id()), mValue(at.value()), mUnit(at.unit()), mScale(at.scale())
+{}
+
+bool MetaAttribute::check(const MetaAttribute& b) const {
+  //const bool idTest = mID == b.mID;
+  const bool unitTest = mUnit == b.mUnit;
+  const bool scaleTest = mScale.reference() == b.mScale.reference();
+  return  unitTest && scaleTest;
 }
 
-MetaAttribute::MetaAttribute(const MetaAttribute& copy) {
-	*this = copy;
+MetaAttribute::MetaAttribute(const MetaAttribute& b)
+  : mID(b.mID), mValue(b.mValue), mUnit(b.mUnit), mScale(b.mScale)
+{}
+
+MetaAttribute::MetaAttribute(MetaAttribute&& b)
+  : mID(b.mID), mValue(move(b.mValue)), mUnit(b.mUnit), mScale(b.mScale)
+{}
+
+MetaAttribute& MetaAttribute::operator=(const MetaAttribute& b) {
+  if(this==&b)
+    return *this;
+
+  mScale = b.mScale;
+  mUnit = b.mUnit;
+  mValue = b.mValue;
+  return *this;
 }
 
-MetaAttribute::MetaAttribute(MetaAttribute&& movee) {
-	*this = movee;
-}
-MetaAttribute& MetaAttribute::operator=(const MetaAttribute& copy) {
-  mID = copy.mID;
-	mUnit = copy.mUnit;
-  mScale = copy.mScale;
-	mValue = copy.mValue;
-	return *this;
-}
+MetaAttribute& MetaAttribute::operator=(MetaAttribute&& b) {
+  if(this==&b)
+    return *this;
 
-MetaAttribute& MetaAttribute::operator=(MetaAttribute&& copy) {
-	if(&copy != this) {
-    mID = move(copy.mID);
-	  mUnit = move(copy.mUnit);
-	  mScale = move(copy.mScale);
-	  mValue = move(copy.mValue);
-  }
-	return *this;
+  mScale = b.mScale;
+  mUnit = b.mUnit;
+  mValue = move(b.mValue);
+  return *this;
 }
 
 MetaAttribute& MetaAttribute::operator+=(const MetaAttribute& b) {
-	if(!(mUnit == b.mUnit)) {
-		mValue = MetaValue();
-		return *this;
-	}
-	if(!(mScale == b.mScale)) {
-		MetaValue sumB = b.value();
-		sumB*=(b.mScale / mScale);
-		mValue = mValue + sumB;
-	} else
-		mValue = mValue + b.value();
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=mScale/b.mScale;
+    mValue += temp.mValue;
+  } else
+    mValue += b.mValue;
 	return *this;
 }
- 
+
+MetaAttribute& MetaAttribute::operator-=(const MetaAttribute& b) {
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=mScale/b.mScale;
+    mValue -= temp.mValue;
+  } else
+    mValue -= b.mValue;
+	return *this;
+}
+
+MetaAttribute& MetaAttribute::operator*=(const MetaAttribute& b) {
+  mScale *= b.mScale;
+  mValue *= b.mValue;
+  mUnit  *= b.mUnit;
+	return *this;
+}
+
+MetaAttribute& MetaAttribute::operator/=(const MetaAttribute& b) {
+  mScale /= b.mScale;
+  mValue /= b.mValue;
+  mUnit  /= b.mUnit;
+	return *this;
+}
+
 MetaAttribute& MetaAttribute::operator*=(const MetaScale& scale){
   this->scale() *= scale;
   this->value() /= scale;
   return *this;
-}   
-MetaAttribute MetaAttribute::operator*(const MetaScale& scale) const {
-  MetaAttribute temp(*this);
-  return temp*=scale;
 }
 
-bool MetaAttribute::operator==(const MetaAttribute& b) const { 
-	return id() == b.id() &&  (ValueType)value() == (ValueType)b.value() && unit() == b.unit() && scale() == b.scale();
+MetaAttribute& MetaAttribute::operator/=(const MetaScale& scale){
+  this->scale() /= scale;
+  this->value() *= scale;
+  return *this;
 }
- 
+
+MetaAttribute MetaAttribute::norm() const {
+  MetaAttribute temp(*this);
+  temp.value() = temp.value().norm();
+  return temp;
+}
+
+MetaAttribute MetaAttribute::valueOnly() const {
+  MetaAttribute temp(*this);
+  temp.value() = temp.value().value();
+  return temp;
+}
+
+MetaAttribute MetaAttribute::uncertainty() const {
+  MetaAttribute temp(*this);
+  temp.value() = temp.value().uncertainty();
+  return temp;
+}
+
+MetaValue MetaAttribute::operator<(const MetaAttribute& b) const {
+	if(!check(b))
+    return MetaValue();
+
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=b.mScale/mScale;
+    return mValue < temp.mValue;
+  } else
+    return mValue < b.mValue;
+}
+
+MetaValue MetaAttribute::operator<=(const MetaAttribute& b) const {
+	if(!check(b))
+    return MetaValue();
+
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=b.mScale/mScale;
+    return mValue <= temp.mValue;
+  } else
+    return mValue <= b.mValue;
+}
+
+MetaValue MetaAttribute::operator>(const MetaAttribute& b) const {
+	if(!check(b))
+    return MetaValue();
+
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=b.mScale/mScale;
+    return mValue > temp.mValue;
+  } else
+    return mValue > b.mValue;
+}
+
+MetaValue MetaAttribute::operator>=(const MetaAttribute& b) const {
+	if(!check(b))
+    return MetaValue();
+
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=b.mScale/mScale;
+    return mValue >= temp.mValue;
+  } else
+    return mValue >= b.mValue;
+}
+
+MetaValue MetaAttribute::operator==(const MetaAttribute& b) const {
+	if(!check(b))
+    return MetaValue();
+
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=b.mScale/mScale;
+    return mValue == temp.mValue;
+  } else
+    return mValue == b.mValue;
+}
+
+MetaValue MetaAttribute::operator!=(const MetaAttribute& b) const {
+	if(!check(b))
+    return MetaValue();
+
+  if (mScale != b.mScale) {
+    MetaAttribute temp(b);
+    temp*=b.mScale/mScale;
+    return mValue != temp.mValue;
+  } else
+    return mValue != b.mValue;
+}
+
+
 MetaAttribute::operator AttributeType() const {
   return AttributeType(id(), ValueType(value()), scale(), unit());
+}
+
+MetaAttribute operator*(const MetaValue& a, const MetaAttribute& b) {
+  MetaAttribute temp(b);
+  temp.value()=a*temp.value();
+  return temp;
 }
 
 ostream& operator<<(ostream& o, const MetaAttribute& ma) {

@@ -2,33 +2,47 @@
 #include <IDIO.h>
 using namespace ::id::filterOp;
 
-bool MetaPredicate::operator()(const std::vector<MetaEvent>& events) const {
-	auto aPtr = events.at(mE0.num).attribute(mE0.attr);
-	if(!aPtr)
-		return false;
+static const MetaAttribute& extractAttr(uint8_t num, uint8_t attr, const std::vector<const MetaEvent*> events) {
+	const MetaAttribute* aPtr = events[num]->attribute(attr);
+  static const MetaAttribute invalid;
+	return !aPtr?invalid:*aPtr;
+}
 
-	const MetaValue& a = aPtr->value();
-	const MetaValue* b = &mV;
-	if(!mOp.constArg) {
-		const MetaAttribute* bPtr = events.at(mE1.num).attribute(mE1.attr);
-		if(!bPtr)
-			return false;
-		b = &bPtr->value();
-	}
+bool MetaPredicate::operator()(const std::vector<const MetaEvent*>& events) const {
+  MetaAttribute a = extractAttr(mE0Num, mE0Attr, events);
+  for(auto func: mUnaryFuncs)
+    a=(a.*func)();
+	const MetaAttribute& b = !mOp.constArg?extractAttr(mE1Num, mE1Attr, events):mAttr;
 	switch(mOp.code){
-		case(LE::value): return (bool)(a <= *b).prod();
-		case(GE::value): return (bool)(a >= *b).prod();
-		case(LT::value): return (bool)(a  < *b).prod();
-		case(GT::value): return (bool)(a  > *b).prod();
-		case(EQ::value): return (bool)(a == *b).prod();
-		case(NE::value): return (bool)(a != *b).sum();
+		case(LE::value): return (bool)(a <= b).prod();
+		case(GE::value): return (bool)(a >= b).prod();
+		case(LT::value): return (bool)(a  < b).prod();
+		case(GT::value): return (bool)(a  > b).prod();
+		case(EQ::value): return (bool)(a == b).prod();
+		case(NE::value): return (bool)(a != b).sum();
 		default:
 			return false;
 	}
 }
 
+bool MetaPredicate::operator==(const MetaPredicate& b) const {
+  return mE0Num == b.mE0Num && mE0Attr != b.mE0Attr && mOp.code == b.mOp.code;
+  if(mOp.constArg)
+    return (bool)(mAttr == b.mAttr);
+  else
+    return mE0Num == b.mE0Num && mE0Attr == b.mE0Attr;
+}
+
 std::ostream& operator<<(std::ostream& o, const MetaPredicate& p){
-	o << "e" << (uint16_t)p.mE0.num << "[" << id::attribute::name(p.mE0.attr) << "]";
+	o << "e" << (uint16_t)p.mE0Num << "[" << id::attribute::name(p.mE0Attr) << "]";
+  for(auto func : p.func()) {
+    if(func == &MetaAttribute::uncertainty)
+      o << ".uncertainty()";
+    if(func == &MetaAttribute::valueOnly)
+      o << ".valueOnly()";
+    if(func == &MetaAttribute::norm)
+      o << ".norm()";
+  }
 	switch(p.mOp.code) {
 		case(LE::value): o << " <= "; break;
 		case(GE::value): o << " >= "; break;
@@ -39,15 +53,17 @@ std::ostream& operator<<(std::ostream& o, const MetaPredicate& p){
 		default: o << "unknown";
 	}
 	if(p.mOp.constArg)
-		o << p.mV;
+		o << p.mAttr;
 	else
-		o << "e" << (uint16_t)p.mE1.num << "[" << id::attribute::name(p.mE1.attr) << "]";
+		o << "e" << (uint16_t)p.mE1Num << "[" << id::attribute::name(p.mE1Attr) << "]";
 	return o;
 }
 
-bool MetaFilter::operator()(const std::vector<MetaEvent>& events) const {
+bool MetaFilter::operator()(const std::vector<const MetaEvent*>& events) const {
+  if(mTypes.empty())
+    return true;
 	bool result=true;
-	ID op = NOOP::value;
+	ID op = NOP::value;
 	for(const auto& subExpr : mExpr) {
 		bool temp = subExpr.first(events);
 		switch(op){
@@ -55,7 +71,7 @@ bool MetaFilter::operator()(const std::vector<MetaEvent>& events) const {
 								  break;
 			case(OR::value):   result = result || temp;
 								  break;
-			case(NOOP::value): result = temp;
+			case(NOP::value): result = temp;
 												 break;
 			default:    return false;
 		}
@@ -64,11 +80,19 @@ bool MetaFilter::operator()(const std::vector<MetaEvent>& events) const {
 	return result;
 }
 
+bool MetaFilter::operator==(const MetaFilter& b) const {
+  auto bIt = b.mExpr.begin();
+  for(const auto& elem : mExpr)
+    if(bIt == b.mExpr.end() && elem.second != bIt->second && elem.first != bIt++->first)
+    return false;
+  return true;
+}
+
 std::ostream& operator<<(std::ostream& o, const MetaFilter& f){
 	o  << "Filter: ";
 	for(const auto& p : f.mExpr) {
 		o << p.first << " ";
-		if(p.second != MetaFilter::noop)
+		if(p.second != NOP())
 			o << p.second << " ";
 	}
 	return o;

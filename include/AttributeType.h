@@ -25,6 +25,9 @@ class AttributeType{
     const UnitType&   unit() const;
     const ScaleType& scale() const;
     const ValueType& value() const;
+          UnitType&   unit();
+          ScaleType& scale();
+          ValueType& value();
 
     constexpr static std::size_t size() noexcept {
       return sizeof(id::attribute::ID) +
@@ -35,6 +38,7 @@ class AttributeType{
 
     bool operator==(const AttributeType& b) const;
     bool operator!=(const AttributeType& b) const { return !(*this==b); }
+    std::size_t operator-(const AttributeType& b) const;
 
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, AttributeType&);
 };

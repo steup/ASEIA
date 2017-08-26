@@ -3,60 +3,68 @@
 #include <cstdint>
 #include <boost/mpl/int.hpp>
 
+/** \brief namespace of static unique identifiers used in ASEIA **/
 namespace id{
+  /**\brief sub-namespace of static unique Attribute identifiers **/
   namespace attribute{
 
+    /**\brief Tag indicating AttrID **/
     struct Tag{};
 
+    /**\brief Definition of numeric type used for AttrID **/
     using ID = std::uint8_t;
 
-    struct Base : public Tag{
-      static constexpr const ID value(){return 0;}
+    /** \brief Unique Attribute Identifier
+     *
+     *  \tparam id uint8_t number specifying the unqiue identifier
+     *
+     * Class representing a unique attribute in Events and EventTypes. It is
+     * used to filter, extract and order Attributes, MetaAttributes and
+     * AttributeTypes.
+     **/
+    template<uint8_t id>
+    struct AttrID : public Tag {
+      /** \brief accessor for the uint8_t number associated with this AttrID
+       *  \return numerical unique id
+       **/
+      static constexpr const ID value(){ return id; }
+      /** \brief cast operator to convert this AttrID to its unique number
+       *  \return numerical unique id
+       **/
+      operator ID() const { return id; }
     };
 
-    struct Position : public Base{
-      static constexpr const ID value(){return 1;}
-    };
-    
-    struct Time : public Base{
-      static constexpr const ID value(){return 2;}
-    };
-    
-    struct PublisherID : public Base{
-      static constexpr const ID value(){return 3;}
-    };
-    
-    struct Validity : public Base{
-      static constexpr const ID value(){return 4;}
-    };
+    /** \brief Invalid Attribute **/
+    using Base        = AttrID<0>;
+    using Position    = AttrID<1>;
+    using Time        = AttrID<2>;
+    using PublisherID = AttrID<3>;
+    using Validity    = AttrID<4>;
+    using Distance    = AttrID<5>;
+    using Orientation = AttrID<6>;
+    using Angle       = AttrID<7>;
+    using Reference   = AttrID<8>;
+    using Object      = AttrID<9>;
+    using Speed       = AttrID<10>;
 
-    struct Distance : public Base{
-      static constexpr const ID value(){return 5;}
-    };
-
-    struct Orientation : public Base{
-      static constexpr const ID value(){return 6;}
-    };
-
-    struct Angle : public Base{
-      static constexpr const ID value(){return 7;}
-    };
-
-    struct Reference : public Base{
-      static constexpr const ID value(){return 8;}
-    };
-
+    /** \brief Lookup of AttrID based on unique number
+     *  \tparam id unique numeric ID
+     **/
     template<ID id>
-    struct attribute;
+    struct lookup {
+      /** \brief the corresponding AttrID
+       *
+       *  in case number is not defined, a compile error will be raised
+       **/
+      using type = AttrID<id>;
+    };
 
-    template<> struct attribute<Position::value()>    { using type = Position;    };
-    template<> struct attribute<Time::value()>        { using type = Time;        };
-    template<> struct attribute<PublisherID::value()> { using type = PublisherID; };
-    template<> struct attribute<Validity::value()>    { using type = Validity;    };
-    template<> struct attribute<Distance::value()>    { using type = Distance;    };
-    template<> struct attribute<Orientation::value()> { using type = Orientation; };
-    template<> struct attribute<Angle::value()>       { using type = Angle;       };
-    template<> struct attribute<Reference::value()>   { using type = Reference;   };
+
+    /** \brief Deprecated alias of lookup
+     *  \tparam id unique numeric ID
+     **/
+    template<ID id>
+    using attribute = lookup<id>;
   }
 
   namespace type{
@@ -65,66 +73,30 @@ namespace id{
 
     using ID = std::uint8_t;
 
-    struct Base : public Tag{
-      using Type = void;
-      static constexpr const ID value(){return 0;}
+    template<uint8_t id, typename T>
+    struct TypeID : public Tag {
+      static constexpr const ID value(){ return id; }
+      operator ID() const { return id; }
+      using Type = T;
     };
 
-    struct UInt8 : public Base{
-      using Type = std::uint8_t;
-      static constexpr const ID value(){return 1;}
-    };
+    using Base   = TypeID<0, void>;
+    using UInt8  = TypeID<1, uint8_t>;
+    using UInt16 = TypeID<2, uint16_t>;
+    using UInt32 = TypeID<3, uint32_t>;
+    using Int8   = TypeID<4, int8_t>;
+    using Int16  = TypeID<5, int16_t>;
+    using Int32  = TypeID<6, int32_t>;
+    using Float  = TypeID<7, float>;
+    using Double = TypeID<8, double>;
+    using Bool   = TypeID<9, bool>;
 
-    struct UInt16 : public Base{
-      using Type = uint16_t;
-      static constexpr const ID value(){return 2;}
-    };
-
-    struct UInt32 : public Base{
-      using Type = uint32_t;
-      static constexpr const ID value(){return 3;}
-    };
-
-    struct UInt64 : public Base{
-      using Type = uint64_t;
-      static constexpr const ID value(){return 4;}
-    };
-
-    struct Int8 : public Base{
-      using Type = std::int8_t;
-      static constexpr const ID value(){return 5;}
-    };
-
-    struct Int16 : public Base{
-      using Type = int16_t;
-      static constexpr const ID value(){return 6;}
-    };
-
-    struct Int32 : public Base{
-      using Type = int32_t;
-      static constexpr const ID value(){return 7;}
-    };
-
-    struct Int64 : public Base{
-      using Type = int64_t;
-      static constexpr const ID value(){return 8;}
-    };
-
-    struct Float : public Base{
-      using Type = float;
-      static constexpr const ID value(){return 9;}
-    };
-
-    struct Double : public Base{
-      using Type = double;
-      static constexpr const ID value(){return 10;}
-    };
-		
-		struct Bool : public Base{
-      using Type = bool;
-      static constexpr const ID value(){return 11;}
-    };
-
+/*  doesn work because of uncertainty computation and numeric_limits errors
+    using Base = TypeID<10, void>;
+ */
+/*  doesn work because of uncertainty computation and numeric_limits errors
+    using Base = TypeID<11, void>;
+ */
 
     template<ID id>
     struct id2Type;
@@ -132,11 +104,11 @@ namespace id{
     template<> struct id2Type< Int8  ::value() > { using type = Int8  ; };
     template<> struct id2Type< Int16 ::value() > { using type = Int16 ; };
     template<> struct id2Type< Int32 ::value() > { using type = Int32 ; };
-    template<> struct id2Type< Int64 ::value() > { using type = Int64 ; };
+//    template<> struct id2Type< Int64 ::value() > { using type = Int64 ; };
     template<> struct id2Type< UInt8 ::value() > { using type = UInt8 ; };
     template<> struct id2Type< UInt16::value() > { using type = UInt16; };
     template<> struct id2Type< UInt32::value() > { using type = UInt32; };
-    template<> struct id2Type< UInt64::value() > { using type = UInt64; };
+//    template<> struct id2Type< UInt64::value() > { using type = UInt64; };
     template<> struct id2Type< Float ::value() > { using type = Float ; };
     template<> struct id2Type< Double::value() > { using type = Double; };
     template<> struct id2Type< Bool  ::value() > { using type = Bool; };
@@ -144,16 +116,67 @@ namespace id{
     static constexpr const ID id( int8_t   ) { return Int8  ::value(); }
     static constexpr const ID id( int16_t  ) { return Int16 ::value(); }
     static constexpr const ID id( int32_t  ) { return Int32 ::value(); }
-    static constexpr const ID id( int64_t  ) { return Int64 ::value(); }
+//    static constexpr const ID id( int64_t  ) { return Int64 ::value(); }
     static constexpr const ID id( uint8_t  ) { return UInt8 ::value(); }
     static constexpr const ID id( uint16_t ) { return UInt16::value(); }
     static constexpr const ID id( uint32_t ) { return UInt32::value(); }
-    static constexpr const ID id( uint64_t ) { return UInt64::value(); }
+//    static constexpr const ID id( uint64_t ) { return UInt64::value(); }
     static constexpr const ID id( float    ) { return Float ::value(); }
     static constexpr const ID id( double   ) { return Double::value(); }
     static constexpr const ID id( bool     ) { return Bool  ::value(); }
 
     template<typename T> struct t2Type { using type = typename id2Type< id( T() ) >::type; };
+    inline bool smaller(ID a, ID b) {
+      switch(a) {
+        case(UInt8::value()):
+          switch(b) {
+            case(UInt8::value()): return false;
+            default    : return true;
+          }
+        case(Int8::value()):
+          switch(b) {
+            case(UInt8::value()): return false;
+            case(Int8::value()) : return false;
+            default    : return true;
+          }
+        case(UInt16::value()):
+          switch(b) {
+            case(UInt8::value()): return false;
+            case(Int8::value()) : return false;
+            default    : return true;
+          }
+        case(Int16::value()):
+          switch(b) {
+            case(UInt8::value()): return false;
+            case(Int8::value()) : return false;
+            case(UInt16::value()): return false;
+            default    : return true;
+          }
+        case(UInt32::value()):
+          switch(b) {
+            case(UInt8::value()): return false;
+            case(Int8::value()) : return false;
+            case(UInt16::value()): return false;
+            case(Int16::value()): return false;
+            default    : return true;
+          }
+        case(Int32::value()):
+          switch(b) {
+            case(UInt8::value()): return false;
+            case(Int8::value()) : return false;
+            case(UInt16::value()): return false;
+            case(Int16::value()): return false;
+            case(UInt32::value()): return false;
+            default    : return true;
+          }
+        case(Float::value()):
+          switch(b) {
+            case(Double::value()) : return true;
+            default               : return false;
+          }
+        default             : return false;
+      }
+    }
   }
 
   namespace unit{
@@ -197,9 +220,11 @@ namespace id{
 		using ID = std::uint8_t;
 
 		template<ID id>
-		struct Base : public Tag, boost::mpl::int_<id> { };
+		struct Base : public Tag, boost::mpl::int_<id> {
+      operator ID() const { return id; }
+    };
 
-		using NOOP= Base< 0>;
+		using NOP = Base< 0>;
 		using LE  = Base< 1>;
 		using GE  = Base< 2>;
 		using LT  = Base< 3>;
@@ -209,8 +234,12 @@ namespace id{
 		using AE  = Base< 7>;
 		using NA  = Base< 8>;
 		using AND = Base< 9>;
-		using OR  = Base<10>;
-		using NOT = Base<11>;
+		using OR  = Base< 10>;
+		using NOT = Base< 11>;
+
+    using UNC = Base< 16>;
+    using CER = Base< 17>;
+    using NOR = Base< 18>;
 
 		bool isLogical(ID id);
 	}

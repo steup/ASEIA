@@ -1,163 +1,268 @@
 #pragma once
 
+#include <Attribute.h>
 #include <boost/phoenix/core/argument.hpp>
 #include <boost/phoenix/operator.hpp>
+#include <boost/phoenix/function.hpp>
+#include <type_traits>
+#include <functional>
 
 #include <ID.h>
 
+template<typename Serializer>
+class FilterEvent;
+
 namespace filter {
+  using namespace ::id;
   const boost::phoenix::expression::argument<1>::type e0 = {};
   const boost::phoenix::expression::argument<2>::type e1 = {};
   const boost::phoenix::expression::argument<3>::type e2 = {};
+  const boost::phoenix::expression::argument<4>::type e3 = {};
+  const boost::phoenix::expression::argument<5>::type e4 = {};
+  const boost::phoenix::expression::argument<6>::type e5 = {};
+  const boost::phoenix::expression::argument<7>::type e6 = {};
+  const boost::phoenix::expression::argument<8>::type e7 = {};
+
+  struct uncertainty_impl {
+    template<typename Attribute>
+    auto operator()(Attribute& attr) const -> decltype(attr.uncertainty()){
+      return attr.uncertainty();
+    }
+  };
+
+  const boost::phoenix::function<uncertainty_impl> uncertainty;
+
+  struct certain_impl {
+    template<typename Attribute>
+    auto operator()(Attribute& attr) const -> decltype(attr.certain()){
+      return attr.valueOnly();
+    }
+  };
+
+  const boost::phoenix::function<certain_impl> certain;
+
+  struct norm_impl {
+
+    template<typename Attribute>
+    auto operator()(Attribute& attr) const -> decltype(attr.norm()){
+      return attr.norm();
+    }
+  };
+
+  const boost::phoenix::function<norm_impl> norm;
+
+  union Op{
+    struct {
+      uint8_t code      : 5;
+      uint8_t unary     : 1;
+      uint8_t comp      : 1;
+      uint8_t constArg  : 1;
+    };
+    uint8_t data;
+  };
+
+  template<typename SubExp0, typename SubExp1>
+  struct Expression {
+    Op op;
+    SubExp0 exp0;
+    SubExp1 exp1;
+    Expression(filterOp::ID op, SubExp0 exp0, SubExp1 exp1)
+      : exp0(exp0), exp1(exp1) {
+      this->op.data=0;
+      this->op.code=op;
+    }
+    template< typename Serializer>
+    Serializer& operator()(Serializer& s) const {
+      return exp1(exp0(s) << op.data);
+    }
+    static constexpr uint8_t size() { return SubExp0::size() + SubExp1::size() + 1; }
+  };
+
+  struct AttributeTag {};
+
+  template<typename ID, typename E>
+  struct Attribute;
+
+  template<typename Arg0, typename Arg1>
+  struct Predicate {
+    Op op;
+    Arg0 arg0;
+    Arg1 arg1;
+
+    Predicate(filterOp::ID op, Arg0 arg0, Arg1 arg1) : arg0(arg0), arg1(arg1) {
+      this->op.data=0;
+      this->op.code=op;
+      this->op.comp=true;
+      this->op.constArg=!std::is_base_of<AttributeTag, Arg1>::type::value;
+    }
+
+    template<typename Serializer, typename ID, typename V, typename S, typename U>
+    Serializer& help(Serializer& s, const ::Attribute<ID, V, S, U>& v) const {
+      return s << v;
+    }
+
+    template<typename Serializer, typename T, int Rows, int Cols, bool U>
+    Serializer& help(Serializer& s, const ::Value<T, Rows, Cols, U>& v) const {
+      return s << v;
+    }
+
+    template<typename Serializer, typename ID, typename Event>
+    Serializer& help(Serializer& s, const Attribute<ID, Event>& a) const {
+      return a(s);
+    }
+
+    template<typename Serializer>
+    Serializer& operator()(Serializer& s) const {
+      return help(arg0(s) << op.data, arg1);
+    }
+
+    template<typename Arg10, typename Arg11>
+    auto operator&&(Predicate<Arg10, Arg11> b)
+      -> Expression<Predicate, Predicate<Arg10, Arg11>> {
+      return Expression<Predicate, Predicate<Arg10, Arg11>>(filterOp::AND(), *this, b);
+    }
+
+    template<typename Arg10, typename Arg11>
+    auto operator||(Predicate<Arg10, Arg11> b)
+      -> Expression<Predicate, Predicate<Arg10, Arg11>> {
+      return Expression<Predicate, Predicate<Arg10, Arg11>>(filterOp::OR(), *this, b);
+    }
+
+    static constexpr uint8_t size() { return Arg0::size() + Arg1::size() + 1; }
+  };
+
+  template<typename Arg0>
+  struct UnaryFunctor;
+
+  template<typename T>
+  struct Ops {
+    template<typename Arg1>
+    auto operator<(Arg1 arg1) const
+      -> Predicate<T, Arg1> {
+        return Predicate<T, Arg1>(filterOp::LT(), *(T*)this, arg1);
+    }
+
+    template<typename Arg1>
+    auto operator<=(Arg1 arg1) const
+      -> Predicate<T, Arg1> {
+        return Predicate<T, Arg1>(filterOp::LE(), *(T*)this, arg1);
+    }
+
+    template<typename Arg1>
+    auto operator>(Arg1 arg1) const
+      -> Predicate<T, Arg1> {
+        return Predicate<T, Arg1>(filterOp::GT(), *(T*)this, arg1);
+    }
+
+    template<typename Arg1>
+    auto operator>=(Arg1 arg1) const
+      -> Predicate<T, Arg1> {
+        return Predicate<T, Arg1>(filterOp::GE(), *(T*)this, arg1);
+    }
+
+    template<typename Arg1>
+    auto operator==(Arg1 arg1) const
+      -> Predicate<T, Arg1> {
+        return Predicate<T, Arg1>(filterOp::EQ(), *(T*)this, arg1);
+    }
+
+    template<typename Arg1>
+    auto operator!=(Arg1 arg1) const
+      -> Predicate<T, Arg1> {
+        return Predicate<T, Arg1>(filterOp::NE(), *(T*)this, arg1);
+    }
+
+    UnaryFunctor<T> uncertainty() const {
+      return UnaryFunctor<T>(filterOp::UNC(), *(T*)this);
+    }
+    UnaryFunctor<T> norm() const {
+      return UnaryFunctor<T>(filterOp::NOR(), *(T*)this);
+    }
+    UnaryFunctor<T> valueOnly() const {
+      return UnaryFunctor<T>(filterOp::CER(), *(T*)this);
+    }
+  };
+
+  template<typename Arg0>
+  struct UnaryFunctor : public Ops<UnaryFunctor<Arg0>> {
+    Op op;
+    Arg0 arg0;
+    UnaryFunctor(filterOp::ID op, Arg0 arg0) : arg0(arg0) {
+      this->op.data = 0;
+      this->op.unary = true;
+      this->op.code = op;
+    }
+    template<typename Serializer>
+    Serializer& operator()(Serializer& s) const {
+      return arg0(s) << op.data;
+    }
+    using Ops<UnaryFunctor>::operator<;
+    using Ops<UnaryFunctor>::operator<=;
+    using Ops<UnaryFunctor>::operator>;
+    using Ops<UnaryFunctor>::operator>=;
+    using Ops<UnaryFunctor>::operator==;
+    using Ops<UnaryFunctor>::operator!=;
+    using Ops<UnaryFunctor>::uncertainty;
+    using Ops<UnaryFunctor>::valueOnly;
+    using Ops<UnaryFunctor>::norm;
+    static constexpr uint8_t size() { return Arg0::size() + 1; }
+  };
+
+
+  template<typename ID, typename E>
+  struct Attribute  : public Ops<Attribute<ID, E>>, public AttributeTag {
+    E e;
+    Attribute(E e) : e(e) {}
+    template<typename Serializer>
+    Serializer& operator()(Serializer& s) const {
+      return e(s) << ID();
+    }
+    using Ops<Attribute>::operator<;
+    using Ops<Attribute>::operator<=;
+    using Ops<Attribute>::operator>;
+    using Ops<Attribute>::operator>=;
+    using Ops<Attribute>::operator==;
+    using Ops<Attribute>::operator!=;
+    using Ops<Attribute>::uncertainty;
+    using Ops<Attribute>::valueOnly;
+    using Ops<Attribute>::norm;
+    static constexpr uint8_t size() { return E::size() + 1; }
+  };
+
+  struct Event {
+    uint8_t num;
+
+    Event(uint8_t num) : num(num) {}
+
+    template<typename Serializer>
+    Serializer& operator()(Serializer& s) const {
+      return s << num;
+    };
+
+    template<typename AttrID>
+    Attribute<AttrID, Event> operator[](AttrID id) const {
+      return Attribute<AttrID, Event>(*this);
+    }
+
+    static constexpr uint8_t size() { return 1; }
+  };
+
+  const Event s0(0);
+  const Event s1(1);
+  const Event s2(2);
+  const Event s3(3);
+  const Event s4(4);
+  const Event s5(5);
+  const Event s6(6);
+  const Event s7(7);
 }
 
-struct PseudoAttr {};
-
-union EventPlaceholder{
-	struct {
-  	uint8_t attr : 5;
-    uint8_t num  : 3;
- 	};
-  uint8_t data;
-};
-
-union FilterOp{
-	struct {
-		uint8_t code      : 7;
-		uint8_t constArg  : 1;
-	};
-	uint8_t data;
-};
-
-template<typename Serializer>
-struct FilterEvent {
-  Serializer* mS = nullptr;
-	EventPlaceholder mEvent;
-
-  FilterEvent(uint8_t num) {
-    mEvent.num=num;
-  }
-
-  FilterEvent(uint8_t num, Serializer& s) : mS(&s) {
-    mEvent.num=num;
-  }
-
-  template<typename AttrID>
-  FilterEvent& operator[](AttrID id){
-    mEvent.attr = AttrID::value();
-    return *this;
-  }
-};
-
-template<typename Serializer, typename Attr = PseudoAttr>
-struct FilterPredicate {
-  Serializer* mS = nullptr;
-  FilterOp mOp;
-  using Event = FilterEvent<Serializer>;
-  const Event& mE0;
-  const Event* mE1 = nullptr;
-  const Attr* mAttr = nullptr;
-  FilterPredicate(id::filterOp::ID op, const Event& e0, const Event& e1) : mE0(e0), mE1(&e1) {
-    mOp.code = op;
-    mOp.constArg = 0;
-    mS = e0.mS;
-  }
-
-  FilterPredicate(id::filterOp::ID op, const Event& e0, const Attr& attr) : mE0(e0), mAttr(&attr) {
-    mOp.code = op;
-    mOp.constArg = 1;
-    mS = e0.mS;
-  }
-};
-
-template<typename T, typename A0, typename A1>
-FilterPredicate<T, A1> operator&&(const FilterPredicate<T, A0>& a, const FilterPredicate<T, A1>& b) {
-  (*a.mS) << a << (id::filterOp::ID)id::filterOp::AND::value;
-  auto temp = b;
-  temp.mS = a.mS;
-  return temp;
+template<typename Serializer, typename Arg0, typename Arg1>
+Serializer& operator<<(Serializer& s, const filter::Predicate<Arg0, Arg1>& p) {
+  return p(s);
 }
 
-template<typename T, typename A0, typename A1>
-FilterPredicate<T, A1> operator||(const FilterPredicate<T, A0>& a, const FilterPredicate<T, A1>& b) {
-  (*a.mS) << a << (id::filterOp::ID)id::filterOp::OR::value;
-  auto temp = b;
-  temp.mS = a.mS;
-  return temp;
-}
-
-
-template<typename Serializer>
-FilterPredicate<Serializer> operator>(FilterEvent<Serializer> a, FilterEvent<Serializer> b){
-  return FilterPredicate<Serializer>(id::filterOp::GT::value, a, b);
-}
-
-template<typename Serializer>
-FilterPredicate<Serializer> operator>=(FilterEvent<Serializer> a, FilterEvent<Serializer> b){
-  return FilterPredicate<Serializer>(id::filterOp::GE::value, a, b);
-}
-
-template<typename Serializer>
-FilterPredicate<Serializer> operator<(FilterEvent<Serializer> a, FilterEvent<Serializer> b){
-  return FilterPredicate<Serializer>(id::filterOp::LT::value, a, b);
-}
-
-template<typename Serializer>
-FilterPredicate<Serializer> operator<=(FilterEvent<Serializer> a, FilterEvent<Serializer> b){
-  return FilterPredicate<Serializer>(id::filterOp::LE::value, a, b);
-}
-
-template<typename Serializer>
-FilterPredicate<Serializer> operator==(FilterEvent<Serializer> a, FilterEvent<Serializer> b){
-  return FilterPredicate<Serializer>(id::filterOp::EQ::value, a, b);
-}
-
-template<typename Serializer>
-FilterPredicate<Serializer> operator!=(FilterEvent<Serializer> a, FilterEvent<Serializer> b){
-  return FilterPredicate<Serializer>(id::filterOp::NE::value, a, b);
-}
-
-template<typename Serializer, typename Attribute>
-FilterPredicate<Serializer, Attribute> operator>(FilterEvent<Serializer> a, const Attribute& attr){
-  return FilterPredicate<Serializer, Attribute>(id::filterOp::GT::value, a, attr);
-}
-
-template<typename Serializer, typename Attribute>
-FilterPredicate<Serializer, Attribute> operator>=(FilterEvent<Serializer> a, const Attribute& b){
-  return FilterPredicate<Serializer, Attribute>(id::filterOp::GE::value, a, b);
-}
-
-template<typename Serializer, typename Attribute>
-FilterPredicate<Serializer, Attribute> operator<(FilterEvent<Serializer> a, const Attribute& b){
-  return FilterPredicate<Serializer, Attribute>(id::filterOp::LT::value, a, b);
-}
-
-template<typename Serializer, typename Attribute>
-FilterPredicate<Serializer, Attribute> operator<=(FilterEvent<Serializer> a, const Attribute& b){
-  return FilterPredicate<Serializer, Attribute>(id::filterOp::LE::value, a, b);
-}
-
-template<typename Serializer, typename Attribute>
-FilterPredicate<Serializer, Attribute> operator==(FilterEvent<Serializer> a, const Attribute& b){
-  return FilterPredicate<Serializer, Attribute>(id::filterOp::EQ::value, a, b);
-}
-
-template<typename Serializer, typename Attribute>
-FilterPredicate<Serializer, Attribute> operator!=(FilterEvent<Serializer> a, const Attribute& b){
-  return FilterPredicate<Serializer, Attribute>(id::filterOp::NE::value, a, b);
-}
-
-template<typename Serializer>
-Serializer& operator<<(Serializer& s, const FilterEvent<Serializer>& e) {
-  return s << e.mEvent.data;
-}
-
-template<typename Serializer>
-Serializer& operator<<(Serializer& s, const FilterPredicate<Serializer, PseudoAttr>& p) {
-    return s << p.mE0 << p.mOp.data << (*p.mE1);
-}
-
-template<typename Serializer, typename Attr>
-Serializer& operator<<(Serializer& s, const FilterPredicate<Serializer, Attr>& p) {
-    return s << p.mE0 << p.mOp.data << (*p.mAttr);
+template<typename Serializer, typename SubExp0, typename SubExp1>
+Serializer& operator<<(Serializer& s, const filter::Expression<SubExp0, SubExp1>& e) {
+  return e(s);
 }

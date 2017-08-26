@@ -17,16 +17,17 @@ class EventType{
 
 
   public:
-    class const_iterator {
+    class const_iterator : public std::iterator<std::forward_iterator_tag, AttributeType> {
 			private:
 				StorageType::const_iterator  mI;
       public:
         const_iterator(StorageType::const_iterator i);
         const ValueType& operator*() const;
+        const ValueType* operator->() const;
         const_iterator& operator++();
         const_iterator operator++(int);
-				bool operator==(const const_iterator& b);
-				bool operator!=(const const_iterator& b);
+				bool operator==(const const_iterator& b) const;
+				bool operator!=(const const_iterator& b) const;
     };
 
     const_iterator begin() const;
@@ -41,10 +42,22 @@ class EventType{
       return true;
     }
 
+    void remove(KeyType k) { mStorage.erase(k); }
+
     const AttributeType* attribute(KeyType key) const;
-    
+    AttributeType* attribute(KeyType key);
+
+
+    const AttributeType& operator[](KeyType key) const { return *attribute(key); }
+    AttributeType& operator[](KeyType key)             { return *attribute(key); }
+
+    std::size_t operator-(const EventType& b) const;
     bool operator==(const EventType& b) const;
-    bool operator!=(const EventType& b) const { return !(*this==b); }
+    bool operator!=(const EventType& b) const { return !(*this == b);}
+    bool operator<(const EventType& b) const;
+    bool operator<=(const EventType& b) const;
+    bool operator>(const EventType& b) const { return b < *this; }
+    bool operator>=(const EventType& b) const { return b <= *this; }
 
     uint8_t length() const;
 

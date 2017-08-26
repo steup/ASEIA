@@ -10,29 +10,41 @@
 
 class AttributeType;
 
-class MetaAttribute { 
+class MetaAttribute {
   public:
     using ID = id::attribute::ID;
-  private:
-    ID         mID    ;
+  protected:
+    const ID   mID    ;
     MetaValue  mValue ;
     MetaUnit   mUnit  ;
     MetaScale  mScale ;
 
-  public:
-    //MetaAttribute() = default;
+    bool check(const MetaAttribute& b) const;
 
+  public:
     MetaAttribute(ID id = id::attribute::Base::value()) : mID(id) {}
     MetaAttribute(const AttributeType& at);
-    MetaAttribute(const MetaAttribute& copy);
-    MetaAttribute(MetaAttribute&& movee);
-    MetaAttribute& operator=(const MetaAttribute& copy);
-    MetaAttribute& operator=(MetaAttribute&& movee);
+    MetaAttribute(const MetaAttribute& b);
+    MetaAttribute(MetaAttribute&& b);
+    MetaAttribute& operator=(const MetaAttribute& b);
+    MetaAttribute& operator=(MetaAttribute&& b);
     MetaAttribute& operator+=(const MetaAttribute& b);
+    MetaAttribute& operator-=(const MetaAttribute& b);
+    MetaAttribute& operator*=(const MetaAttribute& b);
+    MetaAttribute& operator/=(const MetaAttribute& b);
     MetaAttribute& operator*=(const MetaScale& scale);
-    MetaAttribute operator*(const MetaScale& scale) const;
-    bool operator==(const MetaAttribute& b) const;
-    bool operator!=(const MetaAttribute& b) const { return !(*this==b); }
+    MetaAttribute& operator/=(const MetaScale& b);
+    MetaAttribute& operator*=(const MetaValue& b);
+    MetaAttribute& operator/=(const MetaValue& b);
+    MetaAttribute norm() const;
+    MetaValue operator<(const MetaAttribute& b) const;
+    MetaValue operator>(const MetaAttribute& b) const;
+    MetaValue operator<=(const MetaAttribute& b) const;
+    MetaValue operator>=(const MetaAttribute& b) const;
+    MetaValue operator==(const MetaAttribute& b) const;
+    MetaValue operator!=(const MetaAttribute& b) const;
+    MetaAttribute uncertainty() const;
+    MetaAttribute valueOnly() const;
 
           ID            id() const { return mID;    }
 
@@ -45,21 +57,36 @@ class MetaAttribute {
           MetaValue& value()       { return mValue; }
     const MetaValue& value() const { return mValue; }
 
+    bool valid() const { return mValue.valid(); }
+
     explicit operator AttributeType() const;
 
 	//friend class MetaFactory;
   template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, const MetaValue&);
 };
 
+inline MetaAttribute operator+(const MetaAttribute& a, const MetaAttribute& b) {return MetaAttribute(a)+=b; };
+inline MetaAttribute operator-(const MetaAttribute& a, const MetaAttribute& b) {return MetaAttribute(a)-=b; };
+inline MetaAttribute operator*(const MetaAttribute& a, const MetaAttribute& b) {return MetaAttribute(a)*=b; };
+inline MetaAttribute operator/(const MetaAttribute& a, const MetaAttribute& b) {return MetaAttribute(a)/=b; };
+
+inline MetaAttribute operator*(const MetaAttribute& a, const MetaScale& scale) {return MetaAttribute(a)*=scale; };
+inline MetaAttribute operator/(const MetaAttribute& a, const MetaScale& scale) {return MetaAttribute(a)/=scale; };
+inline MetaAttribute operator*(const MetaScale& scale, const MetaAttribute& a) {return MetaAttribute(a)*=scale; };
+
+inline MetaAttribute operator*(const MetaAttribute& a, const MetaValue& b)     {return MetaAttribute(a)*=b; };
+inline MetaAttribute operator/(const MetaAttribute& a, const MetaValue& b)     {return MetaAttribute(a)/=b; };
+MetaAttribute operator*(const MetaValue& a    , const MetaAttribute& b);
+
+
+
 std::ostream& operator<<(std::ostream& o, const MetaAttribute& ma);
 
-/** \todo insert serialization code */
 template<typename PB>
 Serializer<PB>& operator<<(Serializer<PB>& s, const MetaAttribute& me){
 	return s << me.value();
 }
 
-/** \todo insert serialization code */
 template<typename PB>
 DeSerializer<PB>& operator>>(DeSerializer<PB>& d, MetaAttribute& me){
 	return d >> me.value();

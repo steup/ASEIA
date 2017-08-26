@@ -1,23 +1,4 @@
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
-
-#include <id.cpp>
-#include <serializer.cpp>
-#include <deserializer.cpp>
-#include <valueElement.cpp>
-#include <value.cpp>
-#include <attribute.cpp>
-#include <metaValueImpl.cpp>
-#include <metaAttribute.cpp>
-#include <metaEvent.cpp>
-#include <event.cpp>
-#include <filter.cpp>
-#include <metaSerialization.cpp>
-#include <metaDeSerialization.cpp>
-#include <formatID.cpp>
-#include <typeRegistry.cpp>
-#include <transformation.cpp>
-#include <channel.cpp>
 
 /** \namespace tests
  *  \brief %Unit Test Suites

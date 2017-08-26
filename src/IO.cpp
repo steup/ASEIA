@@ -10,18 +10,22 @@
 
 using std::ostream;
 using std::endl;
+using std::vector;
+using std::hex;
 
 ostream& operator<<(ostream& o, const ValueType& t) {
-  return o << (t.hasUncertainty()?"uncertain ":"") << id::type::name(t.typeId()) << "[" << t.rows() << ", " << t.cols() << "]";
+  o << (t.hasUncertainty()?"uncertain ":"") << id::type::name(t.typeId()) << "[" << t.rows();
+  if(t.cols()!=1)
+    o << ", " << t.cols();
+  return o << "]";
 }
 
 ostream& operator<<(ostream& o, const ScaleType& t) {
-  if(t.num()==1 && t.denom()==1)
-    return o;
-  if(t.denom()!=1)
-    return o << t.num() << "/" << t.denom() << " ";
-  else
-    return o << t.num() << " ";
+  if(t.num()!=1 && t.denom()!=1)
+    o << t.num() << "/" << t.denom() << " ";
+  if(t.num()!=1)
+    o << t.num() << " ";
+  return o << " (" << t.reference() << ")";
 }
 
 ostream& operator<<(ostream& o, const UnitType& t) {
@@ -71,3 +75,12 @@ ostream& operator<<(ostream& o, const EventType& t) {
 //  return o << id.node() << (id.direction()==FormatID::Direction::publisher?"P":"S") << id.nr();
 //}
 
+ostream& operator<<(ostream& o, const vector<uint8_t>& v) {
+  auto flags = o.flags();
+  o << "[" << hex;
+  size_t i=0;
+  for(uint8_t elem : v)
+    o << "0x" << elem << (++i==v.size()?"":" ,");
+  o.setf(flags);
+  return o << "]";
+}

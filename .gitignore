@@ -7,3 +7,6 @@ log
 pkgconfig
 misc/*.akg
 *.sw?
+doc/*.dot
+doc/*.svg
+doc/*.log

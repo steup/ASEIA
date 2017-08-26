@@ -3,6 +3,8 @@
 #include <IDIO.h>
 
 #include <Event.h>
+#include <EventID.h>
+#include <FormatID.h>
 #include <Attribute.h>
 #include <ValueElement.h>
 #include <Value.h>
@@ -10,13 +12,13 @@
 
 #include <ostream>
 #include <ratio>
+#include <vector>
 
 class ValueType;
 class AttributeType;
 class UnitType;
 class ScaleType;
 class EventType;
-class FormatID;
 class MetaValueBaseImplementation;
 class MetaAttribute;
 
@@ -92,6 +94,11 @@ std::ostream& operator<<(std::ostream& o, const std::ratio<N,D>& r) {
   return o << r.num << "/" << r.den << " ";
 }
 
+template<typename ratio, uint32_t ref>
+std::ostream& operator<<(std::ostream& o, const Scale<ratio, ref>& s) {
+  return o << s.ratio() << "(" << s.reference() << ")";  
+}
+
 inline std::ostream& operator<<(std::ostream& o, const Dimensionless& u) {
   return o;
 }
@@ -141,3 +148,24 @@ std::ostream& operator<<(std::ostream& o, const UnitType& t);
 std::ostream& operator<<(std::ostream& o, const AttributeType& t);
 
 std::ostream& operator<<(std::ostream& o, const EventType& t);
+
+inline std::ostream& operator<<(std::ostream& o, EventID eID) {
+  return o << eID.value();
+}
+
+inline std::ostream& operator<<(std::ostream& o, FormatID fID) {
+  return o << fID.value();
+}
+
+template<typename T, int32_t R, int32_t C, bool U>
+std::ostream& operator<<(std::ostream& o, const Value<T, R, C, U>& v) {
+  for(std::size_t r = 0; r<v.rows(); r++) {
+    o << "(";
+    for(std::size_t c = 0; c<v.cols(); c++)
+      o << "\t" << v(r, c);
+    o << ")" << std::endl;
+  }
+  return o;
+}
+
+std::ostream& operator<<(std::ostream& o, const std::vector<uint8_t>& v);
