@@ -12,6 +12,7 @@
 
 #include <ostream>
 #include <ratio>
+#include <vector>
 
 class ValueType;
 class AttributeType;
@@ -166,3 +167,5 @@ std::ostream& operator<<(std::ostream& o, const Value<T, R, C, U>& v) {
   }
   return o;
 }
+
+std::ostream& operator<<(std::ostream& o, const std::vector<uint8_t>& v);

@@ -5,6 +5,7 @@
 #include <AttributeType.h>
 #include <Filter.h>
 #include <Attribute.h>
+#include <IO.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -338,7 +339,7 @@ namespace test {
     s << filterExpr;
     MetaFilter metaFilter({&eT0});
     DeSerializer<decltype(buffer.cbegin())> d(buffer.cbegin(), buffer.cend());
-    EXPECT_NO_THROW(d >> metaFilter);
+    EXPECT_NO_THROW(d >> metaFilter) << "buffer: " << buffer;
     KnowledgeBase::registerEventType(eT7);
     KnowledgeBase::registerEventType(eT5);
     KnowledgeBase::registerEventType(eT6);
