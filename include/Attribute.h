@@ -32,6 +32,8 @@ class Attribute
   public:
     Attribute(){}
     Attribute(InitType l) : v(l){}
+    Attribute(const Value& v) : v(v){}
+    Attribute(const typename Value::BaseType& elem){ v(0,0)=elem; }
 
     const ValueType& value() const {return v;}
     ValueType& value(){return v;}
@@ -78,6 +80,16 @@ class Attribute
     bool operator<=(const Attribute& b) const {
       return (value() <= b.value()).prod();
     }
+
+    auto uncertainty() const -> Attribute<IDType, decltype(v.uncertainty()), Unit, S> {
+      return this->v.uncertainty();
+    }
+
+    auto norm() const
+      -> Attribute<IDType, typename ValueType::Scalar, Unit, S> {
+      return this->v.norm();
+    }
+
 
     constexpr const IDType id() const noexcept {return IDType();}
     constexpr const ScaleType scale() const noexcept {return ScaleType();}
