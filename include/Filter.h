@@ -75,6 +75,7 @@ namespace filter {
     Serializer& operator()(Serializer& s) const {
       return exp1(exp0(s) << op.data);
     }
+    static constexpr uint8_t size() { return SubExp0::size() + SubExp1::size() + 1; }
   };
 
   struct AttributeTag {};
@@ -126,6 +127,8 @@ namespace filter {
       -> Expression<Predicate, Predicate<Arg10, Arg11>> {
       return Expression<Predicate, Predicate<Arg10, Arg11>>(filterOp::OR(), *this, b);
     }
+
+    static constexpr uint8_t size() { return Arg0::size() + Arg1::size() + 1; }
   };
 
   template<typename Arg0>
@@ -202,6 +205,7 @@ namespace filter {
     using Ops<UnaryFunctor>::uncertainty;
     using Ops<UnaryFunctor>::valueOnly;
     using Ops<UnaryFunctor>::norm;
+    static constexpr uint8_t size() { return Arg0::size() + 1; }
   };
 
 
@@ -222,6 +226,7 @@ namespace filter {
     using Ops<Attribute>::uncertainty;
     using Ops<Attribute>::valueOnly;
     using Ops<Attribute>::norm;
+    static constexpr uint8_t size() { return E::size() + 1; }
   };
 
   struct Event {
@@ -238,6 +243,8 @@ namespace filter {
     Attribute<AttrID, Event> operator[](AttrID id) const {
       return Attribute<AttrID, Event>(*this);
     }
+
+    static constexpr uint8_t size() { return 1; }
   };
 
   const Event s0(0);

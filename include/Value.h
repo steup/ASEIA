@@ -67,6 +67,7 @@ class Value {
   private:
     Eigen::Matrix<ValueElement<T, U>, R, C> mData;
   public:
+    using Scalar        = Value<T, 1, 1, U>;
 		using BaseType      = ValueElement<T, U>;
 		using RowInitType   = std::initializer_list<BaseType>;
 		using InitType      = std::initializer_list<RowInitType>;
