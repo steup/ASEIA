@@ -17,6 +17,7 @@ using namespace ::id::attribute;
 using namespace filter;
 using std::vector;
 
+
 class FilterTestSuite : public ::testing::Test {
   public:
     using Event = BaseEvent<>;
@@ -24,6 +25,8 @@ class FilterTestSuite : public ::testing::Test {
     EventType eventType = (EventType)trueEvent;
     using TimeAttr = Event::findAttribute<Time>::type;
     const TimeAttr c0 = {{{ 1024 }}};
+    using PosAttr = BaseEvent<>::findAttribute<Position>::type;
+    const decltype(PosAttr().uncertainty().norm()) c1= {7};
     uint8_t time, pos, gt, lt, ge, le, eq, ne, cgt, clt, cge, cle, ceq, cne, nop, lOr, lAnd, unc;
     FilterTestSuite() {
       trueEvent.attribute(Time()).value()  = {{{1050}}};
@@ -132,6 +135,12 @@ TEST_F(FilterTestSuite, compositeExpressionTest){
   EXPECT_FALSE(filter0(falseEvent, falseEvent)) << "False positive";
   EXPECT_TRUE(filter1(trueEvent, falseEvent))  << "False negative";
   EXPECT_FALSE(filter1(falseEvent, falseEvent)) << "False positive";
+}
+
+TEST_F(FilterTestSuite, filterFuncTest) {
+  auto filter1 = norm(uncertainty(e0[Position()])) > c1;
+	EXPECT_TRUE(filter1(trueEvent));
+  EXPECT_FALSE(filter1(falseEvent));
 }
 
 TEST_F(FilterTestSuite, basicSerializationTest) {
@@ -245,6 +254,7 @@ TEST_F(FilterTestSuite, compositeSerializationTest) {
 	EXPECT_EQ(buffer, ref);
 }
 
+
 TEST_F(FilterTestSuite, metaFilterBasicTest) {
 
 	std::vector<uint8_t> buffer({0, time, gt, 1, time, nop, 0, time, lt, 1, time, nop, 0, time, eq, 1, time, nop, 0, time, ne, 1, time, nop, 0, time, ge, 1, time, nop, 0, time, le, 1, time, nop});
@@ -278,6 +288,7 @@ TEST_F(FilterTestSuite, metaFilterBasicTest) {
   EXPECT_TRUE(filter5(falseEvents))  << "False negative:\n" << *falseEvents[0] <<  filter5 << "\n" << *falseEvents[1];
   EXPECT_FALSE(filter5(trueEvents))  << "False positive:\n" << *trueEvents[0]  <<  filter5 << "\n" << *trueEvents[1] ;
 }
+
 
 TEST_F(FilterTestSuite, metaFilterFuncTest) {
 
