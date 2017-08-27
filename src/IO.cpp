@@ -12,6 +12,7 @@ using std::ostream;
 using std::endl;
 using std::vector;
 using std::hex;
+using std::to_string;
 
 ostream& operator<<(ostream& o, const ValueType& t) {
   o << (t.hasUncertainty()?"uncertain ":"") << id::type::name(t.typeId()) << "[" << t.rows();
@@ -21,11 +22,26 @@ ostream& operator<<(ostream& o, const ValueType& t) {
 }
 
 ostream& operator<<(ostream& o, const ScaleType& t) {
-  if(t.num()!=1 && t.denom()!=1)
-    o << t.num() << "/" << t.denom() << " ";
-  if(t.num()!=1)
-    o << t.num() << " ";
-  return o << " (" << t.reference() << ")";
+ o << "(" << t.reference() << ") ";
+ bool isNumeric = false;
+  switch(t.num()) {
+    case(1): break;
+    case(100): o << "h"; break;
+    case(1000): o << "K"; break;
+    case(1000000): o << "M"; break;
+    case(1000000000): o << "G"; break;
+    default: o << t.num(); isNumeric = true;
+  }
+  switch(t.denom()) {
+    case(1): break;
+    case(10): o << "d"; break;
+    case(100): o << "c"; break;
+    case(1000): o << "m"; break;
+    case(1000000): o << "u"; break;
+    case(1000000000): o << "n"; break;
+    default: o << (!isNumeric?to_string(t.num()):"") << "/"<< t.denom();
+  }
+  return o;
 }
 
 ostream& operator<<(ostream& o, const UnitType& t) {
