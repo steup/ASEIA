@@ -102,12 +102,30 @@ static It call(Vertex v, const MetaEvent& e, const Graph& graph, It it) {
      *  \param o output stream to print to
      **/
     void print(std::ostream& o) const {
-      auto writeVertex = [this](ostream& o, Vertex v){
-        TransPtr t = graph[v];
+      const Graph& g=graph;
+      auto writeVertex = [&g](ostream& o, Vertex v){
+        TransPtr t = g[v];
         if(t)
           o << " [label=\"" << *t << "\"]";
         else
           o << " [label=\"nullptr\"]";
+        EventTypes inETs = g[v]->in();
+        auto edges = out_edges(v, g);
+        EventTypes outETs(edges.second-edges.first);
+        EventTypes resETs(inETs.size());
+        transform(edges.first, edges.second, outETs.begin(), [&g](const Edge& e){ return g[e]; });
+        sort(inETs.begin(), inETs.end(), EventType::comp);
+        sort(outETs.begin(), outETs.end(), EventType::comp);
+        resETs.erase(set_difference(inETs.begin(), inETs.end(), outETs.begin(), outETs.end(), resETs.begin()), resETs.end());
+        for(const EventType& eT: resETs) {
+          o << ";\n\"" << EventID(eT) << "/" << FormatID(eT) << "\" [label=\"" << eT << "\"];\n";
+          o << v << " -> \"" << EventID(eT) << "/" << FormatID(eT) << "\"";
+        }
+        if(in_degree(v, g)==0) {
+            const EventType& eT = g[v]->out();
+            o << ";\n\"" << EventID(eT) << "/" << FormatID(eT) << "\" [label=\"" << eT << "\"];\n";
+            o << "\"" << EventID(eT) << "/" << FormatID(eT) << "\" -> " << v;
+        }
       };
       auto writeEdge = [this](ostream& o, Edge e) {
         o << " [label=\"" << graph[e] << "\"]";
@@ -276,6 +294,23 @@ ostream& operator<<(ostream& o, const CompositeTransformation& t) {
         o << " [label=\"" << *g[v].trans() << "\"]";
       else
         o << " [label=\"nullptr\"]";
+      EventTypes inETs = g[v].in();
+      auto edges = out_edges(v, g);
+      EventTypes outETs(edges.second-edges.first);
+      EventTypes resETs(inETs.size());
+      transform(edges.first, edges.second, outETs.begin(), [&g](const Edge& e){ return g[e]; });
+      sort(inETs.begin(), inETs.end(), EventType::comp);
+      sort(outETs.begin(), outETs.end(), EventType::comp);
+      resETs.erase(set_difference(inETs.begin(), inETs.end(), outETs.begin(), outETs.end(), resETs.begin()), resETs.end());
+      for(const EventType& eT: resETs) {
+        o << ";\n\"" << EventID(eT) << "/" << FormatID(eT) << "\" [label=\"" << eT << "\"];\n";
+        o << v << " -> \"" << EventID(eT) << "/" << FormatID(eT) << "\"";
+      }
+      if(in_degree(v, g)==0) {
+          const EventType& eT = g[v].out();
+          o << ";\n\"" << EventID(eT) << "/" << FormatID(eT) << "\" [label=\"" << eT << "\"];\n";
+          o << "\"" << EventID(eT) << "/" << FormatID(eT) << "\" -> " << v;
+      }
   };
   auto writeEdge = [&g](ostream& o, Edge e){
     o << " [label=\"" << g[e] << "\"]";
