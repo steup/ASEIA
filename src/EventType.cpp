@@ -1,5 +1,8 @@
 #include <EventType.h>
 
+#include <EventID.h>
+#include <FormatID.h>
+
 EventType::const_iterator::const_iterator(StorageType::const_iterator i)
   : mI(i) {}
 
@@ -94,4 +97,12 @@ uint8_t EventType::length() const {
 
 std::size_t EventType::size() const throw() {
   return AttributeType::size()*length()+1;
+}
+
+bool EventType::comp(const EventType& a, const EventType& b) {
+  if(EventID(a).value() < EventID(b).value())
+    return true;
+  if(EventID(a).value() > EventID(b).value())
+    return false;
+  return FormatID(a) < FormatID(b);
 }

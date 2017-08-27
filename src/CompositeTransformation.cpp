@@ -163,9 +163,17 @@ VertexResult CompositeTransformation::add(TransformationPtr tPtr, const EventTyp
     return make_pair(Vertex(), false);
 }
 
-VertexResult CompositeTransformation::add(CompositeTransformation&& cT, Vertex v, const EventType& goal,
-                     const EventType& provided) {
+VertexResult CompositeTransformation::add(CompositeTransformation&& cT) {
+  auto checkVertex = [this, &cT](Vertex v){
+    return std::find(mGraph[v].in().begin(), mGraph[v].in().end(), cT.out())==mGraph[v].in().end();
+  };
+  vector<Vertex> sourceVs(vertices(mGraph).first, vertices(mGraph).second);
+  sourceVs.erase(remove_if(sourceVs.begin(), sourceVs.end(), checkVertex), sourceVs.end());
+  if(sourceVs.empty())
+    return make_pair(Vertex(), false);
+
   Vertex subRoot;
+  EventType goal = cT.out();
   auto vertexCopy = [this, &cT, &subRoot](Vertex in, Vertex out) {
     if(in==cT.mRoot)
       subRoot = out;
@@ -174,16 +182,19 @@ VertexResult CompositeTransformation::add(CompositeTransformation&& cT, Vertex v
   auto edgeCopy = [this, &cT](Edge in, Edge out) {
     mGraph[out] = std::move(cT.mGraph[in]);
   };
-
   copy_graph(cT.mGraph, mGraph, boost::vertex_copy(vertexCopy).edge_copy(edgeCopy));
-  auto e = boost::add_edge(v, subRoot, mGraph);
-  if(!e.second)
-    return make_pair(Vertex(), false);
-  mGraph[e.first] = mGraph[subRoot].out();
-  auto endIt = remove(cT.mIn.begin(), cT.mIn.end(), goal);
-  size_t oldSize = mIn.size();
-  mIn.resize(oldSize+(endIt-cT.mIn.begin()));
-  std::move(cT.mIn.begin(), endIt, mIn.begin()+oldSize);
+  for(const Vertex& v: sourceVs) {
+    auto e = boost::add_edge(v, subRoot, mGraph);
+    if(!e.second)
+      return make_pair(Vertex(), false);
+    mGraph[e.first] = mGraph[subRoot].out();
+  }
+  auto endIt = remove(mIn.begin(), mIn.end(), goal);
+  size_t oldSize = endIt-mIn.begin();
+  mIn.resize(oldSize+cT.mIn.size());
+  std::move(cT.mIn.begin(), cT.mIn.end(), mIn.begin()+oldSize);
+  std::sort(mIn.begin(), mIn.end(), EventType::comp);
+  mIn.erase(std::unique(mIn.begin(), mIn.end()), mIn.end());
   return make_pair(subRoot, true);
 }
 

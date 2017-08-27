@@ -63,6 +63,8 @@ class EventType{
 
     std::size_t size() const throw();
 
+    static bool comp(const EventType& a, const EventType& b);
+
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, EventType&);
 };
 
