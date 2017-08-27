@@ -28,6 +28,7 @@ namespace test {
  using std::to_string;
  using std::string;
  using std::transform;
+ using std::unique_ptr;
  using boost::filesystem::ofstream;
  using boost::filesystem::current_path;
  using boost::filesystem::path;
@@ -55,8 +56,8 @@ namespace test {
       const EventType& outE;
       const EventType& inE;
       const string name;
-      HetTrans0(const EventType& outE, const EventType& inE, const string& name)
-        : Transformation(Type::heterogeneus, 1, EventID({Test2::value()})), outE(outE), inE(inE), name(name)
+      HetTrans0(const EventType& out, const EventType& inE, const string& name)
+        : Transformation(Type::heterogeneus, 1, out), outE(out), inE(inE), name(name)
       {}
       virtual EventIDs in(EventID goal, const MetaFilter& filter = MetaFilter()) const  {
         return EventIDs({ EventID({Test3::value()}) });
@@ -76,8 +77,8 @@ namespace test {
       const EventType& in0;
       const EventType& in1;
       const string name;
-      HetTrans1(const EventType& outE, const EventType& in0, const EventType& in1, const string& name)
-        : Transformation(Type::heterogeneus, 2, EventID({Test0::value()})), outE(outE), in0(in0), in1(in1), name(name)
+      HetTrans1(const EventType& out, const EventType& in0, const EventType& in1, const string& name)
+        : Transformation(Type::heterogeneus, 2, out), outE(out), in0(in0), in1(in1), name(name)
 
       {}
       virtual EventIDs in(EventID goal, const MetaFilter& filter = MetaFilter()) const  {
@@ -172,26 +173,16 @@ namespace test {
 
     EventType eT0, eT1, eT2, eT3, eT4, eT5, eT6, eT7, eT8;
 
-    HetTrans0 het0=HetTrans0(eT2, eT3, "Het [eT3] -> eT2");
-    HetTrans1 het1=HetTrans1(eT0, eT1, eT2, "Het [eT1, eT2] -> eT0");
-    AttrTrans0 attr0=AttrTrans0(eT3, eT4, eT4, "Attr [eT4] -> eT3(eT4)");
-    AttrTrans1 attr1=AttrTrans1(eT1, eT5, eT6, eT5, "Attr [eT5, eT6] -> eT1(eT5)");
-    AttrTrans0 attr2=AttrTrans0(eT4, eT7, eT7, "Attr [eT7] -> eT4(eT7)");
-    AttrTrans0 attr3=AttrTrans0(eT3, eT4, eT7, "Attr [eT4] -> eT3(eT7)");
-    HomTrans1  hom0=HomTrans1(eT0, eT8, "Hom [eT0, eT8] -> eT0");
-
+    unique_ptr<HetTrans0>  het0, het2;
+    unique_ptr<HetTrans1>  het1;
+    unique_ptr<AttrTrans0> attr0, attr2, attr3;
+    unique_ptr<AttrTrans1> attr1;
+    unique_ptr<HomTrans1>  hom0;
 
     KnowledgeBaseTestSuite() {
       ValueType v(id::type::Float::value(), 1, 1, false);
       ValueType v2(id::type::UInt32::value(), 1, 1, false);
       KnowledgeBase::clear();
-      KnowledgeBase::registerTransformation(het0);
-      KnowledgeBase::registerTransformation(het1);
-      KnowledgeBase::registerTransformation(attr0);
-      KnowledgeBase::registerTransformation(attr1);
-      KnowledgeBase::registerTransformation(attr2);
-      KnowledgeBase::registerTransformation(attr3);
-      KnowledgeBase::registerTransformation(hom0);
       eT0.add(AttributeType(Test0::value(), v, Scale<>(), Dimensionless()));
       eT1.add(AttributeType(Test1::value(), v, Scale<>(), Dimensionless()));
       eT2.add(AttributeType(Test2::value(), v, Scale<>(), Dimensionless()));
@@ -202,6 +193,23 @@ namespace test {
       eT6.add(AttributeType(Test4::value(), v, Scale<ratio<1, 1>, 0>(), Dimensionless()));
       eT7.add(AttributeType(Test3::value(), v2, Scale<ratio<1, 1000>>(), Dimensionless()));
       eT8.add(AttributeType(Test5::value(), v, Scale<>(), Dimensionless()));
+      het0.reset(new HetTrans0 (eT2, eT3, "Het [eT3] -> eT2"));
+      het1.reset(new HetTrans1 (eT0, eT1, eT2, "Het [eT1, eT2] -> eT0"));
+      attr0.reset(new AttrTrans0(eT3, eT4, eT4, "Attr [eT4] -> eT3(eT4)"));
+      attr1.reset(new AttrTrans1(eT1, eT5, eT6, eT5, "Attr [eT5, eT6] -> eT1(eT5)"));
+      attr2.reset(new AttrTrans0(eT4, eT7, eT7, "Attr [eT7] -> eT4(eT7)"));
+      attr3.reset(new AttrTrans0(eT3, eT4, eT7, "Attr [eT4] -> eT3(eT7)"));
+      hom0.reset(new HomTrans1 (eT0, eT8, "Hom [eT0, eT8] -> eT0"));
+      het2.reset(new HetTrans0 (eT8, eT3, "Het [eT3] -> eT8"));
+      KnowledgeBase::registerTransformation(*het0);
+      KnowledgeBase::registerTransformation(*het1);
+      KnowledgeBase::registerTransformation(*attr0);
+      KnowledgeBase::registerTransformation(*attr1);
+      KnowledgeBase::registerTransformation(*attr2);
+      KnowledgeBase::registerTransformation(*attr3);
+      KnowledgeBase::registerTransformation(*hom0);
+      KnowledgeBase::registerTransformation(*het2);
+
       path file = current_path()/"doc"/"kb.dot";
       ofstream out(file);
       //KnowledgeBase::print(out);
@@ -219,21 +227,21 @@ namespace test {
   }
 
   TEST_F(KnowledgeBaseTestSuite, singleHeterogeneusTransform) {
-    EXPECT_EQ(EventID(eT2), het0.out()) << "Wrong Output ID";
-    EXPECT_EQ(het0.arity(), 1U) << "Wrong arity";
-    ASSERT_EQ(het0.in(EventID(eT2)).size(), 1U) << "Wrong number of input IDs";
-    EXPECT_EQ(EventID(eT3), het0.in(EventID(eT2)).front()) << "Wrong input ID";
-    ASSERT_EQ(het0.in(eT2).size(), 1U) << "Wrong number of input Types";
-    EXPECT_EQ(eT3, het0.in(eT2, EventType()).front()) << "Wrong input Type";
+    EXPECT_EQ(EventID(eT2), het0->out()) << "Wrong Output ID";
+    EXPECT_EQ(het0->arity(), 1U) << "Wrong arity";
+    ASSERT_EQ(het0->in(EventID(eT2)).size(), 1U) << "Wrong number of input IDs";
+    EXPECT_EQ(EventID(eT3), het0->in(EventID(eT2)).front()) << "Wrong input ID";
+    ASSERT_EQ(het0->in(eT2).size(), 1U) << "Wrong number of input Types";
+    EXPECT_EQ(eT3, het0->in(eT2, EventType()).front()) << "Wrong input Type";
   }
 
   TEST_F(KnowledgeBaseTestSuite, singleHomogeneusTransform) {
-    EXPECT_EQ(EventID::any, attr0.out()) << "Wrong Output ID";
-    EXPECT_EQ(attr0.arity(), 1U) << "Wrong arity";
-    ASSERT_EQ(attr0.in(EventID(eT3)).size(), 1U) << "Wrong number of input IDs";
-    EXPECT_EQ(EventID(eT4), attr0.in(EventID(eT3)).front()) << "Wrong input ID";
-    ASSERT_EQ(attr0.in(eT3, eT4).size(), 1U) << "Wrong number of input Types";
-    EXPECT_EQ(eT4, attr0.in(eT3, eT4).front()) << "Wrong input Type";
+    EXPECT_EQ(EventID::any, attr0->out()) << "Wrong Output ID";
+    EXPECT_EQ(attr0->arity(), 1U) << "Wrong arity";
+    ASSERT_EQ(attr0->in(EventID(eT3)).size(), 1U) << "Wrong number of input IDs";
+    EXPECT_EQ(EventID(eT4), attr0->in(EventID(eT3)).front()) << "Wrong input ID";
+    ASSERT_EQ(attr0->in(eT3, eT4).size(), 1U) << "Wrong number of input Types";
+    EXPECT_EQ(eT4, attr0->in(eT3, eT4).front()) << "Wrong input Type";
   }
 
   TEST_F(KnowledgeBaseTestSuite, findSingleHeterogeneusTransform) {
@@ -243,7 +251,7 @@ namespace test {
     fs::path file = fs::current_path()/"doc"/("kbSingleHet.dot");
     fs::ofstream out(file);
     out << ts[0];
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het0) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het0.get()) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT3)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT2) ));
   }
@@ -255,7 +263,7 @@ namespace test {
     fs::path file = fs::current_path()/"doc"/("kbSingleAttr.dot");
     fs::ofstream out(file);
     out << ts[0];
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr0) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr0.get()) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT4)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT3) ));
   }
@@ -268,7 +276,7 @@ namespace test {
     fs::path file = fs::current_path()/"doc"/("kbMultiHet.dot");
     fs::ofstream out(file);
     out << ts[0];
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het1) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het1.get()) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT1, eT2)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT0) ));
   }
@@ -281,7 +289,7 @@ namespace test {
     fs::path file = fs::current_path()/"doc"/("kbMultiAttr.dot");
     fs::ofstream out(file);
     out << ts[0];
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr1) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr1.get()) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT5, eT6)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT1) ));
   }
@@ -293,8 +301,8 @@ namespace test {
     fs::path file = fs::current_path()/"doc"/("kbCombinedAttr.dot");
     fs::ofstream out(file);
     out << ts[0];
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr2) ) ) ) );
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr3) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr2.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr3.get()) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT7)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT3) ));
   }
@@ -307,8 +315,8 @@ namespace test {
     fs::path file = fs::current_path()/"doc"/("kbCombinedHet.dot");
     fs::ofstream out(file);
     out << ts[0];
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het0) ) ) ) );
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het1) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het0.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het1.get()) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT1, eT3)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT0) ));
   }
@@ -322,11 +330,11 @@ namespace test {
     fs::path file = fs::current_path()/"doc"/("kbFullTree.dot");
     fs::ofstream out(file);
     out << ts[0];
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het0) ) ) ) );
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het1) ) ) ) );
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr1) ) ) ) );
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr2) ) ) ) );
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr3) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het0.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het1.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr1.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr2.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr3.get()) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT7, eT5, eT6)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT0) ));
   }
@@ -349,13 +357,40 @@ namespace test {
     fs::path file = fs::current_path()/"doc"/("kbFullTreeWithHom.dot");
     fs::ofstream out(file);
     out << ts[0];
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het0) ) ) ) );
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &het1) ) ) ) );
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr1) ) ) ) );
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr2) ) ) ) );
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &attr3) ) ) ) );
-    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, &hom0) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het0.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het1.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr1.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr2.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr3.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, hom0.get()) ) ) ) );
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT7, eT5, eT6, eT8)) ));
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT0) ));
+  }
+
+  TEST_F(KnowledgeBaseTestSuite, fullTreeWithExtendedHom) {
+    auto filter0 = filter::uncertainty(filter::e0[Test0()]) < Value<float, 1, 1, false>({{{ 10 }}});
+    auto filterExpr = filter0(filter::s0);
+    vector<uint8_t> buffer(decltype(filterExpr)::size());
+    Serializer<decltype(buffer.begin())> s(buffer.begin());
+    s << filterExpr;
+    MetaFilter metaFilter({&eT0});
+    DeSerializer<decltype(buffer.cbegin())> d(buffer.cbegin(), buffer.cend());
+    EXPECT_NO_THROW(d >> metaFilter) << "buffer: " << buffer;
+    KnowledgeBase::registerEventType(eT7);
+    KnowledgeBase::registerEventType(eT5);
+    KnowledgeBase::registerEventType(eT6);
+    Transformations ts = KnowledgeBase::findTransforms(eT0, metaFilter);
+    ASSERT_THAT(ts, SizeIs(1));
+    fs::path file = fs::current_path()/"doc"/("kbFullTreeWithExtendedHom.dot");
+    fs::ofstream out(file);
+    out << ts[0];
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het0.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het1.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr1.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr2.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr3.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, hom0.get()) ) ) ) );
+    EXPECT_THAT(ts, Each( Property(&CompositeTransformation::in, UnorderedElementsAre(eT7, eT5, eT6)) ));
     EXPECT_THAT(ts, Each( Property(&CompositeTransformation::out, eT0) ));
   }
 }

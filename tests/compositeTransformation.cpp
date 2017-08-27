@@ -103,11 +103,13 @@ struct CompositeTransformSuite : public ::testing::Test {
   /// Lookup structure to map TestTransformation names to instances
   map<string, TestTransformer*> trans;
   /// Statically allocated unary TestTransformations
-  TestTransformation a, c, d;
+  TestTransformation a, c, d, e;
   /// Linear CompositeTransformation containing a and b
   CompositeTransformation compTrans;
   /// Tree-like CompositeTransformation containing c, b and d
   CompositeTransformation compTrans2;
+  /// Single CompositeTransformation containing e
+  CompositeTransformation compTrans3;
   /// Dynamically allocated unary TestTransformation
   shared_ptr<const TestTransformation> b;
   /// Final goal EventType: single Attribute Test0 of certain 1x1 float
@@ -130,7 +132,7 @@ struct CompositeTransformSuite : public ::testing::Test {
 
   /// Create four TestTransformations
   CompositeTransformSuite()
-    : a("a", 1), c("c", 2), d("d", 1), b(new TestTransformation("b", 1))
+    : a("a", 1), c("c", 2), d("d", 1),  e("e", 2), b(new TestTransformation("b", 1))
   {}
 
   /// Create CompositeTransformations compTrans and compTrans2
@@ -175,6 +177,8 @@ struct CompositeTransformSuite : public ::testing::Test {
       .Times(1).WillOnce(Return(EventTypes({intermediate, intermediate2})));
     EXPECT_CALL(d, in(intermediate2, provided2, _))
       .Times(1).WillOnce(Return(EventTypes({provided2})));
+    EXPECT_CALL(e, in(goal, _, _))
+      .Times(1).WillOnce(Return(EventTypes({goal, intermediate})));
     auto r0 = compTrans.add(&a, goal, provided, metaFilter);
     ASSERT_TRUE(r0.second);
     auto r1 = compTrans.add(b.get(), r0.first, intermediate, provided);
@@ -190,6 +194,8 @@ struct CompositeTransformSuite : public ::testing::Test {
     out.close();
     out.open(current_path()/"doc"/"treeTransformation.dot");
     out << compTrans2;
+    auto r5 = compTrans3.add(&e, goal);
+    ASSERT_TRUE(r5.second);
 
     EXPECT_EQ(metaFilter, compTrans.filter());
     EXPECT_EQ(metaFilter, compTrans2.filter());
@@ -390,29 +396,28 @@ TEST_F(CompositeTransformSuite, treeCreateTest) {
   }
 }
 
-/** \brief Unit-Test checking correct merging of linear and tree-like
+/** \brief Unit-Test checking correct merging of single and tree-like
  * CompositeTransformation **/
 TEST_F(CompositeTransformSuite, insertTest) {
   using Vertex = CompositeTransformation::Vertex;
-  auto edges = boost::edges(compTrans.graph());
-  ASSERT_NE(edges.first, edges.second);
-  Vertex insertPoint = boost::target(*edges.first, compTrans.graph());
-  ASSERT_NO_THROW(compTrans.add(move(compTrans2), insertPoint,
-                                compTrans.in().at(0)));
+  std::pair<Vertex, bool> r;
+  ASSERT_NO_THROW(r = compTrans3.add(move(compTrans2)));
+  ASSERT_TRUE(r.second);
+  Vertex insertPoint = compTrans3.root();
   path file = current_path()/"doc"/"insertCompTrans.dot";
   ofstream out(file);
-  out << compTrans;
-  ASSERT_EQ(out_degree(insertPoint, compTrans.graph()), 1U);
-  auto outEdges = boost::out_edges(insertPoint, compTrans.graph());
-  Vertex cV = boost::target(*outEdges.first, compTrans.graph());
-  ASSERT_EQ(out_degree(cV, compTrans.graph()), 2U);
-  outEdges = boost::out_edges(cV, compTrans.graph());
-  Vertex bV = boost::target(*outEdges.first, compTrans.graph());
-  Vertex dV = boost::target(*++outEdges.first, compTrans.graph());
-  EXPECT_EQ(compTrans.graph()[cV].trans(), &c);
-  EXPECT_EQ(compTrans.graph()[bV].trans(), b.get());
-  EXPECT_EQ(compTrans.graph()[dV].trans(), &d);
-  EXPECT_THAT(compTrans.in(), UnorderedElementsAre(provided, provided2));
+  out << compTrans3;
+  ASSERT_EQ(out_degree(insertPoint, compTrans3.graph()), 1U);
+  auto outEdges = boost::out_edges(insertPoint, compTrans3.graph());
+  Vertex cV = boost::target(*outEdges.first, compTrans3.graph());
+  ASSERT_EQ(out_degree(cV, compTrans3.graph()), 2U);
+  outEdges = boost::out_edges(cV, compTrans3.graph());
+  Vertex bV = boost::target(*outEdges.first, compTrans3.graph());
+  Vertex dV = boost::target(*++outEdges.first, compTrans3.graph());
+  EXPECT_EQ(compTrans3.graph()[cV].trans(), &c);
+  EXPECT_EQ(compTrans3.graph()[bV].trans(), b.get());
+  EXPECT_EQ(compTrans3.graph()[dV].trans(), &d);
+  EXPECT_THAT(compTrans3.in(), UnorderedElementsAre(provided, provided2, intermediate));
 }
 
 }}
