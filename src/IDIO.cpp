@@ -14,6 +14,12 @@ namespace id {
         case(Reference::value())   : return "Reference     ";
         case(Object::value())      : return "Object        ";
         case(Speed::value())       : return "Speed         ";
+        case(250)                  : return "Test0         ";
+        case(251)                  : return "Test1         ";
+        case(252)                  : return "Test2         ";
+        case(253)                  : return "Test3         ";
+        case(254)                  : return "Test4         ";
+        case(255)                  : return "Test5         ";
         default                    : return "Unspecified   ";
       }
     }
