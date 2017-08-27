@@ -4,10 +4,15 @@
 #include <MetaFactory.h>
 #include <Transformations.h>
 
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 namespace test {
 
+ namespace fs = boost::filesystem;
 using namespace ::id::attribute;
 using namespace ::id::type;
+
+using std::to_string;
 
 using TransPtr    = Transformation::TransPtr;
 using Events      = Transformer::Events;
@@ -44,10 +49,13 @@ TEST_F(TransformationTestSuite, scaleTransformBasicTest) {
   registerTypes();
   auto transList=KnowledgeBase::findTransforms(outT);
   ASSERT_GT(transList.size(), 0U) << "No Transform found!";
-  std::ostringstream os;
-  for(const CompositeTransformation& t : transList)
-    os << t;
-  ASSERT_LE(transList.size(), 1U) << "Too many Transforms found: " << os.str();
+  size_t i=0;
+  for(const CompositeTransformation& t : transList) {
+    fs::path file = fs::current_path()/"doc"/("basicScale"+to_string(i++)+".dot");
+    fs::ofstream out(file);
+    out << t;
+  }
+  ASSERT_LE(transList.size(), 1U);
   TransPtr scaleT = transList.front().create(AbstractPolicy());
   ASSERT_NE(scaleT, nullptr);
   EXPECT_TRUE(scaleT->check(in)) << "MetaValue is not supported by ScaleTransform";
@@ -67,10 +75,14 @@ TEST_F(TransformationTestSuite, typeTransformBasicTest) {
   registerTypes();
   auto transList = KnowledgeBase::findTransforms(outT);
   ASSERT_GT(transList.size(), 0U) << "No Transform found!";
-  std::ostringstream os;
-  for(const CompositeTransformation& t : transList)
-    os << t;
-  ASSERT_LE(transList.size(), 1U) << "Too many Transforms found: " << os.str();
+  size_t i=0;
+  for(const CompositeTransformation& t : transList) {
+    fs::path file = fs::current_path()/"doc"/("basicType"+to_string(i++)+".dot");
+    fs::ofstream out(file);
+    out << t;
+  }
+
+  ASSERT_LE(transList.size(), 1U);
   TransPtr typeT = transList.front().create(AbstractPolicy());
   ASSERT_NE(typeT, nullptr);
   EXPECT_TRUE(typeT->check(in)) << "MetaValue is not supported by TypeTransform";
@@ -90,10 +102,12 @@ TEST_F(TransformationTestSuite, castedRescaleTest) {
   outA.value() = MetaValue({{{1, 1}}}, UInt32::value());
   registerTypes();
   auto transList = KnowledgeBase::findTransforms(outT);
-  EXPECT_GE(transList.size(), 1U) << "Wrong amount of Transforms found!";
-  std::ostringstream os;
+  EXPECT_GE(transList.size(), 1U);
+  size_t i=0;
   for(const CompositeTransformation& t : transList) {
-    os << t;
+    fs::path file = fs::current_path()/"doc"/("scaleType"+to_string(i++)+".dot");
+    fs::ofstream out(file);
+    out << t;
     TransPtr typeT = t.create(AbstractPolicy());
     ASSERT_NE(typeT, nullptr);
     EXPECT_TRUE(typeT->check(in)) << "MetaValue is not supported by TypeTransform";
