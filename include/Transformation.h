@@ -52,7 +52,7 @@ class SimpleTransformer : public Transformer {
     SimpleTransformer(const EventType& out, const EventType& in)
       : Transformer(out, {in}) {}
     virtual Events operator()(const MetaEvent& event) {
-      if(mIn.size() == 1 && (EventType)event <= mIn[0] && check(event))
+      if(mIn.size() == 1 && mIn[0].isCompatible(EventType(event)) && check(event))
         return {execute(event)};
       else
         return {};
@@ -71,7 +71,7 @@ class BufferedTransformer : public Transformer {
     virtual Events operator()(const MetaEvent& event) {
       Events result;
       EventType eT = (EventType)event;
-      auto checkType = [&eT](const EventType& b){ return b<=eT; };
+      auto checkType = [&eT](const EventType& b){ return eT.isCompatible(b); };
       if( any_of(mIn.begin(), mIn.end(), checkType) && check(event)) {
         mStorage.addEvent(event);
         for(const EventPtrs& input : mStorage) {

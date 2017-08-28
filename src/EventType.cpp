@@ -29,8 +29,8 @@ EventType::const_iterator EventType::begin() const {
   return const_iterator(mStorage.cbegin());
 }
 
-EventType::const_iterator EventType::end() const { 
-  return const_iterator(mStorage.cend()); 
+EventType::const_iterator EventType::end() const {
+  return const_iterator(mStorage.cend());
 }
 
 bool EventType::const_iterator::operator==(const const_iterator& b) const {
@@ -57,27 +57,24 @@ AttributeType* EventType::attribute(KeyType key) {
     return &i->second;
 }
 
-bool EventType::operator<=(const EventType& b) const {
-  for( const auto& p : mStorage ){
-    auto i = b.mStorage.find(p.first);
-    if( i == b.mStorage.end())
-      return false;
-    if( !(p.second == i->second) )
-      return false;
-  }
-  return true;
-}
-
 bool EventType::operator<(const EventType& b) const {
-  if(mStorage.size() >= b.mStorage.size())
+  EventID aEID = (EventID)*this;
+  EventID bEID = (EventID)b;
+  FormatID aFID = (FormatID)*this;
+  FormatID bFID = (FormatID)b;
+  if(aEID<bEID)
+    return true;
+  if(aEID>bEID)
     return false;
-  return *this <= b;
+  return aFID<bFID;
 }
 
 bool EventType::operator==(const EventType& b) const{
-  if(mStorage.size() != b.mStorage.size())
-    return false;
-  return *this <= b;
+  EventID aEID = (EventID)*this;
+  EventID bEID = (EventID)b;
+  FormatID aFID = (FormatID)*this;
+  FormatID bFID = (FormatID)b;
+  return aEID == bEID && aFID == bFID;
 }
 
 size_t EventType::operator-(const EventType& b) const{
@@ -91,18 +88,25 @@ size_t EventType::operator-(const EventType& b) const{
   return value;
 }
 
+bool EventType::isCompatible(const EventType& b) const {
+  EventID aEID = (EventID)*this;
+  EventID bEID = (EventID)b;
+  FormatID aFID = (FormatID)*this;
+  FormatID bFID = (FormatID)b;
+  if (aEID == bEID && aFID == bFID)
+    return true;
+  if(!aEID.isCompatible(bEID))
+    return false;
+  for(const AttributeType& aT : b)
+    if(aT != (*this)[aT.id()])
+      return false;
+  return true;
+}
+
 uint8_t EventType::length() const {
   return mStorage.size();
 }
 
 std::size_t EventType::size() const throw() {
   return AttributeType::size()*length()+1;
-}
-
-bool EventType::comp(const EventType& a, const EventType& b) {
-  if(EventID(a).value() < EventID(b).value())
-    return true;
-  if(EventID(a).value() > EventID(b).value())
-    return false;
-  return FormatID(a) < FormatID(b);
 }

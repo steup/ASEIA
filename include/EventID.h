@@ -39,28 +39,29 @@ class EventID {
       return mID;
     }
 
-		bool operator==(const EventID& b) const {
+		bool operator==(EventID b) const {
 			return value() == b.value();
 		}
 
-		/** \brief subset test **/
-		bool operator<=(const EventID& b) const {
-			return value() && (b.value() % value() == 0);
+    bool operator<(EventID b) const {
+			return value() < b.value();
 		}
 
-		bool operator!=(const EventID& b) const {
+		/** \brief superset test **/
+    bool isCompatible(EventID b) const {
+      return b.value() && (value() % b.value() == 0);
+    }
+
+		bool operator<=(EventID b) const {
+			return (*this)<b || (*this)==b;
+		}
+
+		bool operator!=(EventID b) const {
 			return !((*this)==b);
 		}
 
-		/** \brief strict superset test
-     **/
-		bool operator>(const EventID& b) const {
+		bool operator>(EventID b) const {
 			return b<(*this);
-		}
-
-		/** \brief strict subset test **/
-		bool operator<(const EventID& b) const {
-			return (*this)<=b && (*this)!=b;
 		}
 
 		bool operator>=(const EventID& b) const {
@@ -71,8 +72,6 @@ class EventID {
     EventID& operator*=(id::attribute::ID attr);
     EventID operator/(id::attribute::ID attr) const { return EventID(*this)/=attr; }
     EventID operator*(id::attribute::ID attr) const { return EventID(*this)*=attr; }
-
-    static bool comp(EventID a, EventID b) { return a.mID < b.mID; }
 
 		static const EventID any;
 };

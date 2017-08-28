@@ -133,7 +133,7 @@ class AbstractRegistry {
       EventIDs temp(mStorage.size());
       auto transFunc =  [](const typename Storage::value_type& v){ return v.first.eventID(); };
       transform(mStorage.begin(), mStorage.end(), temp.begin(), transFunc);
-      sort(temp.begin(), temp.end(), EventID::comp);
+      sort(temp.begin(), temp.end());
       temp.erase(unique(temp.begin(), temp.end()), temp.end());
       return temp;
     }

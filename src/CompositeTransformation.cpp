@@ -84,7 +84,7 @@ static It call(Vertex v, const MetaEvent& e, const Graph& graph, It it) {
       Events result;
       EventType eT=(EventType)event;
       auto eTCompat = [eT](const EventType& eTin) {
-        return eTin<=eT;
+        return eT.isCompatible(eTin);
       };
       for(auto it=vertices(graph).first; it!=vertices(graph).second;it++) {
         Transformer& t = *graph[*it];
@@ -114,8 +114,8 @@ static It call(Vertex v, const MetaEvent& e, const Graph& graph, It it) {
         EventTypes outETs(edges.second-edges.first);
         EventTypes resETs(inETs.size());
         transform(edges.first, edges.second, outETs.begin(), [&g](const Edge& e){ return g[e]; });
-        sort(inETs.begin(), inETs.end(), EventType::comp);
-        sort(outETs.begin(), outETs.end(), EventType::comp);
+        sort(inETs.begin(), inETs.end());
+        sort(outETs.begin(), outETs.end());
         resETs.erase(set_difference(inETs.begin(), inETs.end(), outETs.begin(), outETs.end(), resETs.begin()), resETs.end());
         for(const EventType& eT: resETs) {
           o << ";\n\"" << EventID(eT) << "/" << FormatID(eT) << "\" [label=\"" << eT << "\"];\n";

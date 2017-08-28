@@ -1,11 +1,13 @@
 #pragma once
 
 #include <AttributeType.h>
-#include <map>
-
 #include <Serializer.h>
 #include <DeSerializer.h>
 
+#include <EventID.h>
+#include <FormatID.h>
+
+#include <map>
 class EventType{
   public:
     using KeyType = id::attribute::ID;
@@ -42,8 +44,9 @@ class EventType{
       return true;
     }
 
-    void remove(KeyType k) { mStorage.erase(k); }
-
+    void remove(KeyType k) {
+      mStorage.erase(k);
+    }
     const AttributeType* attribute(KeyType key) const;
     AttributeType* attribute(KeyType key);
 
@@ -51,19 +54,20 @@ class EventType{
     const AttributeType& operator[](KeyType key) const { return *attribute(key); }
     AttributeType& operator[](KeyType key)             { return *attribute(key); }
 
+    EventID eID() const { return EventID(*this); }
+    FormatID fID() const { return FormatID(*this); }
+    bool isCompatible(const EventType& b) const;
     std::size_t operator-(const EventType& b) const;
     bool operator==(const EventType& b) const;
     bool operator!=(const EventType& b) const { return !(*this == b);}
     bool operator<(const EventType& b) const;
-    bool operator<=(const EventType& b) const;
+    bool operator<=(const EventType& b) const { return *this < b || *this == b; }
     bool operator>(const EventType& b) const { return b < *this; }
-    bool operator>=(const EventType& b) const { return b <= *this; }
+    bool operator>=(const EventType& b) const { return !(*this < b); }
 
     uint8_t length() const;
 
     std::size_t size() const throw();
-
-    static bool comp(const EventType& a, const EventType& b);
 
     template<typename PB> friend DeSerializer<PB>& operator>>(DeSerializer<PB>&, EventType&);
 };

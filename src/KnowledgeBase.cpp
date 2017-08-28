@@ -62,7 +62,7 @@ class KBImpl {
         for(EventID id : compIDs) {
           if(found)break;
           for(const EventType& provType : mTypes.find(id))
-            if(in<=provType)  {
+            if(provType.isCompatible(in))  {
               found=true;
               break;
             }
@@ -160,7 +160,7 @@ class KBImpl {
     EventTypes findCompatible(const EventType& eT) {
       EventTypes result;
       for(const EventType& curr : mTypes)
-        if(eT<=curr)
+        if(curr.isCompatible(eT))
           result.push_back(curr);
       return result;
     }
@@ -212,14 +212,13 @@ class KBImpl {
      **/
     Transformations find(const EventType& goal, const MetaFilter& filter) {
       EventIDs ids = mTypes.ids();
-      sort(ids.begin(), ids.end(), EventID::comp); //<< Sort EventIDs ascending
+      sort(ids.begin(), ids.end()); //<< Sort EventIDs ascending
 
       Transformations result;
 
       mHetTrans.generate(goal, ids, back_inserter(result));
       //generateHomTrans(goal, filter, ids, back_inserter(result));
       generateAttTrans(goal, ids, back_inserter(result));
-
       // start dirty hack including homogeneus transforms as final trans
       for(const Transformation* homTrans: mHomTrans)
         for(CompositeTransformation& cT: result) {
@@ -230,12 +229,11 @@ class KBImpl {
           swap(cT, homCT);
           cT.add(move(homCT));
           homETs.erase(remove(homETs.begin(), homETs.end(), cT.out()), homETs.end());
-          sort(homETs.begin(), homETs.end(), EventType::comp);
-          sort(origETs.begin(), origETs.end(), EventType::comp);
+          sort(homETs.begin(), homETs.end());
+          sort(origETs.begin(), origETs.end());
           EventTypes todo;
           std::set_difference(homETs.begin(), homETs.end(), origETs.begin(), origETs.end(), back_inserter(todo));
           for(const EventType& eT: todo) {
-            std::cout << eT << std::endl;
             Transformations todoTrans;
             mHetTrans.generate(eT, ids, back_inserter(todoTrans));
             for(CompositeTransformation& todoCT: todoTrans)

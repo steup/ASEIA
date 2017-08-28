@@ -27,7 +27,7 @@ class EventStorage {
     class const_iterator : public std::iterator<std::forward_iterator_tag, std::vector<const MetaEvent*>> {
       private:
         long mIndex=-1;
-        long mFactor=0;
+        long mFactor=1;
         const std::vector<size_t>* mCurrIndicesPtr = nullptr;
         const Storage* mStoragePtr = nullptr;
       public:

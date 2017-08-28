@@ -61,7 +61,7 @@ EventStorage::EventStorage(const EventTypes& in, const AbstractPolicy& policy)
 void EventStorage::addEvent(const MetaEvent& e) {
   mCurrIndices.clear();
   for(size_t i=0;i<mInTypes.size();i++)
-    if(mInTypes[i]<=(EventType)e) {
+    if(((EventType)e).isCompatible(mInTypes[i])) {
       mStorage[i].push_front(e);
       mCurrIndices.push_back(i);
     }
