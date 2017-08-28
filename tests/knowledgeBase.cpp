@@ -326,10 +326,13 @@ namespace test {
     KnowledgeBase::registerEventType(eT5);
     KnowledgeBase::registerEventType(eT6);
     Transformations ts = KnowledgeBase::findTransforms(eT0);
-    ASSERT_THAT(ts, SizeIs(1));
-    fs::path file = fs::current_path()/"doc"/("kbFullTree.dot");
-    fs::ofstream out(file);
-    out << ts[0];
+    EXPECT_THAT(ts, SizeIs(1));
+    size_t i=0;
+    for(const CompositeTransformation& cT: ts) {
+      fs::path file = fs::current_path()/"doc"/("kbFull"+to_string(i++)+".dot");
+      fs::ofstream out(file);
+      out << cT;
+    }
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het0.get()) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het1.get()) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr1.get()) ) ) ) );
@@ -353,10 +356,13 @@ namespace test {
     KnowledgeBase::registerEventType(eT6);
     KnowledgeBase::registerEventType(eT8);
     Transformations ts = KnowledgeBase::findTransforms(eT0, metaFilter);
-    ASSERT_THAT(ts, SizeIs(1));
-    fs::path file = fs::current_path()/"doc"/("kbFullTreeWithHom.dot");
-    fs::ofstream out(file);
-    out << ts[0];
+    EXPECT_THAT(ts, SizeIs(1));
+    size_t i=0;
+    for(const CompositeTransformation& cT: ts) {
+      fs::path file = fs::current_path()/"doc"/("kbFullTreeWithHom"+to_string(i++)+".dot");
+      fs::ofstream out(file);
+      out << cT;
+    }
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het0.get()) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het1.get()) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr1.get()) ) ) ) );
@@ -380,10 +386,13 @@ namespace test {
     KnowledgeBase::registerEventType(eT5);
     KnowledgeBase::registerEventType(eT6);
     Transformations ts = KnowledgeBase::findTransforms(eT0, metaFilter);
-    ASSERT_THAT(ts, SizeIs(1));
-    fs::path file = fs::current_path()/"doc"/("kbFullTreeWithExtendedHom.dot");
-    fs::ofstream out(file);
-    out << ts[0];
+    EXPECT_THAT(ts, SizeIs(1));
+    size_t i=0;
+    for(const CompositeTransformation& cT: ts) {
+      fs::path file = fs::current_path()/"doc"/("kbFullTreeWithExtendedHom"+to_string(i++)+".dot");
+      fs::ofstream out(file);
+      out << cT;
+    }
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het0.get()) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, het1.get()) ) ) ) );
     EXPECT_THAT(ts, Each( ResultOf(getTrans, Contains( Property(&ConfiguredTransformation::trans, attr1.get()) ) ) ) );

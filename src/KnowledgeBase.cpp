@@ -10,10 +10,13 @@
 #include <numeric>
 #include <utility>
 #include <ostream>
-#include <iostream>
 #include <IO.h>
 
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+
 using namespace std;
+namespace fs = boost::filesystem;
 
 class KBImpl {
   public:
@@ -105,8 +108,8 @@ class KBImpl {
             TransList path = cT.path(v);
             copy_if(trans.begin(), trans.end(), back_inserter(tempTrans),
                     [&path](TransformationPtr tPtr){return std::find(path.begin(), path.end(), tPtr)==path.end(); });
-            for(TransformationPtr tPtr : tempTrans) {
               for(const EventType& provided: extractCompatibleEventTypes(eT, ids)) {
+            for(TransformationPtr tPtr : tempTrans) {
                 EventTypeResult result = findGoalEventType(eT, tPtr->in(eT, provided));
                 if( result.second && result.first - provided < provided - eT) {
                   CompositeTransformation newCT = cT;
@@ -202,6 +205,12 @@ class KBImpl {
       mTypes.unregisterType(eT);
     }
 
+    void filterDuplicates(vector<CompositeTransformation>& result) {
+      vector<CompositeTransformation> temp(result.size());
+      auto resIt = std::copy_if(result.begin(), result.end(), temp.begin(), [&temp](const CompositeTransformation& cT){return std::find(temp.begin(), temp.end(), cT)==temp.end();});
+      temp.resize(resIt-temp.begin());
+      result=temp;
+    }
 
     /** \brief Find Composite Transformations for EventType
      *  \param goal the output of the Transformations
@@ -226,19 +235,20 @@ class KBImpl {
           EventTypes homETs =homCT.in();
           EventTypes origETs =cT.in();
           if(homETs.empty()) continue;
-          swap(cT, homCT);
-          cT.add(move(homCT));
+          homCT.add(move(cT));
           homETs.erase(remove(homETs.begin(), homETs.end(), cT.out()), homETs.end());
           sort(homETs.begin(), homETs.end());
           sort(origETs.begin(), origETs.end());
           EventTypes todo;
-          std::set_difference(homETs.begin(), homETs.end(), origETs.begin(), origETs.end(), back_inserter(todo));
+          std::set_difference(homETs.begin(), homETs.end(), origETs.begin(),
+                              origETs.end(), back_inserter(todo));
           for(const EventType& eT: todo) {
             Transformations todoTrans;
             mHetTrans.generate(eT, ids, back_inserter(todoTrans));
             for(CompositeTransformation& todoCT: todoTrans)
-              cT.add(move(todoCT));
+              homCT.add(move(todoCT));
           }
+          cT=homCT;
         }
       // end dirty hack including homogeneus transforms as final trans
 
@@ -258,9 +268,44 @@ class KBImpl {
       close(mAttNTrans);
       close(mAtt1Trans);
 
-      auto check = [this, &ids](const CompositeTransformation& t){ return !unfitEvents(t, ids).empty() || !t.check(); };
-      result.erase(remove_if(result.begin(), result.end(), check), result.end());
 
+      filterDuplicates(result);
+#ifndef NDEBUG
+      size_t i=0;
+      for(const CompositeTransformation& cT: result) {
+        fs::path file = fs::current_path()/"doc"/("KBFind"+to_string(EventID(goal).value())+"_"+to_string(FormatID(goal).value())+"_"+to_string(i++)+".dot");
+        fs::ofstream out(file);
+        out << cT;
+      }
+#endif
+
+      auto check = [this, &ids](const CompositeTransformation& t){ return !unfitEvents(t, ids).empty() || !t.check(); };
+      auto endIt = remove_if(result.begin(), result.end(), check);
+//      sort(result.begin(), endIt);
+//      endIt = unique(result.begin(), endIt);
+      result.erase(endIt, result.end());
+
+      filterDuplicates(result);
+      for(CompositeTransformation& cT: result) {
+        EventTypes all = cT.allIn();
+        for(const EventType& in : all) {
+          if(std::find(cT.in().begin(), cT.in().end(), in)!=cT.in().end())
+            continue;
+
+          EventIDs compIDs = extractCompatibleIDs(in, ids);
+          bool found = false;
+          for(EventID id : compIDs) {
+            if(found)break;
+            for(const EventType& provType : mTypes.find(id))
+              if(provType.isCompatible(in))  {
+                found=true;
+                break;
+              }
+          }
+          if(found)
+            cT.addIn(in);
+        }
+      }
       return result;
     }
 

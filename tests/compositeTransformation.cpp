@@ -262,6 +262,15 @@ TEST_F(CompositeTransformSuite, treeInTest) {
   EXPECT_EQ(result, EventTypes({provided, provided2}));
 }
 
+TEST_F(CompositeTransformSuite, eqTest) {
+  EXPECT_FALSE(compTrans == compTrans2);
+  EXPECT_FALSE(compTrans == compTrans3);
+  EXPECT_FALSE(compTrans2 == compTrans3);
+  EXPECT_FALSE(compTrans2 == compTrans);
+  EXPECT_FALSE(compTrans3 == compTrans);
+  EXPECT_FALSE(compTrans3 == compTrans2);
+}
+
 /** \brief Unit-Test checking correct creation of CompositeTransformer from
  * linear CompositeTransformation **/
 TEST_F(CompositeTransformSuite, linearCreateTest) {

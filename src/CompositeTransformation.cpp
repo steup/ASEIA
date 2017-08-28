@@ -160,6 +160,23 @@ bool CompositeTransformation::check() const {
   return boost::num_vertices(mGraph);
 }
 
+static void extractLeafTypes(const Graph& g, back_insert_iterator<EventTypes> it) {
+  auto getTypes = [&g](back_insert_iterator<EventTypes> it, Vertex v){
+    const EventTypes& tempIn = g[v].in();
+    EventTypes tTypes(out_degree(v, g));
+    auto copyTypes = [&tTypes](const EventType& t){
+      return count(tTypes.begin(), tTypes.end(), t)==0;
+    };
+    transform(out_edges(v, g).first,
+              out_edges(v, g).second,
+              tTypes.begin(),
+              [&g](Edge e){ return g[e];});
+    return copy_if(tempIn.begin(), tempIn.end(), it, copyTypes);
+  };
+
+  accumulate(vertices(g).first, vertices(g).second, it, getTypes);
+}
+
 VertexResult CompositeTransformation::add(TransformationPtr tPtr, const EventType& tempGoal,
                                           const EventType& provided) {
   if(num_vertices(mGraph)==0) {
@@ -168,17 +185,56 @@ VertexResult CompositeTransformation::add(TransformationPtr tPtr, const EventTyp
     mIn=mGraph[mRoot].in();
     mOut=mGraph[mRoot].out();
     return make_pair(mRoot, true);
-  }else
-    return make_pair(Vertex(), false);
+  }else {
+    ConfiguredTransformation tempCT(tPtr, tempGoal, provided, mFilter);
+    if(tempCT.in().empty() || std::find(mIn.begin(), mIn.end(), tempCT.out())!=mIn.end())
+      return make_pair(Vertex(), false);
+    Vertex temp = boost::add_vertex(mGraph);
+    mGraph[temp] = tempCT;
+    for(auto it=vertices(mGraph).first; it!=vertices(mGraph).second; it++) {
+      Vertex v = *it;
+      const EventTypes& in = mGraph[v].in();
+      if(std::find(in.begin(), in.end(), tempCT.out())!=in.end()) {
+        auto e = add_edge(v, temp, mGraph);
+        if(e.second)
+          mGraph[e.first] = tempCT.out();
+      }
+    }
+    mIn.clear();
+    extractLeafTypes(mGraph, back_inserter(mIn));
+    std::sort(mIn.begin(), mIn.end());
+    mIn.erase(std::unique(mIn.begin(), mIn.end()), mIn.end());
+    return make_pair(temp, true);
+  }
 }
 
 VertexResult CompositeTransformation::add(TransformationPtr tPtr, const EventType& tempGoal,
                                           const EventType& provided, const MetaFilter& filter) {
-  if(num_vertices(mGraph)==0) {
+  if(num_vertices(mGraph)==0)
     mFilter = filter;
-    return add(tPtr, tempGoal, provided);
-  }else
-    return make_pair(Vertex(), false);
+  return add(tPtr, tempGoal, provided);
+}
+
+EventTypes CompositeTransformation::allIn() const {
+  EventTypes temp;
+  const Graph& g = mGraph;
+  auto getTypes = [&g](back_insert_iterator<EventTypes> it, Vertex v){
+    const EventTypes& tempIn = g[v].in();
+    return copy(tempIn.begin(), tempIn.end(), it);
+  };
+
+  accumulate(vertices(g).first, vertices(g).second, back_inserter(temp), getTypes);
+  std::sort(temp.begin(), temp.end());
+  temp.erase(std::unique(temp.begin(), temp.end()), temp.end());
+  return temp;
+}
+
+bool CompositeTransformation::addIn(const EventType& eT) {
+  if(std::find(mIn.begin(), mIn.end(), eT)==mIn.end()) {
+    mIn.push_back(eT);
+    return true;
+  } else
+    return false;
 }
 
 VertexResult CompositeTransformation::add(CompositeTransformation&& cT) {
@@ -207,11 +263,9 @@ VertexResult CompositeTransformation::add(CompositeTransformation&& cT) {
       return make_pair(Vertex(), false);
     mGraph[e.first] = mGraph[subRoot].out();
   }
-  auto endIt = remove(mIn.begin(), mIn.end(), goal);
-  size_t oldSize = endIt-mIn.begin();
-  mIn.resize(oldSize+cT.mIn.size());
-  std::move(cT.mIn.begin(), cT.mIn.end(), mIn.begin()+oldSize);
-  std::sort(mIn.begin(), mIn.end(), EventType::comp);
+  mIn.clear();
+  extractLeafTypes(mGraph, back_inserter(mIn));
+  std::sort(mIn.begin(), mIn.end());
   mIn.erase(std::unique(mIn.begin(), mIn.end()), mIn.end());
   return make_pair(subRoot, true);
 }
@@ -228,21 +282,9 @@ VertexResult CompositeTransformation::add(TransformationPtr tPtr, Vertex v,
   auto e = boost::add_edge(v, newV, mGraph);
   mGraph[e.first]=mGraph[newV].out();
   mIn.clear();
-
-  auto getTypes = [this](back_insert_iterator<EventTypes> it, Vertex v){
-    const EventTypes& tempIn = mGraph[v].in();
-    EventTypes tTypes(out_degree(v, mGraph));
-    auto copyTypes = [&tTypes](const EventType& t){
-      return count(tTypes.begin(), tTypes.end(), t)==0;
-    };
-    transform(out_edges(v, mGraph).first,
-              out_edges(v, mGraph).second,
-              tTypes.begin(),
-              [this](Edge e){ return mGraph[e];});
-    return copy_if(tempIn.begin(), tempIn.end(), it, copyTypes);
-  };
-
-  accumulate(vertices(mGraph).first, vertices(mGraph).second, back_inserter(mIn), getTypes);
+  extractLeafTypes(mGraph, back_inserter(mIn));
+  std::sort(mIn.begin(), mIn.end());
+  mIn.erase(std::unique(mIn.begin(), mIn.end()), mIn.end());
   return make_pair(newV, true);
 }
 
@@ -287,34 +329,66 @@ VertexList CompositeTransformation::find(const EventType& eT) const {
   return result;
 }
 
+bool ConfiguredTransformation::operator==(const ConfiguredTransformation& b) const{
+  if ( !(mTPtr == b.mTPtr) )
+    return false;
+
+  if ( mIn.size() != b.mIn.size())
+    return false;
+
+  if( mOut != b.mOut )
+    return false;
+
+  if(std::equal(mIn.begin(), mIn.end(), b.mIn.begin()))
+    return true;
+  else
+    return false;
+};
+
+bool CompositeTransformation::operator==(const CompositeTransformation& b) const {
+  if(num_vertices(mGraph) != num_vertices(b.mGraph))
+    return false;
+
+  auto aVertices = vertices(mGraph);
+  auto bVertices = vertices(b.mGraph);
+  for(auto it = aVertices.first; it!=aVertices.second; it++) {
+    auto comp = [this, &b, it](Vertex bVertex){
+                  return b.mGraph[bVertex] == mGraph[*it];
+                };
+    if(std::find_if(bVertices.first, bVertices.second, comp)==bVertices.second)
+      return false;
+  }
+  return true;
+}
+
 ostream& operator<<(ostream& o, const CompositeTransformation& t) {
-  const Graph& g=t.graph();
-  auto writeVertex = [&g](ostream& o, Vertex v){
+  bool first = true;
+  auto writeVertex = [&t, &first](ostream& o, Vertex v){
+      const EventTypes& in = t.in();
+      const Graph& g = t.graph();
+
       if(g[v].trans())
         o << " [label=\"" << *g[v].trans() << "\"]";
       else
         o << " [label=\"nullptr\"]";
-      EventTypes inETs = g[v].in();
-      auto edges = out_edges(v, g);
-      EventTypes outETs(edges.second-edges.first);
-      EventTypes resETs(inETs.size());
-      transform(edges.first, edges.second, outETs.begin(), [&g](const Edge& e){ return g[e]; });
-      sort(inETs.begin(), inETs.end(), EventType::comp);
-      sort(outETs.begin(), outETs.end(), EventType::comp);
-      resETs.erase(set_difference(inETs.begin(), inETs.end(), outETs.begin(), outETs.end(), resETs.begin()), resETs.end());
-      for(const EventType& eT: resETs) {
-        o << ";\n\"" << EventID(eT) << "/" << FormatID(eT) << "\" [label=\"" << eT << "\"];\n";
-        o << v << " -> \"" << EventID(eT) << "/" << FormatID(eT) << "\"";
-      }
-      if(in_degree(v, g)==0) {
-          const EventType& eT = g[v].out();
-          o << ";\n\"" << EventID(eT) << "/" << FormatID(eT) << "\" [label=\"" << eT << "\"];\n";
-          o << "\"" << EventID(eT) << "/" << FormatID(eT) << "\" -> " << v;
+
+      for(const EventType& eT: g[v].in())
+        if(find(in.begin(), in.end(), eT) != in.end())
+          o << ";\n" << v << " -> \"" << EventID(eT) << "/" << FormatID(eT) << "\"";
+
+      if(in_degree(v, g)==0)
+          o << ";\n\"" << EventID(t.out()) << "/" << FormatID(t.out()) << "\" -> " << v;
+
+      if(first) {
+        o << ";\n\"" << EventID(t.out()) << "/" << FormatID(t.out()) << "\" [label=\"" << t.out() << "\"]";
+        for(const EventType& eT: in)
+          o << ";\n\"" << EventID(eT) << "/" << FormatID(eT) << "\" [label=\"" << eT << "\"]";
+        first = false;
       }
   };
-  auto writeEdge = [&g](ostream& o, Edge e){
-    o << " [label=\"" << g[e] << "\"]";
+  auto writeEdge = [&t](ostream& o, Edge e){
+    o << " [label=\"" << t.graph()[e] << "\"]";
   };
-  write_graphviz(o, g, writeVertex, writeEdge);
+  write_graphviz(o, t.graph(), writeVertex, writeEdge);
   return o;
 }

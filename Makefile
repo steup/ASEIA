@@ -1,5 +1,5 @@
 PROFILING        ?= 0
-DEBUG            ?= 1
+DEBUG            ?= 0
 EMBEDDED         ?= 0
 LTO              ?= 1
 

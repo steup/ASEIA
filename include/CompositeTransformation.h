@@ -30,6 +30,7 @@ class CompositeTransformation : public AbstractConfiguredTransformation {
         TransPtr create(const AbstractPolicy& policy) const {
           return mTPtr->create(mOut, mIn, policy, mFilter);
         }
+        bool operator==(const ConfiguredTransformation& b) const;
     };
     using  Graph       = boost::adjacency_list< boost::vecS, boost::vecS, boost::bidirectionalS,
                                                 ConfiguredTransformation, EventType>;
@@ -59,6 +60,8 @@ class CompositeTransformation : public AbstractConfiguredTransformation {
     VertexResult add(TransformationPtr tPtr, Vertex v, const EventType& goal,
                      const EventType& provided = EventType());
     EventIDs inIDs() const;
+    EventTypes allIn() const;
+    bool addIn(const EventType&);
     TransPtr create(const AbstractPolicy& policy) const;
     bool check() const;
     const Graph& graph() const { return mGraph; }
@@ -67,6 +70,7 @@ class CompositeTransformation : public AbstractConfiguredTransformation {
     VertexResult find(TransformationPtr tPtr) const;
     VertexList find(const EventType& eT) const;
     bool contains(TransformationPtr tPtr) const { return find(tPtr).second; }
+    bool operator==(const CompositeTransformation& b) const;
 };
 
 std::ostream& operator<<(std::ostream& o, const CompositeTransformation& t);
