@@ -48,7 +48,12 @@ class MetaPredicate {
 		bool operator()(const std::vector<const MetaEvent*>& events) const;
     bool operator==(const MetaPredicate& b) const;
     bool operator!=(const MetaPredicate& b) const { return !(*this==b); }
-
+    ::id::attribute::ID attribute() const { return mE0Attr; }
+    uint8_t event() const { return mE0Num; }
+    bool constArgument() const { return mOp.constArg; }
+    ::id::attribute::ID argumentAttribute() const { return mE1Attr; }
+    uint8_t argumentEvent() const { return mE1Num; }
+    const MetaAttribute& argument() const { return mAttr; }
     const std::vector<MetaAttribute(MetaAttribute::*)(void)const>& func() const { return mUnaryFuncs; }
 	/** \brief friend declaration of deserialization function **/
 	template<typename T> friend DeSerializer<T>& operator>>(DeSerializer<T>&, MetaPredicate&);
