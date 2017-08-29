@@ -45,7 +45,8 @@ namespace id{
     using Angle       = AttrID<7>;
     using Reference   = AttrID<8>;
     using Object      = AttrID<9>;
-    using Speed       = AttrID<10>;
+    using Object2     = AttrID<10>;
+    using Speed       = AttrID<11>;
 
     /** \brief Lookup of AttrID based on unique number
      *  \tparam id unique numeric ID
