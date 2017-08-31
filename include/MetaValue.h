@@ -74,6 +74,8 @@ class MetaValue {
     MetaValue row(size_t row) const;
     MetaValue value() const;
     MetaValue uncertainty() const;
+    MetaValue toUncertainty() const;
+    MetaValue inverse() const;
 
     MetaValue& sin();
     MetaValue& cos();

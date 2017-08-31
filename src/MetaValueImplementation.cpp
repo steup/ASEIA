@@ -21,6 +21,27 @@ using BinaryConstOp = MetaValueBaseImplementation::BinaryConstOp;
 using MVBI = MetaValueBaseImplementation;
 
 template<typename T, bool U>
+Ptr inverseHelper(const Value<T, Eigen::Dynamic, Eigen::Dynamic, U>& v) {
+  return Interface::instance();
+}
+
+template<bool U>
+Ptr inverseHelper(const Value<float, Eigen::Dynamic, Eigen::Dynamic, U>& v) {
+  using MVI = MetaValueImplementation<float, U>;
+  using Base = typename MVI::Base;
+  MVI temp(Base(v.inverse()));
+  return temp.copy();
+}
+
+template<bool U>
+Ptr inverseHelper(const Value<double, Eigen::Dynamic, Eigen::Dynamic, U>& v) {
+  using MVI = MetaValueImplementation<double, U>;
+  using Base = typename MVI::Base;
+  MVI temp(Base(v.inverse()));
+  return temp.copy();
+}
+
+template<typename T, bool U>
 using MVI = MetaValueImplementation<T, U>;
 
 template<bool U>
@@ -186,6 +207,10 @@ Ptr MetaValueImplementation<T, U>::unaryConstOp( UnaryConstOp op) const {
       MetaValueImplementation<T, U> temp(Base(mData.transpose()));
       ptr = temp.copy(); }
       break;
+    case(UnaryConstOp::Inverse): {
+      ptr = inverseHelper(mData);
+      }
+      break;
     case(UnaryConstOp::Zero): {
       MetaValueImplementation<T, U> temp(mData.zero());
       ptr = temp.copy(); }
@@ -200,6 +225,10 @@ Ptr MetaValueImplementation<T, U>::unaryConstOp( UnaryConstOp op) const {
       break;
     case(UnaryConstOp::Uncertainty): {
       MetaValueImplementation<T, false> temp(mData.uncertainty());
+      ptr = temp.copy(); };
+      break;
+    case(UnaryConstOp::ToUncertainty): {
+      MetaValueImplementation<T, true> temp(mData.toUncertainty());
       ptr = temp.copy(); };
       break;
     case(UnaryConstOp::ZeroValue):

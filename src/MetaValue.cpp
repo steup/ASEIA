@@ -93,6 +93,10 @@ MetaValue MetaValue::uncertainty() const{
   return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Uncertainty));
 }
 
+MetaValue MetaValue::toUncertainty() const{
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::ToUncertainty));
+}
+
 // \todo Implement
 static bool autoCast(ValueType& aT, ValueType& bT) {
   if(aT.hasUncertainty() || bT.hasUncertainty()) {
@@ -235,6 +239,10 @@ MetaValue MetaValue::sum() const {
 
 MetaValue MetaValue::transpose() const {
   return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Transpose));
+}
+
+MetaValue MetaValue::inverse() const {
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::Inverse));
 }
 
 MetaValue MetaValue::norm() const {

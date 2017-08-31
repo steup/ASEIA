@@ -6,7 +6,7 @@
 
 template<typename T, bool U>
 class MetaValueImplementation : public MetaValueBaseImplementation {
-  private:
+  public:
     using Impl = MetaValueImplementation;
 		using Base = Value<T, Eigen::Dynamic, Eigen::Dynamic, U>;
 		using Elem = typename Base::BaseType;
@@ -23,7 +23,6 @@ class MetaValueImplementation : public MetaValueBaseImplementation {
 		virtual const uint8_t* end() const;
 		virtual uint8_t* end();
 
-  public:
     MetaValueImplementation(std::size_t rows, std::size_t cols);
 
     MetaValueImplementation(typename Base::InitType values);

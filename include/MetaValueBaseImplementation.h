@@ -53,7 +53,9 @@ class MetaValueBaseImplementation {
       ZeroValue,
       Identity,
       Value,
-      Uncertainty
+      Uncertainty,
+      ToUncertainty,
+      Inverse
     };
 
 		enum class BinaryOp {

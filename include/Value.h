@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Eigen/Core>
+#include <Eigen/LU>
 
 #include <ratio>
 #include <cmath>
@@ -133,6 +134,10 @@ class Value {
 
     auto transpose() const -> decltype(mData.transpose()) {
       return mData.transpose();
+    }
+
+    auto inverse() const -> decltype(mData.inverse()) {
+      return mData.inverse();
     }
 
     Value& cwiseProduct(const Value& b) {
@@ -315,6 +320,15 @@ class Value {
       for(size_t i=0; i<temp.rows();i++)
         for(size_t j=0; j<temp.cols(); j++)
           temp.mData(i,j).value(mData(i,j).uncertainty());
+      return temp;
+    }
+
+    Value<T, R, C, true> toUncertainty() const {
+      Value<T, R, C, true> temp;
+      temp.resize(rows(), cols());
+      for(size_t i=0; i<temp.rows();i++)
+        for(size_t j=0; j<temp.cols(); j++)
+          temp.mData(i,j).uncertainty(mData(i,j).value());
       return temp;
     }
 
