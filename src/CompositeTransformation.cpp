@@ -220,7 +220,8 @@ EventTypes CompositeTransformation::allIn() const {
   const Graph& g = mGraph;
   auto getTypes = [&g](back_insert_iterator<EventTypes> it, Vertex v){
     const EventTypes& tempIn = g[v].in();
-    return copy(tempIn.begin(), tempIn.end(), it);
+    auto pred = [&g, v](const EventType& eT){ return eT != g[v].out(); };
+    return copy_if(tempIn.begin(), tempIn.end(), it, pred);
   };
 
   accumulate(vertices(g).first, vertices(g).second, back_inserter(temp), getTypes);
