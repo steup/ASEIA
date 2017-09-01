@@ -103,6 +103,20 @@ MetaAttribute MetaAttribute::norm() const {
   return temp;
 }
 
+MetaAttribute MetaAttribute::inverse() const {
+  MetaAttribute temp(*this);
+  temp.value() = temp.value().inverse();
+  temp.unit().inverse();
+  return temp;
+}
+
+MetaAttribute MetaAttribute::sqrt() const {
+  MetaAttribute temp(*this);
+  temp.value() = temp.value().sqrt();
+  temp.unit().sqrt();
+  return temp;
+}
+
 MetaAttribute MetaAttribute::valueOnly() const {
   MetaAttribute temp(*this);
   temp.value() = temp.value().value();
@@ -112,6 +126,12 @@ MetaAttribute MetaAttribute::valueOnly() const {
 MetaAttribute MetaAttribute::uncertainty() const {
   MetaAttribute temp(*this);
   temp.value() = temp.value().uncertainty();
+  return temp;
+}
+
+MetaAttribute MetaAttribute::toUncertainty() const {
+  MetaAttribute temp(*this);
+  temp.value() = temp.value().toUncertainty();
   return temp;
 }
 

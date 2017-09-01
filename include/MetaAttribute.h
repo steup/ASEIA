@@ -37,6 +37,8 @@ class MetaAttribute {
     MetaAttribute& operator*=(const MetaValue& b);
     MetaAttribute& operator/=(const MetaValue& b);
     MetaAttribute norm() const;
+    MetaAttribute inverse() const;
+    MetaAttribute sqrt() const;
     MetaValue operator<(const MetaAttribute& b) const;
     MetaValue operator>(const MetaAttribute& b) const;
     MetaValue operator<=(const MetaAttribute& b) const;
@@ -45,6 +47,7 @@ class MetaAttribute {
     MetaValue operator!=(const MetaAttribute& b) const;
     MetaAttribute uncertainty() const;
     MetaAttribute valueOnly() const;
+    MetaAttribute toUncertainty() const;
 
           ID            id() const { return mID;    }
 

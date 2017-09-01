@@ -50,6 +50,7 @@ class MetaPredicate {
     bool operator!=(const MetaPredicate& b) const { return !(*this==b); }
     ::id::attribute::ID attribute() const { return mE0Attr; }
     uint8_t event() const { return mE0Num; }
+    ::id::filterOp::ID op() const { return mOp.code; }
     bool constArgument() const { return mOp.constArg; }
     ::id::attribute::ID argumentAttribute() const { return mE1Attr; }
     uint8_t argumentEvent() const { return mE1Num; }
@@ -95,6 +96,7 @@ class MetaFilter {
 		 **/
 		bool operator()(const std::vector<const MetaEvent*>& events) const;
     const std::vector<std::pair<MetaPredicate, id::filterOp::ID>>& expressions() const { return mExpr; }
+    std::vector<std::pair<MetaPredicate, id::filterOp::ID>>& expressions() { return mExpr; }
 
     const MetaPredicate& operator[](size_t i) const { return mExpr[i].first; }
     const MetaPredicate& at(size_t i) const { return mExpr.at(i).first; }

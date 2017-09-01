@@ -21,4 +21,6 @@ class MetaUnit : public UnitType{
     MetaUnit& operator/=(const MetaUnit& b);
     MetaUnit operator*(const MetaUnit& b) const { return MetaUnit(*this)*=b; }
     MetaUnit operator/(const MetaUnit& b) const { return MetaUnit(*this)/=b; }
+    MetaUnit& inverse();
+    MetaUnit& sqrt();
 };
