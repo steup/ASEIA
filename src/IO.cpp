@@ -77,7 +77,7 @@ ostream& operator<<(ostream& o, const UnitType& t) {
 }
 
 ostream& operator<<(ostream& o, const AttributeType& t) {
-  return o << id::attribute::name(t.id()) << ": " << t.value() << " " << t.scale() << t.unit();
+  return o << id::attribute::name(t.id()) << "(" << t.id() << ": " << t.value() << " " << t.scale() << t.unit();
 }
 
 ostream& operator<<(ostream& o, const EventType& t) {
