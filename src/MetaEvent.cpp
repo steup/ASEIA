@@ -7,17 +7,17 @@ using namespace std;
 MetaEvent::iterator::iterator(Storage::iterator iter)
 	: Storage::iterator(iter) {}
 
-MetaAttribute& MetaEvent::iterator::operator*() { 
-	return this->Storage::iterator::operator*().second; 
+MetaAttribute& MetaEvent::iterator::operator*() {
+	return this->Storage::iterator::operator*().second;
 }
 
 MetaEvent::const_iterator::const_iterator(Storage::const_iterator iter)
 	: Storage::const_iterator(iter) {}
 
-const MetaAttribute& MetaEvent::const_iterator::operator*() const { 
-	return this->Storage::const_iterator::operator*().second; 
+const MetaAttribute& MetaEvent::const_iterator::operator*() const {
+	return this->Storage::const_iterator::operator*().second;
 }
-			
+
 const MetaAttribute* MetaEvent::attribute(id::attribute::ID id) const {
 	Storage::const_iterator iter = mStorage.find(id);
 	if(iter != mStorage.end())

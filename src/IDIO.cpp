@@ -24,7 +24,7 @@ namespace id {
       }
     }
   }
-  
+
   namespace type {
     const char* name(ID id) {
       switch(id){
