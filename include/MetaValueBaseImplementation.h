@@ -55,7 +55,8 @@ class MetaValueBaseImplementation {
       Value,
       Uncertainty,
       ToUncertainty,
-      Inverse
+      Inverse,
+      ArgMin
     };
 
 		enum class BinaryOp {
@@ -73,7 +74,8 @@ class MetaValueBaseImplementation {
 			GreatEqual,
 			Equal,
 			NotEqual,
-			ApproxEqual
+			ApproxEqual,
+      CDot
 		};
 	public:
     using Ptr = std::unique_ptr<Interface>;

@@ -58,6 +58,7 @@ class MetaValue {
 		MetaValue operator>=(const MetaValue& b) const;
 		MetaValue operator<(const MetaValue& b) const;
 		MetaValue operator>(const MetaValue& b) const;
+		MetaValue cwiseDot(const MetaValue& b) const;
 
     MetaValue dot(const MetaValue& b) const;
 
@@ -76,6 +77,8 @@ class MetaValue {
     MetaValue uncertainty() const;
     MetaValue toUncertainty() const;
     MetaValue inverse() const;
+    MetaValue argmin() const;
+    MetaValue cast(const MetaValue& b) const;
 
     MetaValue& sin();
     MetaValue& cos();

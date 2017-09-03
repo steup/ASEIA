@@ -197,6 +197,14 @@ MetaValue MetaValue::operator>(const MetaValue& b) const {
   return binaryConstOp(BinaryConstOp::Greater, *this, b);
 }
 
+MetaValue MetaValue::cwiseDot(const MetaValue& b) const {
+  return binaryConstOp(BinaryConstOp::CDot, *this, b);
+}
+
+MetaValue MetaValue::cast(const MetaValue& b) const {
+  return MetaFactory::instance().convert((ValueType)b, *this);
+}
+
 MetaValue& MetaValue::operator*=(const MetaScale& b) { 
 	mImpl->scale(b);
 	return *this;
@@ -264,6 +272,11 @@ MetaValue MetaValue::ones() const {
 MetaValue MetaValue::zeroValue() const {
   return MetaValue(mImpl->unaryConstOp(UnaryConstOp::ZeroValue));
 }
+
+MetaValue MetaValue::argmin() const {
+  return MetaValue(mImpl->unaryConstOp(UnaryConstOp::ArgMin));
+}
+
 
 MetaValue& MetaValue::sin(){
   mImpl->unaryOp(UnaryOp::Sin);

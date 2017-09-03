@@ -140,6 +140,25 @@ class Value {
       return mData.inverse();
     }
 
+    /** \brief find minimum index in each column
+     *  \return 1xR uint32_t matrix containing index of smallest element
+     *
+     *  uses operator< for comparision
+     **/
+    Value<uint32_t, (R==Eigen::Dynamic?R:1), C, false> argmin() const {
+      Value<uint32_t, (R==Eigen::Dynamic?R:1), C, false> indices;
+      indices.resize(1, cols());
+      indices=indices.zero();
+      Eigen::Matrix<ValueElement<T, U>, (R==Eigen::Dynamic?R:1), C> temp=mData.row(0);
+      for(size_t r=1;r<rows();r++)
+        for(size_t c=0;c<cols();c++)
+          if(mData(r, c)<temp(0, c)) {
+            indices(0, c)=r;
+            temp(0, c)=mData(r,c);
+          }
+      return indices;
+    }
+
     Value& cwiseProduct(const Value& b) {
       mData=mData.cwiseProduct(b.mData);
       return *this;
@@ -159,7 +178,10 @@ class Value {
 
     BaseType prod() const { return mData.prod(); }
     BaseType sum() const { return mData.sum(); }
-    BaseType norm() const { return ::sqrt(Value(mData.cwiseProduct(mData)).sum()); }
+    BaseType norm() const { return ::sqrt(mData.cwiseProduct(mData).sum()); }
+    Value<T, R==Eigen::Dynamic?R:1, C, U> cwiseDot(const Value& v) const {
+      return Value<T, R==Eigen::Dynamic?R:1, C, U>(mData.cwiseProduct(v.mData).colwise().sum());
+    }
     const DataType& data() const { return mData; }
     DataType& data() { return mData; }
 

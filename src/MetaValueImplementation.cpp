@@ -237,6 +237,9 @@ Ptr MetaValueImplementation<T, U>::unaryConstOp( UnaryConstOp op) const {
     case(UnaryConstOp::Ones):
       ptr = MetaValueImplementation(mData.ones()).copy();
       break;
+    case(UnaryConstOp::ArgMin):
+      ptr = MetaValueImplementation<uint32_t, false>(mData.argmin()).copy();
+      break;
     default           : return Interface::unaryConstOp(op);
   }
   return ptr;
@@ -309,6 +312,7 @@ Ptr MetaValueImplementation<T, U>::binaryConstOp( BinaryConstOp op, const Interf
    case(BinaryConstOp::Greater)    : return Ptr(new Bool<U>(mData > typedB.mData));
    case(BinaryConstOp::SmallEqual) : return Ptr(new Bool<U>(mData <= typedB.mData));
    case(BinaryConstOp::GreatEqual) : return Ptr(new Bool<U>(mData >= typedB.mData));
+   case(BinaryConstOp::CDot)       : return MetaValueImplementation<T, U>(mData.cwiseDot(typedB.mData)).copy();
    default                         : return Interface::binaryConstOp(op, b);
   }
 }
