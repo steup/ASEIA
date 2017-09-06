@@ -24,7 +24,7 @@ struct ChannelTestSuite : public ::testing::Test{
   struct TestChannel : public Channel {
     TestChannel() : Channel(TransPtr(new TestTransformer())) { }
 
-    MOCK_CONST_METHOD1(publishEvent, void(const MetaEvent& e));
+    MOCK_CONST_METHOD1(publishEvent, void(MetaEvent& e));
     MOCK_CONST_METHOD2(error, void(Errors, const MetaEvent&));
     void handleEvent() { Channel::handleEvent(MetaEvent()); }
     Transformer* trans() { return mTrans.get(); }

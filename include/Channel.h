@@ -19,7 +19,7 @@ class Channel{
     virtual void fixType(MetaEvent& e) const;
     virtual void error(Errors error, const MetaEvent& e) const {}
     void handleEvent(const MetaEvent& e);
-    virtual void publishEvent(const MetaEvent& e) const =0;
+    virtual void publishEvent(MetaEvent& e) const =0;
   public:
     Channel() = default;
     Channel(TransPtr&& trans);
