@@ -10,7 +10,7 @@ using namespace std;
 
 /** \todo ignore sorting of input EventTypes **/
 bool AbstractConfiguredTransformation::operator==(const AbstractConfiguredTransformation& b) const {
-  return mOut == b.out() && mIn == b.in();
+  return mOut == b.out() && mIn == b.in() && mFilter == b.mFilter;
 }
 
 Transformation::Transformation(Type type, size_t arity, const EventID& out)

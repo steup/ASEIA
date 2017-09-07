@@ -340,6 +340,9 @@ bool ConfiguredTransformation::operator==(const ConfiguredTransformation& b) con
   if( mOut != b.mOut )
     return false;
 
+  if(mFilter != b.mFilter)
+    return false;
+
   if(std::equal(mIn.begin(), mIn.end(), b.mIn.begin()))
     return true;
   else
