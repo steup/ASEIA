@@ -342,5 +342,29 @@ TEST_F(FilterTestSuite, metaFilterFuncTest) {
 	EXPECT_TRUE(filter0(trueEvents))   << "False negative:\n" << *trueEvents[0]  <<  filter0 << "\n" << *trueEvents[1] ;
   EXPECT_FALSE(filter0(falseEvents)) << "False positive:\n" << *falseEvents[0] <<  filter0 << "\n" << *falseEvents[1];
 }
+TEST_F(FilterTestSuite, metaFilterCompTest) {
+
+	std::vector<std::vector<uint8_t>> buffers = {
+    {0, time, gt, 1, time},
+    {1, time, gt, 1, time},
+    {0, time, lt, 1, time},
+    {0, time, gt, 2, time},
+    {0, time, gt, 0, pos},
+    {0, time, gt, 1, time}
+  };
+	std::vector<const EventType*> types={&eventType, &eventType};
+	std::vector<MetaFilter> filters(buffers.size(), types);
+  size_t i=0;
+  for(const auto& buffer : buffers) {
+	  DeSerializer<std::vector<uint8_t>::const_iterator> d(buffer.cbegin(), buffer.cend());
+	  EXPECT_NO_THROW(d >> filters[i++]);
+  }
+
+	EXPECT_EQ(filters[0], filters[5]);
+  EXPECT_NE(filters[0], filters[1]);
+  EXPECT_NE(filters[0], filters[2]);
+  EXPECT_NE(filters[0], filters[3]);
+  EXPECT_NE(filters[0], filters[4]);
+}
 
 }}

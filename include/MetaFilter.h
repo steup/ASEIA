@@ -177,9 +177,10 @@ DeSerializer<T>& operator>>(DeSerializer<T>& d, MetaFilter& f) {
 		d >> p;
     if(d.eof())
 		  f.mExpr.emplace_back(p, id::filterOp::NOP());
-    else
+    else {
       d >> logicalOp;
 		  f.mExpr.emplace_back(p, logicalOp);
+    }
 	}while(!d.eof() && !d.error());
 	if(d.error())
 		throw MetaFilterError();

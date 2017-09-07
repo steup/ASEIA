@@ -26,11 +26,12 @@ bool MetaPredicate::operator()(const std::vector<const MetaEvent*>& events) cons
 }
 
 bool MetaPredicate::operator==(const MetaPredicate& b) const {
-  return mE0Num == b.mE0Num && mE0Attr != b.mE0Attr && mOp.code == b.mOp.code;
+  if(mE0Num != b.mE0Num || mE0Attr != b.mE0Attr || mOp.code != b.mOp.code)
+    return false;
   if(mOp.constArg)
     return (bool)(mAttr == b.mAttr);
   else
-    return mE0Num == b.mE0Num && mE0Attr == b.mE0Attr;
+    return mE1Num == b.mE1Num && mE1Attr == b.mE1Attr;
 }
 
 std::ostream& operator<<(std::ostream& o, const MetaPredicate& p){
@@ -82,9 +83,13 @@ bool MetaFilter::operator()(const std::vector<const MetaEvent*>& events) const {
 
 bool MetaFilter::operator==(const MetaFilter& b) const {
   auto bIt = b.mExpr.begin();
-  for(const auto& elem : mExpr)
-    if(bIt == b.mExpr.end() && elem.second != bIt->second && elem.first != bIt++->first)
+  if(mExpr.size() != b.mExpr.size())
     return false;
+  for(const auto& elem : mExpr) {
+    if(elem.second != bIt->second || elem.first != bIt->first)
+      return false;
+    bIt++;
+  }
   return true;
 }
 

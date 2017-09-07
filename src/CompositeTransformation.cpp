@@ -29,7 +29,6 @@ struct CompositeTransformer : public Transformer {
 
     Graph graph;
     Vertex root;
-    MetaFilter mFilter;
     /** \brief Generate CompositeTransformer from CompositeTransformation
      *  \param out output EventType of the created MetaEvents
      *  \param in input EventTypes of the consumed MetaEvents

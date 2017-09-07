@@ -106,6 +106,8 @@ struct CompositeTransformSuite : public ::testing::Test {
   TestTransformation a, c, d, e;
   /// Linear CompositeTransformation containing a and b
   CompositeTransformation compTrans;
+  /// Tree-like CompositeTransformation containing c, b and d and a filter expression
+  CompositeTransformation compTransNoFilter;
   /// Tree-like CompositeTransformation containing c, b and d
   CompositeTransformation compTrans2;
   /// Single CompositeTransformation containing e
@@ -169,10 +171,14 @@ struct CompositeTransformSuite : public ::testing::Test {
       EXPECT_NO_THROW(d >> metaFilter);
     }
     ASSERT_NE(b, nullptr);
-    EXPECT_CALL(a, in(goal, provided, _))
+    EXPECT_CALL(a, in(goal, provided, metaFilter))
       .Times(1).WillOnce(Return(EventTypes({intermediate})));
-    EXPECT_CALL(*b, in(intermediate, provided, _))
-      .Times(AtLeast(1)).WillRepeatedly(Return(EventTypes({provided})));
+    EXPECT_CALL(*b, in(intermediate, provided, metaFilter))
+      .Times(2).WillRepeatedly(Return(EventTypes({provided})));
+    EXPECT_CALL(a, in(goal, provided, MetaFilter()))
+      .Times(1).WillOnce(Return(EventTypes({intermediate})));
+    EXPECT_CALL(*b, in(intermediate, provided, MetaFilter()))
+      .Times(1).WillRepeatedly(Return(EventTypes({provided})));
     EXPECT_CALL(c, in(goal, _, _))
       .Times(1).WillOnce(Return(EventTypes({intermediate, intermediate2})));
     EXPECT_CALL(d, in(intermediate2, provided2, _))
@@ -183,8 +189,16 @@ struct CompositeTransformSuite : public ::testing::Test {
     ASSERT_TRUE(r0.second);
     auto r1 = compTrans.add(b.get(), r0.first, intermediate, provided);
     ASSERT_TRUE(r1.second);
-    ofstream out(current_path()/"doc"/"linTransformation.dot");
+    ofstream out(current_path()/"doc"/"filteredLinTransformation.dot");
     out << compTrans;
+    r0 = compTransNoFilter.add(&a, goal, provided);
+    ASSERT_TRUE(r0.second);
+    r1 = compTransNoFilter.add(b.get(), r0.first, intermediate, provided);
+    ASSERT_TRUE(r1.second);
+    out.close();
+    out.open(current_path()/"doc"/"linTransformation.dot");
+    out << compTrans;
+
     auto r2 = compTrans2.add(&c, goal, EventType(), metaFilter);
     ASSERT_TRUE(r2.second);
     auto r3 = compTrans2.add(b.get(), r2.first, intermediate, provided);
@@ -429,4 +443,59 @@ TEST_F(CompositeTransformSuite, insertTest) {
   EXPECT_THAT(compTrans3.in(), UnorderedElementsAre(provided, provided2, intermediate));
 }
 
+TEST_F(CompositeTransformSuite, compTest) {
+  EXPECT_CALL(a, create(goal, EventTypes({intermediate}), _, _))
+    .Times(1).WillOnce(Return(TransPtr(
+      new TestTransformer("a", goal, EventTypes({intermediate}), trans))));
+  ASSERT_NE(b, nullptr);
+  EXPECT_CALL(*b, create(intermediate, EventTypes({provided}), _, _))
+    .Times(1).WillOnce(Return(TransPtr(
+      new TestTransformer("b", intermediate, EventTypes({provided}),trans))));
+  TransPtr linearPtr = compTrans.create(AbstractPolicy());
+  EXPECT_CALL(c, create(goal, EventTypes({intermediate, intermediate2}), _, _))
+    .Times(1).WillOnce(Return(TransPtr(
+      new TestTransformer("c", goal, EventTypes({intermediate, intermediate2}),
+                          trans))));
+  ASSERT_NE(b, nullptr);
+  EXPECT_CALL(*b, create(intermediate, EventTypes({provided}), _, _))
+    .Times(1).WillOnce(Return(TransPtr(
+      new TestTransformer("b", intermediate, EventTypes({provided}),trans))));
+  EXPECT_CALL(d, create(intermediate2, EventTypes({provided2}), _, _))
+    .Times(1).WillOnce(Return(TransPtr(
+      new TestTransformer("d", intermediate2, EventTypes({provided2}), trans))));
+  TransPtr treePtr = compTrans2.create(AbstractPolicy());
+  EXPECT_EQ(*treePtr, *treePtr);
+  EXPECT_EQ(compTrans2, compTrans2);
+  EXPECT_EQ(compTrans, compTrans);
+  EXPECT_EQ(*treePtr, compTrans2);
+  EXPECT_EQ(*linearPtr, compTrans);
+  EXPECT_FALSE(*treePtr == *linearPtr);
+  EXPECT_FALSE(*treePtr == compTrans);
+  EXPECT_FALSE(*linearPtr == compTrans2);
+  EXPECT_FALSE(compTrans == compTrans2);
+}
+
+TEST_F(CompositeTransformSuite, compWithFilterTest) {
+  EXPECT_CALL(a, create(goal, EventTypes({intermediate}), _, _))
+    .Times(1).WillOnce(Return(TransPtr(
+      new TestTransformer("a", goal, EventTypes({intermediate}), trans))));
+  ASSERT_NE(b, nullptr);
+  EXPECT_CALL(*b, create(intermediate, EventTypes({provided}), _, _))
+    .Times(1).WillOnce(Return(TransPtr(
+      new TestTransformer("b", intermediate, EventTypes({provided}),trans))));
+  TransPtr filteredLinearPtr = compTrans.create(AbstractPolicy());
+  EXPECT_CALL(a, create(goal, EventTypes({intermediate}), _, _))
+    .Times(1).WillOnce(Return(TransPtr(
+      new TestTransformer("a", goal, EventTypes({intermediate}), trans))));
+  ASSERT_NE(b, nullptr);
+  EXPECT_CALL(*b, create(intermediate, EventTypes({provided}), _, _))
+    .Times(1).WillOnce(Return(TransPtr(
+      new TestTransformer("b", intermediate, EventTypes({provided}),trans))));
+  TransPtr linearPtr = compTransNoFilter.create(AbstractPolicy());
+  EXPECT_EQ(*filteredLinearPtr, compTrans);
+  EXPECT_EQ(*linearPtr, compTransNoFilter);
+  EXPECT_FALSE(*filteredLinearPtr == *linearPtr);
+  EXPECT_FALSE(*filteredLinearPtr == compTransNoFilter);
+  EXPECT_FALSE(*linearPtr == compTrans);
+}
 }}
