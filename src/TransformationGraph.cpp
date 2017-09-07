@@ -119,7 +119,7 @@ struct SpanningTreeVisitor : public default_bfs_visitor {
 void TransformationGraph::generate(const EventType& type, const EventIDs& ids, OutIt it) const {
 
   auto gen = [this, &type, &ids](pair<OutIt, OutIt> its, Vertex v){
-    if(mGraph[v]->out()==EventID(type)) {
+    if(mGraph[v]->out().isCompatible(EventID(type))) {
       *its.second++ = CompositeTransformation(mGraph[v], type, EventType());
     }
     return its;
