@@ -375,7 +375,6 @@ ostream& operator<<(ostream& o, const CompositeTransformation& t) {
       const EventTypes& in = t.in();
       const Graph& g = t.graph();
 
-
       if(g[v].trans())
         o << " [label=\"" << *g[v].trans() << "\"]";
       else

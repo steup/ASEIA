@@ -248,6 +248,7 @@ doc:
 dot: ${GRAPHS}
 
 ${GRAPHS}: ${DOC}/%.svg: ${DOC}/%.dot
+	@python beautifyDot.py $<
 	@dot -Tsvg $< -o $@
 
 -include ${DEPS}

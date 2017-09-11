@@ -54,7 +54,7 @@ std::ostream& operator<<(std::ostream& o, const MetaPredicate& p){
 		default: o << "unknown";
 	}
 	if(p.mOp.constArg)
-		o << p.mAttr;
+		o << p.mAttr.value();
 	else
 		o << "e" << (uint16_t)p.mE1Num << "[" << id::attribute::name(p.mE1Attr) << "]";
 	return o;
@@ -97,8 +97,13 @@ std::ostream& operator<<(std::ostream& o, const MetaFilter& f){
 	o  << "Filter: ";
 	for(const auto& p : f.mExpr) {
 		o << p.first << " ";
-		if(p.second != NOP())
-			o << p.second << " ";
+		if(p.second != NOP()) {
+      switch(p.second){
+        case(AND()): o << "&&"; break;
+        case(OR()): o << "||"; break;
+      }
+			o << std::endl;
+    }
 	}
 	return o;
 }

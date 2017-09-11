@@ -4,23 +4,23 @@ namespace id {
   namespace attribute {
     const char* name(ID id) {
       switch(id){
-        case(Position::value())    : return "Position      ";
-        case(Time::value())        : return "Time          ";
-        case(PublisherID::value()) : return "Publisher ID  ";;
-        case(Validity::value())    : return "Validity      ";
-        case(Distance::value())    : return "Distance      ";
-        case(Orientation::value()) : return "Orientation   ";
-        case(Angle::value())       : return "Angle         ";
-        case(Reference::value())   : return "Reference     ";
-        case(Object::value())      : return "Object        ";
-        case(Speed::value())       : return "Speed         ";
-        case(250)                  : return "Test0         ";
-        case(251)                  : return "Test1         ";
-        case(252)                  : return "Test2         ";
-        case(253)                  : return "Test3         ";
-        case(254)                  : return "Test4         ";
-        case(255)                  : return "Test5         ";
-        default                    : return "Unspecified   ";
+        case(Position::value())    : return "Position";
+        case(Time::value())        : return "Time";
+        case(PublisherID::value()) : return "Publisher ID";;
+        case(Validity::value())    : return "Validity";
+        case(Distance::value())    : return "Distance";
+        case(Orientation::value()) : return "Orientation";
+        case(Angle::value())       : return "Angle";
+        case(Reference::value())   : return "Reference";
+        case(Object::value())      : return "Object";
+        case(Speed::value())       : return "Speed";
+        case(250)                  : return "Test0";
+        case(251)                  : return "Test1";
+        case(252)                  : return "Test2";
+        case(253)                  : return "Test3";
+        case(254)                  : return "Test4";
+        case(255)                  : return "Test5";
+        default                    : return "Unspecified";
       }
     }
   }

@@ -14,7 +14,7 @@ class MetaAttribute {
   public:
     using ID = id::attribute::ID;
   protected:
-    const ID   mID    ;
+    ID         mID    ;
     MetaValue  mValue ;
     MetaUnit   mUnit  ;
     MetaScale  mScale ;
