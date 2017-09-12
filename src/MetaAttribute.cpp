@@ -34,8 +34,8 @@ MetaAttribute::MetaAttribute(MetaAttribute&& b)
 MetaAttribute& MetaAttribute::operator=(const MetaAttribute& b) {
   if(this==&b)
     return *this;
-
-  mID = b.mID;
+  if(mID==id::attribute::Base())
+    mID = b.mID;
   mScale = b.mScale;
   mUnit = b.mUnit;
   mValue = b.mValue;
@@ -46,7 +46,8 @@ MetaAttribute& MetaAttribute::operator=(MetaAttribute&& b) {
   if(this==&b)
     return *this;
 
-  mID = b.mID;
+  if(mID==::id::attribute::Base())
+    mID = b.mID;
   mScale = b.mScale;
   mUnit = b.mUnit;
   mValue = move(b.mValue);
