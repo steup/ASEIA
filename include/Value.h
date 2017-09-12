@@ -349,8 +349,10 @@ class Value {
       Value<T, R, C, true> temp;
       temp.resize(rows(), cols());
       for(size_t i=0; i<temp.rows();i++)
-        for(size_t j=0; j<temp.cols(); j++)
+        for(size_t j=0; j<temp.cols(); j++){
+          temp.mData(i,j).value(0);
           temp.mData(i,j).uncertainty(mData(i,j).value());
+        }
       return temp;
     }
 
