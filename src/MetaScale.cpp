@@ -16,8 +16,9 @@ MetaScale& MetaScale::operator*=(const MetaScale& b) {
 }
 
 MetaScale& MetaScale::operator/=(const MetaScale& b) {
-  mNum*=b.denom();
+  uint32_t temp = mNum*b.denom();
   mDenom*=b.num();
+  mNum = temp;
   normalize();
   return *this;
 }

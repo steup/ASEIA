@@ -89,14 +89,14 @@ MetaAttribute& MetaAttribute::operator/=(const MetaAttribute& b) {
 }
 
 MetaAttribute& MetaAttribute::operator*=(const MetaScale& scale){
-  this->scale() *= scale;
   this->value() /= scale;
+  this->scale() *= scale;
   return *this;
 }
 
 MetaAttribute& MetaAttribute::operator/=(const MetaScale& scale){
-  this->scale() /= scale;
   this->value() *= scale;
+  this->scale() /= scale;
   return *this;
 }
 
