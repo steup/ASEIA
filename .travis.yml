@@ -1,0 +1,11 @@
+language: cpp
+dist: xenial
+compiler:
+- gcc
+os:
+- linux
+before_script: make
+script: make run_tests
+branches:
+  only:
+    - master
