@@ -1,6 +1,8 @@
 **A**bstract **Se**nsor **I**nformation **A**rchitecture (ASEIA)
 ========================================================
 
+[![Build Status](https://travis-ci.org/steup/ASEIA.svg?branch=master)](https://travis-ci.org/steup/ASEIA)
+
 Goal
 ----
 

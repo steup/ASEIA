@@ -1,11 +1,39 @@
 language: cpp
-dist: xenial
-compiler:
-- gcc
-os:
-- linux
-before_script: make
-script: make run_tests
-branches:
-  only:
-    - master
+sudo: enabled
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5 && LD=g++-5"
+#
+#    - os: linux
+#      addons:
+#        apt:
+#          sources:
+#            - ubuntu-toolchain-r-test
+#          packages:
+#            - g++-5
+#      env:
+#         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+#
+#    - os: linux
+#      addons:
+#        apt:
+#          sources:
+#            - ubuntu-toolchain-r-test
+#          packages:
+#            - g++-6
+#      env:
+#        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+before_install:
+- eval "${MATRIX_EVAL}"
+- sudo apt-get -qq update
+- sudo apt-get install libeigen3-dev
+- sudo apt-get install libboost-all-dev
+script: make && make run_tests

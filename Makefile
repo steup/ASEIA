@@ -1,7 +1,7 @@
 PROFILING        ?= 0
 DEBUG            ?= 0
 EMBEDDED         ?= 0
-LTO              ?= 1
+LTO              ?= 0
 
 INCLUDES         +=
 LDPATHS          +=

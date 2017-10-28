@@ -99,8 +99,8 @@ std::ostream& operator<<(std::ostream& o, const MetaFilter& f){
 		o << p.first << " ";
 		if(p.second != NOP()) {
       switch(p.second){
-        case(AND()): o << "&&"; break;
-        case(OR()): o << "||"; break;
+        case(AND::value): o << "&&"; break;
+        case(OR::value): o << "||"; break;
       }
 			o << std::endl;
     }
