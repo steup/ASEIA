@@ -169,7 +169,7 @@ class Value {
     Value& tan()  { mData = mData.array().tan();  return *this; }
     Value& asin() { mData = mData.array().asin(); return *this; }
     Value& acos() { mData = mData.array().acos(); return *this; }
-    Value& atan() { mData = mData.array().atan(); return *this; }
+    Value& atan() { mData = mData.array().unaryExpr(std::ptr_fun(::atan<T, U>)); return *this; }
     Value& abs()  { mData = mData.array().abs().cast<BaseType>(); return *this; }
     Value& sqrt() { mData = mData.array().sqrt(); return *this; }
 
