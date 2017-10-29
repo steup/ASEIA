@@ -7,17 +7,20 @@ BSMHASHER         := ${BUILD}/smhasher
 SMHASHER_OBJECTS  := MurmurHash2
 
 SMHASHER_FLAGS    := ${CXXFLAGS}
+SMHASHER_SOURCES  := $(addprefix ${SMHASHER_SRC}/, $(addsuffix .cpp, ${SMHASHER_OBJECTS}))
 SMHASHER_OBJECTS  := $(addprefix ${BSMHASHER}/, $(addsuffix .o, ${SMHASHER_OBJECTS}))
 
 ${BSMHASHER}:
 	@echo "create directory $@"
 	@mkdir -p $@
 
-${SMHASHER_SRC}: | ${LOG}
-	@echo "Fetchin Dependancy SMHasher" | tee -a ${LOG}/smhasher.log
-	@echo "git submodule update --init ${SMHASHER_DIR}" &>> ${LOG}/smhasher.log
-	@git submodule update --init ${SMHASHER_DIR} &>> ${LOG}/smhasher.log
+${SMHASHER_SRC}:
+	@echo "Fetchin Dependancy SMHasher"
+	@git submodule update --init ${SMHASHER_DIR}
 
-${BSMHASHER}/%.o : ${SMHASHER_SRC}/%.cpp smhasher.mk | ${SMHASHER_SRC} ${BSMHASHER} ${LOG}
-	@echo "Building Dependancy SMHasher $@ <- $< "| tee -a ${LOG}/smhasher.log
-	@$(CXX) -MMD -MT $@ -MF $@.d $(SMHASHER_FLAGS) $(SMHASHER_INCLUDES) -c $< -o $@ &>>  ${LOG}/smhasher.log
+${SMHASHER_SOURCES}: ${SMHASHER_SRC}
+
+${BSMHASHER}/%.o : ${SMHASHER_SRC}/%.cpp make/smhasher.mk | ${BSMHASHER}
+	@echo "Building Dependancy SMHasher $@ <- $< "
+	@$(CXX) -MMD -MT $@ -MF $@.d $(SMHASHER_FLAGS) -I $(SMHASHER_INCLUDES) -c $< -o $@
+	@file $@

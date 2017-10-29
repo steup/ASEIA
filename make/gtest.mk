@@ -10,27 +10,23 @@ GTEST_MODULES  := gtest
 GTEST_INCLUDES := $(addprefix -I, ${GTEST_DIR}/include -I ${GMOCK_DIR}/include)
 GTEST_FLAGS    := -pthread
 GTEST_LDFLAGS  := -pthread
-GTEST_LDPATHS  := 
+GTEST_LDPATHS  :=
 GTEST          := $(addprefix ${LIB}/lib, $(addsuffix .a, ${GTEST_MODULES})) ${GTEST_HEADER}
 GTEST_LIBS     := $(addprefix -l, ${GTEST_MODULES})
 
-${GTEST_HEADER}: | ${LOG}
-	@echo "Fetchin Dependancy GTest" | tee -a ${LOG}/gtest.log
-	@echo "git submodule update --init ${GTEST_DIR}" &>> ${LOG}/gtest.log
-	@git submodule update --init ${GTEST_DIR} &>> ${LOG}/gtest.log
+${GTEST_HEADER}:
+	@echo "Fetchin Dependancy GTest"
+	@git submodule update --init gtest
 
-${BTEST}/gtest.o : ${GTEST_HEADER} ${MAKEFILE_LIST} | ${BTEST} ${LOG}
-	@echo "Building Dependancy GTest $@ <- $< "| tee -a ${LOG}/gtest.log
-	@echo "$(CXX) -MMD -MF $@.d -I${GTEST_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GTEST_CODE} -o $@" &>>  ${LOG}/gtest.log
-	@$(CXX) -MMD -MT $@ -MF $@.d -I${GTEST_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GTEST_CODE} -o $@ &>>  ${LOG}/gtest.log
+${BTEST}/gtest.o : ${GTEST_HEADER} ${MAKEFILE_LIST} | ${BTEST}
+	@echo "Building Dependancy GTest $@ <- $< "
+	@$(CXX) -MMD -MT $@ -MF $@.d -I${GTEST_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GTEST_CODE} -o $@
 
-${BTEST}/gmock.o : ${GTEST_HEADER} ${MAKEFILE_LIST} | ${BTEST} ${LOG}
-	@echo "Building Dependancy GMock $@ <- $< "| tee -a ${LOG}/gtest.log
-	@echo "$(CXX) -MMD -MF $@.d -I${GMOCK_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GMOCK_CODE} -o $@" &>>  ${LOG}/gtest.log
-	@$(CXX) -MMD -MT $@ -MF $@.d -I${GMOCK_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GMOCK_CODE} -o $@ &>>  ${LOG}/gtest.log
+${BTEST}/gmock.o : ${GTEST_HEADER} ${MAKEFILE_LIST} | ${BTEST}
+	@echo "Building Dependancy GMock $@ <- $< "
+	@$(CXX) -MMD -MT $@ -MF $@.d -I${GMOCK_DIR} $(GTEST_FLAGS) $(GTEST_INCLUDES) -c ${GMOCK_CODE} -o $@
 
-${LIB}/libgtest.a : ${BTEST}/gtest.o ${BTEST}/gmock.o ${MAKEFILE_LIST} | ${LIB} ${LOG}
-	@echo "Linking Dependancy GTest and GMock $@ <- [$<]" | tee -a ${LOG}/gtest.log
-	@echo "${AR} ${ARFLAGS} $@ $^" &>> ${LOG}/gtest.log
-	@${AR} ${ARFLAGS} $@ $^ &>> ${LOG}/gtest.log
+${LIB}/libgtest.a : ${BTEST}/gtest.o ${BTEST}/gmock.o ${MAKEFILE_LIST} | ${LIB}
+	@echo "Linking Dependancy GTest and GMock $@ <- [$<]"
+	@${AR} ${ARFLAGS} $@ $^
 	@${RANLIB} $@

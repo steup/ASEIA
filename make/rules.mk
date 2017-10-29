@@ -129,11 +129,11 @@ tests: ${BIN}/${RUN_TESTS}
 run_tests: ${BIN}/${RUN_TESTS}
 	@./$<
 
-${TESTOBJS}: ${BTEST}/%.o: ${TESTS}/%.cpp ${MAKEFILE_LIST} ${GTEST} | ${BTEST}
+${TESTOBJS}: ${BTEST}/%.o: ${TESTS}/%.cpp ${MAKEFILE_LIST} ${GTEST_HEADER} | ${BTEST}
 	@echo "Building unit tests $@ <- $<"
 	@${CXX} -MP -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} -I${TESTS} ${GTEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES} ${GTEST_INCLUDES}
 
-${BIN}/${RUN_TESTS}: ${TESTOBJS} ${MAKEFILE_LIST} ${GTEST} | ${BIN} ${DYNLIB}
+${BIN}/${RUN_TESTS}: ${TESTOBJS} ${MAKEFILE_LIST} | ${BIN} ${DYNLIB} ${GTEST_LIBS}
 	@echo "Linking unit tests $@ <- [${TESTOBJS}]"
 	@${CXX} ${LDFLAGS} ${GTEST_LDFLAGS} ${TESTOBJS} -o $@ ${LDPATHS} ${LIBS} -L ${LIB} -l${LIBNAME} -l${IO_LIBNAME} -l${BASE_LIBNAME} ${GTEST_LDPATHS} ${GTEST_LIBS}
 
@@ -221,7 +221,7 @@ ${DIRS}: %:
 	@echo "Creating $@"
 	@mkdir -p $@
 
-${BLIB}/%.o: ${SRC}/%.cpp ${MAKEFILE_LIST} | ${BLIB}
+${BLIB}/%.o: ${SRC}/%.cpp ${MAKEFILE_LIST} | ${BLIB} ${SMHASHER_INCLUDES}
 	@echo "Compiling lib file $@ <- $<"
 	@${CXX} -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} ${SYMBOLS} $< -o $@ ${INCLUDES}
 
