@@ -23,4 +23,3 @@ ${SMHASHER_SOURCES}: ${SMHASHER_SRC}
 ${BSMHASHER}/%.o : ${SMHASHER_SRC}/%.cpp make/smhasher.mk | ${BSMHASHER}
 	@echo "Building Dependancy SMHasher $@ <- $< "
 	@$(CXX) -MMD -MT $@ -MF $@.d $(SMHASHER_FLAGS) -I $(SMHASHER_INCLUDES) -c $< -o $@
-	@file $@

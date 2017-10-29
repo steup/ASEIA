@@ -28,5 +28,5 @@ ${BTEST}/gmock.o : ${GTEST_HEADER} ${MAKEFILE_LIST} | ${BTEST}
 
 ${LIB}/libgtest.a : ${BTEST}/gtest.o ${BTEST}/gmock.o ${MAKEFILE_LIST} | ${LIB}
 	@echo "Linking Dependancy GTest and GMock $@ <- [$<]"
-	@${AR} ${ARFLAGS} $@ $^
+	@${AR} ${ARFLAGS} $@ $^ > /dev/null
 	@${RANLIB} $@

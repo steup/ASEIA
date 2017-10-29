@@ -5,7 +5,7 @@ EMBEDDED         ?= 0
 INCLUDES :=
 LDPATHS  :=
 SYMBOLS  :=
-CXXFLAGS := -std=gnu++11 -ffunction-sections -fdata-sections -fvisibility-inlines-hidden ${CXXFLAGS}
+CXXFLAGS := -std=gnu++11 -ffunction-sections -fdata-sections -fvisibility-inlines-hidden -Wno-bool-compare ${CXXFLAGS}
 
 LDFLAGS  := -Wl,--gc-sections ${LDFLAGS}
 LIBS     := boost_system boost_filesystem
@@ -133,7 +133,7 @@ ${TESTOBJS}: ${BTEST}/%.o: ${TESTS}/%.cpp ${MAKEFILE_LIST} ${GTEST_HEADER} | ${B
 	@echo "Building unit tests $@ <- $<"
 	@${CXX} -MP -MMD -MT $@ -MF $@.d -c ${CXXFLAGS} -I${TESTS} ${GTEST_FLAGS} $< -o $@ ${INCLUDES} ${TEST_INCLUDES} ${GTEST_INCLUDES}
 
-${BIN}/${RUN_TESTS}: ${TESTOBJS} ${MAKEFILE_LIST} | ${BIN} ${DYNLIB} ${GTEST_LIBS}
+${BIN}/${RUN_TESTS}: ${TESTOBJS} ${MAKEFILE_LIST} | ${BIN} ${DYNLIB} ${GTEST}
 	@echo "Linking unit tests $@ <- [${TESTOBJS}]"
 	@${CXX} ${LDFLAGS} ${GTEST_LDFLAGS} ${TESTOBJS} -o $@ ${LDPATHS} ${LIBS} -L ${LIB} -l${LIBNAME} -l${IO_LIBNAME} -l${BASE_LIBNAME} ${GTEST_LDPATHS} ${GTEST_LIBS}
 
@@ -143,7 +143,7 @@ ${DYNLIB}: ${OBJECTS} | ${DYNBASELIB} ${DYNIOLIB} ${CONFIGS}
 
 ${STATLIB}: ${OBJECTS} | ${LIB} ${CONFIGS}
 	@echo "Building static library: $@ <- [$^]"
-	@${AR} ${ARFLAGS} $@ $^
+	@${AR} ${ARFLAGS} $@ $^ > /dev/null
 	@${RANLIB} $@
 
 ${DYNBASELIB}: ${BASE_OBJECTS} | ${LIB} ${BASE_CONFIGS}
@@ -240,6 +240,7 @@ debug_%: ${BIN}/%
 clean:
 	@echo "Clean"
 	@rm -rf ${GARBAGE}
+	@git submodule deinit .
 
 doc:
 	@echo "Creating Documentation"
