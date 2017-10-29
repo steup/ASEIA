@@ -20,5 +20,4 @@ ${SMHASHER_SRC}: | ${LOG}
 
 ${BSMHASHER}/%.o : ${SMHASHER_SRC}/%.cpp smhasher.mk | ${SMHASHER_SRC} ${BSMHASHER} ${LOG}
 	@echo "Building Dependancy SMHasher $@ <- $< "| tee -a ${LOG}/smhasher.log
-	@echo "$(CXX) -MMD -MF $@.d $(SMHASHER_FLAGS) $(SMHASHER_INCLUDES) -c $< -o $@" &>>  ${LOG}/smhasher.log
 	@$(CXX) -MMD -MT $@ -MF $@.d $(SMHASHER_FLAGS) $(SMHASHER_INCLUDES) -c $< -o $@ &>>  ${LOG}/smhasher.log
