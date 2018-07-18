@@ -1,7 +1,9 @@
 #pragma once
 
+#pragma GCC diagnostic ignored "-Wint-in-bool-context"
 #include <Eigen/Core>
 #include <Eigen/LU>
+#pragma GCC diagnostic pop
 
 #include <ratio>
 #include <cmath>
@@ -170,7 +172,7 @@ class Value {
     Value& asin() { mData = mData.array().asin(); return *this; }
     Value& acos() { mData = mData.array().acos(); return *this; }
     Value& atan() { mData = mData.array().unaryExpr(std::ptr_fun(::atan<T, U>)); return *this; }
-    Value& abs()  { mData = mData.array().abs().cast<BaseType>(); return *this; }
+    Value& abs()  { mData = mData.array().abs().template cast<BaseType>(); return *this; }
     Value& sqrt() { mData = mData.array().sqrt(); return *this; }
 
     std::size_t rows() const { return R==-1?mData.rows():R; }
